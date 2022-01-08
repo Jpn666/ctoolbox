@@ -26,44 +26,43 @@
  * Processor specific
  *************************************************************************** */
 
-/* Define one of them if endiannes auto detection fails.
-#define CTB_CFG_LITTLEENDIAN
-#define CTB_CFG_BIGENDIAN
-*/
+/* Define one of them if endiannes auto detection fails. */
+#undef CTB_CFG_LITTLEENDIAN
+#undef CTB_CFG_BIGENDIAN
 
-/* Define it if your target is a 64bit arch.
-#define CTB_CFG_ENV64
-*/
 
-/* ...
-#define CTB_CFG_STRICTALIGNMENT
-*/
+/* Define it if your target is a 64bit arch. */
+#undef CTB_CFG_ENV64
 
-/* Define it if unaligned memory access is efficient.
-#define CTB_CFG_FASTUNALIGNED
-*/
+
+/* ... */
+#undef CTB_CFG_STRICTALIGNMENT
+
+
+/* Define it if unaligned memory access is efficient. */
+#undef CTB_CFG_FASTUNALIGNED
 
 
 /* ***************************************************************************
  * Platform
  *************************************************************************** */
 
-/* Define it if your compiler don't have support for 64 bits integers.
-#define CTB_CFG_NOINT64
-*/
+/* Define it if your compiler don't have support for 64 bits integers. */
+#undef CTB_CFG_NOINT64
 
-/* Compiler features.
-#define CTB_CFG_NOINTTYPES
-#define CTB_CFG_NOSTDBOOL
-*/
 
-/* In this way we don't have to deal with compiler definitions.
-#define CTB_CFG_PLATFORM_UNIX
-#define CTB_CFG_PLATFORM_WINDOWS
-#define CTB_CFG_PLATFORM_BEOS
-#define CTB_CFG_PLATFORM_DOS
-#define CTB_CFG_PLATFORM_OS2
-*/
+/* Compiler features. */
+#undef CTB_CFG_NOINTTYPES
+#undef CTB_CFG_NOSTDBOOL
+
+
+/* In this way we don't have to deal with compiler definitions. */
+#undef CTB_CFG_PLATFORM_UNIX
+#undef CTB_CFG_PLATFORM_WINDOWS
+#undef CTB_CFG_PLATFORM_BEOS
+#undef CTB_CFG_PLATFORM_DOS
+#undef CTB_CFG_PLATFORM_OS2
+
 
 
 #endif

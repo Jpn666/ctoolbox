@@ -124,16 +124,16 @@ typedef uint32 uintxx;
 /* produce compile errors if the sizes aren't right */
 typedef union
 {
-	char i1_incorrect[(sizeof(  int8) == 1) - 1];
-	char u1_incorrect[(sizeof( uint8) == 1) - 1];
-	char i2_incorrect[(sizeof( int16) == 2) - 1];
-	char u2_incorrect[(sizeof(uint16) == 2) - 1];
-	char i4_incorrect[(sizeof( int32) == 4) - 1];
-	char u4_incorrect[(sizeof(uint32) == 4) - 1];
+	char i1_incorrect[-1 + (sizeof(  int8) == 1) * 2];
+	char u1_incorrect[-1 + (sizeof( uint8) == 1) * 2];
+	char i2_incorrect[-1 + (sizeof( int16) == 2) * 2];
+	char u2_incorrect[-1 + (sizeof(uint16) == 2) * 2];
+	char i4_incorrect[-1 + (sizeof( int32) == 4) * 2];
+	char u4_incorrect[-1 + (sizeof(uint32) == 4) * 2];
     
 #if CTB_HAVEINT64 == 1
-	char i8_incorrect[(sizeof( int64) == 8) - 1];
-	char u8_incorrect[(sizeof(uint64) == 8) - 1];
+	char i8_incorrect[-1 + (sizeof( int64) == 8) * 2];
+	char u8_incorrect[-1 + (sizeof(uint64) == 8) * 2];
 #endif
 } TTypeStaticAssert;
 

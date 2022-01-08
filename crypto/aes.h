@@ -27,11 +27,11 @@
 
 #define AES_BLOCKSZ 16
 
-enum eAESKeyLen {
+typedef enum {
 	AES_KEYLEN256 = 256,
 	AES_KEYLEN192 = 192,
 	AES_KEYLEN128 = 128
-};
+} eAESKeyLen;
 
 
 /* */

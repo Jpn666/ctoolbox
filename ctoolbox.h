@@ -23,7 +23,7 @@
  */
 
 
-#include "config.h"
+#include <ctbconfig.h>
 #include <stdlib.h>
 #include <string.h>
 
