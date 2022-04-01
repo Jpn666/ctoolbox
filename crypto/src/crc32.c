@@ -20,9 +20,7 @@
 #include "../crc32.h"
 
 
-extern const uint32 crc32_combinetable[32][32];
-extern const uint32 crc32_table[8][256];
-
+#if defined(AUTOINCLUDE_1)
 
 CTB_INLINE uint32
 GF2_matrixtimes(const uint32* matrix, uint32 index)
@@ -203,11 +201,13 @@ crc32_createtable(uint32 table[8][256])
 }
 
 
+#else
+
 /* ****************************************************************************
  * Lookup Table
  *************************************************************************** */
 
-const uint32 crc32_table[8][256] =
+static const uint32 crc32_table[8][256] =
 {
 	{
 		0X00000000UL, 0x77073096UL, 0xEE0E612CUL, 0x990951BAUL, 0x076DC419UL,
@@ -647,7 +647,7 @@ const uint32 crc32_table[8][256] =
  * 
  *************************************************************************** */
 
-const uint32 crc32_combinetable[32][32] =
+static const uint32 crc32_combinetable[32][32] =
 {
 	{
 		0x77073096UL, 0xEE0E612CUL, 0x076DC419UL, 0x0EDB8832UL, 0x1DB71064UL,
@@ -939,3 +939,9 @@ const uint32 crc32_combinetable[32][32] =
 	}
 };
 
+
+#define AUTOINCLUDE_1
+#include __FILE__
+#undef  AUTOINCLUDE_1
+
+#endif

@@ -18,10 +18,7 @@
 #include "../tiger.h"
 
 
-extern const uint64 tiger_table[1024];
-
-
-#define TGEN "Tiger - A Fast New Hash Function, by Ross Anderson and Eli Biham"
+#if defined(AUTOINCLUDE_1)
 
 #define TTABLE ((uint64*) tiger_table)
 
@@ -29,6 +26,8 @@ extern const uint64 tiger_table[1024];
 #define TT2(TT) ((TT) + 256)
 #define TT3(TT) ((TT) + 256 * 2)
 #define TT4(TT) ((TT) + 256 * 3)
+
+#define TGEN "Tiger - A Fast New Hash Function, by Ross Anderson and Eli Biham"
 
 
 #if TIGER_PASSES >= 3
@@ -257,11 +256,13 @@ tiger_createtable(uint64 table[1024])
 }
 
 
+#else
+
 /* ****************************************************************************
  * Lookup Table
  *************************************************************************** */
 
-const uint64 tiger_table[1024] = {
+static const uint64 tiger_table[1024] = {
 	0x02AAB17CF7E90C5EULL, 0xAC424B03E243A8ECULL, 0x72CD5BE30DD5FCD3ULL,
 	0x6D019B93F6F97F3AULL, 0xCD9978FFD21F9193ULL, 0x7573A1C9708029E2ULL,
 	0xB164326B922A83C3ULL, 0x46883EEE04915870ULL, 0xEAACE3057103ECE6ULL,
@@ -606,3 +607,9 @@ const uint64 tiger_table[1024] = {
 	0xC3A0396F7363A51FULL
 };
 
+
+#define AUTOINCLUDE_1
+#include __FILE__
+#undef  AUTOINCLUDE_1
+
+#endif
