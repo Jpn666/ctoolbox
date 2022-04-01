@@ -19,8 +19,9 @@
 
 #include "../crc32.h"
 
-const uint32 crc32_combinetable[32][32];
-const uint32 crc32_table[8][256];
+
+extern const uint32 crc32_combinetable[32][32];
+extern const uint32 crc32_table[8][256];
 
 
 CTB_INLINE uint32
