@@ -17,7 +17,8 @@
 
 #include "../tiger.h"
 
-const uint64 tiger_table[1024];
+
+extern const uint64 tiger_table[1024];
 
 
 #define TGEN "Tiger - A Fast New Hash Function, by Ross Anderson and Eli Biham"
