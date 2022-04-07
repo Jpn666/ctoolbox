@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2014, jpn 
- * 
+ * Copyright (C) 2014, jpn
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,7 +40,7 @@ uint32
 crc32_ncombine(uint32 crc1, uint32 crc2, uint32 size2)
 {
 	uintxx i;
-	
+
 	for (i = 0; i < 32; i++) {
 		if (size2 == 0) {
 			break;
@@ -50,21 +50,21 @@ crc32_ncombine(uint32 crc1, uint32 crc2, uint32 size2)
 		}
 		size2 >>= 1;
 	}
-	
+
 	return crc1 ^ crc2;
 }
 
 
 #if CTB_IS_LITTLEENDIAN
-#	define CRC32_4BYTE1_OFFSET 0x00
-#	define CRC32_4BYTE2_OFFSET 0x08
-#	define CRC32_4BYTE3_OFFSET 0x10
-#	define CRC32_4BYTE4_OFFSET 0x18
+	#define CRC32_4BYTE1_OFFSET 0x00
+	#define CRC32_4BYTE2_OFFSET 0x08
+	#define CRC32_4BYTE3_OFFSET 0x10
+	#define CRC32_4BYTE4_OFFSET 0x18
 #else
-#	define CRC32_4BYTE1_OFFSET 0x18
-#	define CRC32_4BYTE2_OFFSET 0x10
-#	define CRC32_4BYTE3_OFFSET 0x08
-#	define CRC32_4BYTE4_OFFSET 0x00
+	#define CRC32_4BYTE1_OFFSET 0x18
+	#define CRC32_4BYTE2_OFFSET 0x10
+	#define CRC32_4BYTE3_OFFSET 0x08
+	#define CRC32_4BYTE4_OFFSET 0x00
 #endif
 
 
@@ -125,7 +125,7 @@ crc32_updateby8(uint32 crc, const uint8* data, uintxx size)
 	const uint32* ptr32;
 	uint32 rg1;
 	uint32 rg2;
-	
+
 	for (; size; size--) {
 		if ((((uintxx) data) & (sizeof(uintxx) - 1)) == 0) {
 			break;
@@ -165,7 +165,7 @@ crc32_reflect(uint32 value, uint8 size)
 		if (value & 1) {
 			result |= 1 << (size - i);
 		}
-		value >>= 1; 
+		value >>= 1;
 	}
 	return result;
 }
@@ -176,7 +176,7 @@ crc32_createtable(uint32 table[8][256])
 	uint32 i;
 	uintxx j;
 	uint32 x;
-	
+
 	for (i = 0; 256 > i; i++) {
 		table[0][i] = crc32_reflect(i, 8) << 24;
 		for (j = 0; 8 > j; j++) {
@@ -644,7 +644,7 @@ static const uint32 crc32_table[8][256] =
 };
 
 /* ****************************************************************************
- * 
+ *
  *************************************************************************** */
 
 static const uint32 crc32_combinetable[32][32] =
@@ -941,7 +941,7 @@ static const uint32 crc32_combinetable[32][32] =
 
 
 #define AUTOINCLUDE_1
-#include __FILE__
+	#include __FILE__
 #undef  AUTOINCLUDE_1
 
 #endif

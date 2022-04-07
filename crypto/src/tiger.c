@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, jpn 
+ * Copyright (C) 2015, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@
 
 
 #if TIGER_PASSES >= 3
-#	define TIGER_UNROLLED
+	#define TIGER_UNROLLED
 #endif
 
 
@@ -139,7 +139,7 @@ tiger_compress(uint64 state[3], uint64 block[8])
 	uint64 x0, x1, x2, x3, x4, x5, x6, x7;
 	uint64 x;
 	intxx z;
-	
+
 	TIGER_COMPRESS(TTABLE, block, state)
 }
 
@@ -150,11 +150,11 @@ tiger_getdigest(uint64 digest[3], const uint8* data, uintxx size)
 	uint64 j;
 	uint8 tmp[64];
 	ASSERT(data && digest);
-	
+
 	digest[0] = 0x0123456789ABCDEFULL;
 	digest[1] = 0xFEDCBA9876543210ULL;
 	digest[2] = 0xF096A5B4C3B2E187ULL;
-	
+
 	for (i = size; i >= 64; i -= 64) {
 #if CTB_IS_BIGENDIAN
 		for(j = 0; j < 64; j++)
@@ -165,30 +165,30 @@ tiger_getdigest(uint64 digest[3], const uint8* data, uintxx size)
 #endif
 		data += 64;
 	}
-	
+
 #if CTB_IS_LITTLEENDIAN
 	for(j = 0; j < i; j++)
 		tmp[j] = data[j];
-	
+
 	tmp[j++] = 0x01;
 	for(; j & 7; j++)
 		tmp[j] = 0;
 #else
 	for(j = 0; j < i; j++)
 		tmp[j ^ 7] = data[j];
-	
+
 	tmp[j++ ^ 7] = 0x01;
 	for(; j & 7; j++)
 		tmp[j ^ 7] = 0;
 #endif
-	
+
 	if(j > 56) {
 		for(; j < 64; j++)
 			tmp[j] = 0;
 		tiger_compress(digest, (void*) tmp);
 		j = 0;
 	}
-	
+
 	for(; j < 56; j++)
 		tmp[j] = 0;
 	*((uint64 *) (tmp + 56)) = ((uint64) size) << 3;
@@ -208,21 +208,21 @@ tiger_generate_table(uint64 table[1024], uint32 src[16], intxx passes)
 	intxx cnt;
 	intxx sb;
 	intxx abc;
-	
+
 	state[0] = 0x0123456789ABCDEFULL;
 	state[1] = 0xFEDCBA9876543210ULL;
 	state[2] = 0xF096A5B4C3B2E187ULL;
-	
+
 	statech = (uint8(*)[8]) state;
 	tablech = (uint8(*)[8]) table;
-	
+
 	for(j = 0; j < 64; j++)
 		((uint8 *) tmp)[j] = ((uint8 *) src)[j];
-	
+
 	for(i = 0; i < 1024; i++)
 		for(c = 0; c < 8; c++)
 			tablech[i][c] = i & 0xff;
-	
+
 	abc = 2;
 	for (cnt = 0; cnt < passes; cnt++) {
 		for (i = 0; i < 256; i++) {
@@ -609,7 +609,7 @@ static const uint64 tiger_table[1024] = {
 
 
 #define AUTOINCLUDE_1
-#include __FILE__
+	#include __FILE__
 #undef  AUTOINCLUDE_1
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017, jpn 
+ * Copyright (C) 2017, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,54 +20,54 @@
 /*
  * ecnfg.h
  * An small event based configuration parser.
- * 
+ *
  * Example sintaxis:
  * ############################################################################
  * # Single entry key-value
  * ############################################################################
- * 
+ *
  * # Integers.
  * Entry0: 55544  # decimal
  * Entry1: 0x124  # hexadecinal integer
- * 
+ *
  * # Floats.
  * Entry3: 1.23554
  * Entry4: 1E10
  * Entry5: 1.5E10
  * Entry6: .25
- * 
+ *
  * # Strings.
  * Entry7: "String value"
- * 
+ *
  * # Multi line string.
  * Entry8: "This is a multi-line string."
  *         "This line is part of the same string above."
  *         "This line too."
  * Entry9: "This string" " " "will be merged with the previews one."
- * 
+ *
  * # Escape sequences takes the form of $(unicode codepoint value):
  * EntryA: "Hello$(20)World"
  * EntryB: "Hello$(0a 0a 0a)World"
- * 
+ *
  * ############################################################################
  * # Complex stuff
  * ############################################################################
- * 
+ *
  * # Directives.
  * Directive0 "some string" 80 23.8E10
  * EnableSomething
- * 
+ *
  * # Sections.
  * # The colon can be omitted if you are defining a section.
  * Section0 {
- *     
+ *
  *     # A nested section
  *     Section1: {
  *         Entry1: 40.2
  *     }
  * }
- * 
- * 
+ *
+ *
  * ############################################################################
  *
  * Usage:
@@ -77,7 +77,7 @@
  *     switch(evnttype) {
  *         case ECNFG_EVNTSECTIONBGN: {
  *             const char* identifier;
- *             
+ *
  *             identifier = ecnfg_getlval(cfg);
  *             break;
  *         }
@@ -85,11 +85,11 @@
  *             break;
  *         case ECNFG_EVNTDIRECTIVE: {
  *             const char* identifier;
- *             
+ *
  *             identifier = ecnfg_getlval(cfg);
  *             while ((rvaltype = ecnfg_nextrvaltype(cfg))) {
  *                 const char* parameter;
- *                 
+ *
  *                 parameter = ecnfg_getrval(cfg);
  *                 switch (rvaltype) {
  *                     case ECNFG_TYPEFLT: break;
@@ -101,7 +101,7 @@
  *         }
  *         case ECNFG_EVNTENTRY: {
  *             const char* identifier;
- *             
+ *
  *             identifier = ecnfg_getlval(cfg);
  *             switch ((rvaltype = ecnfg_nextrvaltype(cnfg))) {
  *                 case ECNFG_TYPEFLT: break;
@@ -113,12 +113,12 @@
  *         }
  *     }
  * }
- * 
+ *
  * ...check for errors
  * if (ecnfg_getstate(cfg, NULL, NULL) == ECNFG_ABORTED) {
  *     ...
  * }
- * 
+ *
  */
 
 #include "../ctoolbox.h"
@@ -185,29 +185,29 @@ struct TECnfg {
 	uintxx event;
 	intxx  rvcnt;  /* rvalues counter */
 	intxx  sncnt;  /* section counter */
-	
+
 	/* input callback */
 	TECInputFn inputfn;
-	
+
 	/* input callback parameter */
 	void* payload;
-	
+
 	/* lexer */
 	uintxx lastchr;
 	uintxx line;
 	uintxx token;
 	uintxx error;
-	
+
 	uint8* buffer;
 	uint8* bufferbgn;
 	uint8* bufferend;
-	
+
 	uint8* buffermem;
 	uintxx buffersz;
-	
+
 	uint8* input;
 	uint8* inputend;
-	
+
 	/* input buffer */
 	uint8* inputbgn;
 };
@@ -251,7 +251,7 @@ eECNFGType ecnfg_nextrvaltype(TECnfg*);
  * Returns a const pointer to the identifier string. */
 const char* ecnfg_getlval(TECnfg*);
 
-/* 
+/*
  * Returns a const pointer to the rvalue as string. */
 const char* ecnfg_getrval(TECnfg*);
 
@@ -263,7 +263,7 @@ CTB_INLINE void
 ecnfg_setinputfn(TECnfg* cfg, TECInputFn inputfn, void* payload)
 {
 	ASSERT(cfg);
-	
+
 	cfg->inputfn = inputfn;
 	cfg->payload = payload;
 }
@@ -272,7 +272,7 @@ CTB_INLINE eECNFGState
 ecnfg_getstate(TECnfg* cfg, uintxx* error, uintxx* lline)
 {
 	ASSERT(cfg);
-	
+
 	if (error)
 		error[0] = cfg->error;
 	if (lline)

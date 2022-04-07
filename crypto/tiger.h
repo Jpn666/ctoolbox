@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, jpn 
+ * Copyright (C) 2015, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 
 
 #if !CTB_HAVEINT64
-#	error "Your compiler does not seems to support 64 bit integers"
+    #error "Your compiler does not seems to support 64 bit integers"
 #endif
 
 

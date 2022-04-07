@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2014, jpn 
- * 
+ * Copyright (C) 2014, jpn
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,7 @@
  */
 
 #if !defined(CTB_INTERNAL_INCLUDE_GUARD)
-#	error "this file can't be included directly"
+	#error "this file can't be included directly"
 #endif
 
 #include <stddef.h>
@@ -31,29 +31,29 @@
 
 
 #ifndef NULL
-#	define NULL ((*void) 0)
+	#define NULL ((*void) 0)
 #endif
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-#	if !defined(CTB_CFG_NOINTTYPES)
-#		define CTB_HAVEINTTYPES
-#		include <inttypes.h>
-#	endif
-#	if !defined(CTB_CFG_NOSTDBOOL)
-#		define CTB_HAVESTDBOOL
-#		include <stdbool.h>
-#	endif
+	#if !defined(CTB_CFG_NOINTTYPES)
+		#define CTB_HAVEINTTYPES
+		#include <inttypes.h>
+	#endif
+	#if !defined(CTB_CFG_NOSTDBOOL)
+		#define CTB_HAVESTDBOOL
+		#include <stdbool.h>
+	#endif
 #endif
 
 
-/* 
+/*
  * Boolean */
 
 #if !defined(CTB_HAVESTDBOOL)
 typedef int custombool;
-#	if !defined(bool)
-#       define bool custombool
-#	endif
+	#if !defined(bool)
+		#define bool custombool
+	#endif
 #endif
 
 
@@ -61,9 +61,9 @@ typedef int custombool;
  * Integers */
 
 #if defined(CTB_HAVEINTTYPES)
-#	define ADD_TYPE(A, B) typedef B##_t B
+	#define ADD_TYPE(A, B) typedef B##_t B
 #else
-#	define ADD_TYPE(A, B) typedef A B
+	#define ADD_TYPE(A, B) typedef A B
 #endif
 
 ADD_TYPE(signed int, int32);
@@ -75,41 +75,41 @@ ADD_TYPE(unsigned char, uint8);
 
 
 #if defined(CTB_CFG_NOINT64)  /* configuration flag */
-#	define CTB_NOINT64
+	#define CTB_NOINT64
 #endif
 
 #if (defined(__MSVC__) && !defined(__POCC__)) || defined(__BORLANDC__)
 typedef   signed __int64  int64;
 typedef unsigned __int64 uint64;
-#   define CTB_HAVEINT64 1
+	#define CTB_HAVEINT64 1
 #endif
 
 /* using gcc extension in c89 */
 #if !defined(CTB_NOINT64) && !defined(__STDC_VERSION__) && defined(__GNUC__)
 __extension__ typedef signed long long int    int64;
 __extension__ typedef unsigned long long int uint64;
-#	define CTB_HAVEINT64 1
+	#define CTB_HAVEINT64 1
 #endif
 
 
 /* ISO C90 does not support long long */
 #if !defined(CTB_NOINT64) && !defined(__STDC_VERSION__)
-#	if !defined(__POCC__)
-#		define CTB_NOINT64
-#	endif
+	#if !defined(__POCC__)
+		#define CTB_NOINT64
+	#endif
 #endif
 
 #if !defined(CTB_HAVEINT64) && !defined(CTB_NOINT64)
 ADD_TYPE(signed long long int, int64);
 ADD_TYPE(unsigned long long int, uint64);
-#	define CTB_HAVEINT64 1
+	#define CTB_HAVEINT64 1
 #endif
 
 #undef ADD_TYPE
 
 
 #if !defined(CTB_HAVEINT64)
-#	define CTB_HAVEINT64 0
+	#define CTB_HAVEINT64 0
 #endif
 
 /* fast (target platform word size) integer */
@@ -130,7 +130,7 @@ typedef union
 	char u2_incorrect[-1 + (sizeof(uint16) == 2) * 2];
 	char i4_incorrect[-1 + (sizeof( int32) == 4) * 2];
 	char u4_incorrect[-1 + (sizeof(uint32) == 4) * 2];
-    
+
 #if CTB_HAVEINT64 == 1
 	char i8_incorrect[-1 + (sizeof( int64) == 8) * 2];
 	char u8_incorrect[-1 + (sizeof(uint64) == 8) * 2];
@@ -152,7 +152,7 @@ typedef float32 flt32;
 typedef float64 flt64;
 
 
-/* 
+/*
  * Funtion types */
 
 /* used for comparison */
@@ -173,65 +173,64 @@ typedef void (*TUnaryFn)(void*);
 
 /* integers limits */
 #ifndef INT8_MIN
-#	define  INT8_MIN 0x00000080UL
+	#define  INT8_MIN 0x00000080UL
 #endif
 #ifndef INT8_MAX
-#	define  INT8_MAX 0x0000007FUL
+	#define  INT8_MAX 0x0000007FUL
 #endif
 #ifndef INT16_MIN
-#	define INT16_MIN 0x00008000UL
+	#define INT16_MIN 0x00008000UL
 #endif
 #ifndef INT16_MAX
-#	define INT16_MAX 0x00007FFFUL
+	#define INT16_MAX 0x00007FFFUL
 #endif
 #ifndef INT32_MIN
-#	define INT32_MIN 0x80000000UL
+	#define INT32_MIN 0x80000000UL
 #endif
 #ifndef INT32_MAX
-#	define INT32_MAX 0x7FFFFFFFUL
+	#define INT32_MAX 0x7FFFFFFFUL
 #endif
 
 #if CTB_HAVEINT64
-#	ifndef INT64_MIN
-#		define INT64_MIN 0x8000000000000000ULL
-#	endif
-#	ifndef INT64_MAX
-#		define INT64_MAX 0x7FFFFFFFFFFFFFFFULL
-#	endif
+	#ifndef INT64_MIN
+		#define INT64_MIN 0x8000000000000000ULL
+	#endif
+	#ifndef INT64_MAX
+		#define INT64_MAX 0x7FFFFFFFFFFFFFFFULL
+	#endif
 #endif
 
 
 #ifndef UINT8_MAX
-#	define  UINT8_MAX 0x000000FFUL
+	#define  UINT8_MAX 0x000000FFUL
 #endif
 #ifndef UINT32_MAX
-#	define UINT32_MAX 0xFFFFFFFFUL
+	#define UINT32_MAX 0xFFFFFFFFUL
 #endif
 #ifndef UINT16_MAX
-#	define UINT16_MAX 0x0000FFFFUL
+	#define UINT16_MAX 0x0000FFFFUL
 #endif
 
 #if CTB_HAVEINT64
-#	ifndef UINT64_MAX
-#		define UINT64_MAX 0xFFFFFFFFFFFFFFFFULL
-#	endif
+	#ifndef UINT64_MAX
+		#define UINT64_MAX 0xFFFFFFFFFFFFFFFFULL
+	#endif
 #endif
 
 
 #if CTB_HAVEINT64 && defined(CTB_ENV64)
 	/* 64 bits */
-#	define INTXX_MIN INT64_MIN
-#	define INTXX_MAX INT64_MAX
-	
-#	define UINTXX_MAX UINT64_MAX
+	#define INTXX_MIN INT64_MIN
+	#define INTXX_MAX INT64_MAX
+
+	#define UINTXX_MAX UINT64_MAX
 #else
 	/* 32 bits */
-#	define INTXX_MIN INT32_MIN
-#	define INTXX_MAX INT32_MAX
-	
-#	define UINTXX_MAX UINT32_MAX
+	#define INTXX_MIN INT32_MIN
+	#define INTXX_MAX INT32_MAX
+
+	#define UINTXX_MAX UINT32_MAX
 #endif
 
 
 #endif
-
