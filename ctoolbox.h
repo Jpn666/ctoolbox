@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, jpn
+ * Copyright (C) 2022, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,14 +48,7 @@
 /*
  * Inline and force inline */
 
-#if defined(__MSVC__) || defined(__BORLANDC__) || \
-    defined(__DMC__)      || \
-    defined(__SC__)       || \
-    defined(__WATCOMC__)  || \
-    defined(__LCC__)      || \
-    defined(__DECC)       || \
-    defined(__POCC__)     || \
-defined (__MWERKS__)
+#if defined(__MSVC__) || defined(__BORLANDC__) || defined(__POCC__)
 	#define CTB_INLINE static __inline
 #endif
 
@@ -77,7 +70,7 @@ defined (__MWERKS__)
 #endif
 
 #if !defined(CTB_FORCEINLINE)
-	#if defined(__GNUC__) && (__GNUC__ >= 3 && __GNUC_MINOR__ >= 1)
+	#if defined(__GNUC__)
 		#define CTB_FORCEINLINE __attribute__((always_inline)) CTB_INLINE
 	#else
 		#define CTB_FORCEINLINE CTB_INLINE
@@ -131,6 +124,11 @@ typedef enum {
 	CTB_EOOM   = -3,
 	CTB_ENKEY  = -4
 } eCTBError;
+
+
+/*
+ * */
+extern void (*ctb_memzero)(void* buffer, uintxx size);
 
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017, jpn 
+ * Copyright (C) 2022, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -704,6 +704,28 @@ ecnfg_nextrvaltype(TECnfg* cfg)
 
 #define DISPATCH(EVNT) return (cfg->event = (EVNT))
 
+CTB_INLINE void
+restorebuffer(struct TECnfg* cfg)
+{
+	if (cfg->event == ECNFG_EVNTDIRECTIVE) {
+		if (cfg->token == ECNFG_TKNIDENT) {
+			cfg->buffer = cfg->buffermem;
+			while (cfg->bufferbgn[0]) {
+				*cfg->buffer++ = *cfg->bufferbgn++;
+			}
+			*cfg->buffer++ = 0x00;
+		}
+		cfg->bufferbgn = cfg->buffermem;
+
+		while (ISRVALUE(cfg->token)) {
+			NEXTTOKEN(cfg);
+		}
+		return;
+	}
+	cfg->bufferbgn = cfg->buffermem;
+	NEXTTOKEN(cfg);
+}
+
 eECNFGEvent
 ecnfg_nextevnttype(TECnfg* cfg)
 {
@@ -718,25 +740,7 @@ ecnfg_nextevnttype(TECnfg* cfg)
 			DISPATCH(ECNFG_EVNTNONE);
 		}
 	}
-	
-	if (cfg->event == ECNFG_EVNTDIRECTIVE) {
-		/* restore buffer position */
-		if (cfg->token == ECNFG_TKNIDENT) {
-			cfg->buffer = cfg->buffermem;
-				
-			while (cfg->bufferbgn[0])
-				*cfg->buffer++ = *cfg->bufferbgn++;
-			*cfg->buffer++ = 0x00;
-		}
-		cfg->bufferbgn = cfg->buffermem;
-		
-		while (ISRVALUE(cfg->token))
-			NEXTTOKEN(cfg);
-	}
-	else {
-		cfg->bufferbgn = cfg->buffermem;
-		NEXTTOKEN(cfg);
-	}
+	restorebuffer(cfg);
 	
 	colon = 0;
 	cfg->rvcnt = 0;

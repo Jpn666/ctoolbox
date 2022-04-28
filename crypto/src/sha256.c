@@ -131,6 +131,7 @@ sha256_compress(uint32 state[8], const uint8 data[64])
 	state[5] += s[5];
 	state[6] += s[6];
 	state[7] += s[7];
+	ctb_memzero(v, sizeof(v));
 }
 
 #undef C
@@ -245,4 +246,5 @@ sha256_final(TSHA256ctx* context, uint32 digest[8])
 	digest[5] = context->state[5];
 	digest[6] = context->state[6];
 	digest[7] = context->state[7];
+	ctb_memzero(context, sizeof(TSHA256ctx));
 }

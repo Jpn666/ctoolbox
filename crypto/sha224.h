@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, jpn 
+ * Copyright (C) 2022, jpn
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
  * SHA 224 hash.
  */
 
-#include "../ctoolbox.h"
+#include "sha256.h"
 
 
 #define SHA224_BLOCKSZ  SHA256_BLOCKSZ

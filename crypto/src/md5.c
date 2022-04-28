@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, jpn 
+ * Copyright (C) 2022, jpn
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,6 +160,7 @@ md5_compress(uint32 state[4], const uint8 data[64])
 	state[1] += b;
 	state[2] += c;
 	state[3] += d;
+	ctb_memzero(v, sizeof(v));
 }
 
 void
@@ -252,4 +253,5 @@ md5_final(TMD5ctx* context, uint32 digest[8])
 	digest[1] = ctb_swap32(context->state[1]);
 	digest[2] = ctb_swap32(context->state[2]);
 	digest[3] = ctb_swap32(context->state[3]);
+	ctb_memzero(context, sizeof(TMD5ctx));
 }

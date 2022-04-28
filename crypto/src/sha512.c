@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, jpn 
+ * Copyright (C) 2022, jpn
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,6 +144,7 @@ sha512_compress(uint64 state[8], const uint8 data[128])
 	state[5] += s[5];
 	state[6] += s[6];
 	state[7] += s[7];
+	ctb_memzero(v, sizeof(v));
 }
 
 
@@ -255,4 +256,5 @@ sha512_final(TSHA512ctx* context, uint64 digest[8])
 	digest[5] = context->state[5];
 	digest[6] = context->state[6];
 	digest[7] = context->state[7];
+	ctb_memzero(context, sizeof(TSHA512ctx));
 }
