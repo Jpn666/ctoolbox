@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, jpn 
+ * Copyright (C) 2022, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,21 @@
 #include "../ctoolbox.h"
 
 
-#if defined(CTB_ENV64) && CTB_HAVEINT64
+#if !CTB_HAVEINT64
+#	error "Your compiler does not seems to support 64 bit integers"
+#endif
+
+
+/* Error codes */
+typedef enum {
+	STR2INT_OK        = 0,
+	STR2INT_ENAN      = 1,
+	STR2INT_EBADBASE  = 2,
+	STR2INT_EOVERFLOW = 3
+} eSTR2INTError;
+
+
+#if defined(CTB_ENV64)
 
 #define str2uxx str2u64
 #define str2ixx str2i64
@@ -40,18 +54,12 @@
 
 /*
  * */
-eintxx str2u32(const char* src, const char** end, uint32* n, uintxx base);
-eintxx str2i32(const char* src, const char** end,  int32* n, uintxx base);
-
-
-#if CTB_HAVEINT64
+uintxx str2u32(const char* src, const char** end, uint32* result, uintxx base);
+uintxx str2i32(const char* src, const char** end,  int32* result, uintxx base);
 
 /*
  * */
-eintxx str2u64(const char* src, const char** end, uint64* n, uintxx base);
-eintxx str2i64(const char* src, const char** end,  int64* n, uintxx base);
+uintxx str2u64(const char* src, const char** end, uint64* result, uintxx base);
+uintxx str2i64(const char* src, const char** end,  int64* result, uintxx base);
 
 #endif
-
-#endif
-

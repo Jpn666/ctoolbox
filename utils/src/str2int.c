@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017, jpn 
+ * Copyright (C) 2022, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,208 +14,420 @@
  * limitations under the License.
  */
 
+#include "../../ctype.h"
 #include "../str2int.h"
 
 
-#if !defined(STR2INT_AUTOINCLUDE)
 
-#define ISSPACE(N) (((N) >= 0x09 && (N) <= 0x0D) || (N) == 0x20)
-#define ISDIGIT(N) (((N) >= 0x30 && (N) <= 0x39))
-#define ISALPHA(N) (((N) >= 0x61 && (N) <= 0x71))
+CTB_INLINE bool
+checkbase(uintxx chr, uintxx base)
+{
+	static const uint8 chrbasemap[] = {
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e,
+		0x1e, 0x1e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+	};
+
+	return (chrbasemap[chr] & base) != 0;
+}
 
 
 CTB_INLINE uintxx
 getbase(const char** src, uintxx base)
 {
-	if (*src[0] == 0x30) {
-		(*src)++;
-		if (base == 0 || base == 16) {
-			if ((*src[0] | 0x20) == 0x78) {
-				(*src)++;
-				base = 16;
+	const char *s;
+
+	s = src[0];
+	if (s[0] == 0x30) {
+		if (base == 0 || base == 0x10) {
+			if ((s[1] | 0x20) == 0x78) {
+				if (checkbase(s[2], 0x10)) {
+					s += 2;
+					base = 0x10;
+				}
 			}
 		}
-		if (base == 0 || base == 2) {
-			if ((*src[0] | 0x20) == 0x62) {
-				(*src)++;
-				base = 2;
+		if (base == 0 || base == 0x02) {
+			if ((s[1] | 0x20) == 0x62) {
+				if (checkbase(s[2], 0x02)) {
+					s += 2;
+					base = 0x02;
+				}
+			}
+		}
+		if (base == 0 || base == 0x08) {
+			if ((s[1] | 0x20) == 0x6f) {
+				if (checkbase(s[2], 0x08)) {
+					s += 2;
+					base = 0x08;
+				}
 			}
 		}
 		if (base == 0)
-			base = 8;
+			base = 0x0a;
 	}
 	else {
-		if (base == 0)
-			base = 10;
+		if (base == 0) {
+			base = 0x0a;
+		}
+		else {
+			if (base < 2 || base > 16) {
+				base = 0;
+			}
+		}
 	}
+	src[0] = s;
+
 	return base;
 }
 
 
-CTB_INLINE uintxx
-isnegative(const char** src)
+static bool
+parseu32(const char* src, const char** end, uint32* result, uintxx b)
 {
-	uintxx negative;
-	
-	negative = 0;
-	while (ISSPACE(*src[0]))
-		(*src)++;
+	const char* s;
+	uint32 r;
+	uint32 n;
+	uint32 c;
 
-	for(; *src[0]; (*src)++) {
-		switch (*src[0]) {
-			case 0x2D: negative = 1; continue;
-			case 0x2B: negative = 0; continue;
-		}
-		break;
-	}
-	return negative;
-}
-
-
-#define   GLUE(A, B) A ## B
-#define CONCAT(A, B) GLUE(A, B)
-
-#define GETFNNAME(A) CONCAT(A, TYPESIZE)
-
-
-#define STR2INT_AUTOINCLUDE
-
-#define TYPESIZE 32
-#define ITYPEMAX  INT32_MAX
-#define ITYPEMIN  INT32_MIN
-#define UTYPEMAX UINT32_MAX
-
-#include "str2int.c"
-
-#undef TYPESIZE
-#undef ITYPEMAX
-#undef ITYPEMIN
-#undef UTYPEMAX
-
-#if CTB_HAVEINT64
-
-#define TYPESIZE 64
-#define ITYPEMAX  INT64_MAX
-#define ITYPEMIN  INT64_MIN
-#define UTYPEMAX UINT64_MAX
-
-#include "str2int.c"
-
-#undef TYPESIZE
-#undef ITYPEMAX
-#undef ITYPEMIN
-#undef UTYPEMAX
-
-#endif
-
-#undef GLUE
-#undef CONCAT
-#undef GETFNNAME
-
-#else
-
-
-#define ITYPE CONCAT( int, TYPESIZE)
-#define UTYPE CONCAT(uint, TYPESIZE)
-
-static eintxx
-GETFNNAME(str2n)(const char* src, const char** end, UTYPE* num, uintxx base)
-{
-	UTYPE value;
-	UTYPE limit;
-	UTYPE rem;
-	uintxx c;
-	uintxx n;
-
-	base = getbase(&src, base);
-	if (base < 2 || base > 36) {  /* same limit as strtol like functions */
-		return CTB_EPARAM;
-	}
-	
-	limit = UTYPEMAX / (UTYPE) base;
-	rem   = UTYPEMAX - (limit * (UTYPE) base);
-	for (value = 0; (c = src[0]); src++) {
-		if (ISDIGIT(c)) {
+	s = src;
+	for (r = 0; (c = s[0]); s++) {
+		uint64 j;
+		if (ctb_isdigit(c)) {
 			n = c - 0x30;
 		}
 		else {
 			c = c | 0x20;
-			if (ISALPHA(c)) {
+			if (ctb_isalpha(c)) {
 				n = c - (0x61 - 10);
 			}
 			else {
 				break;
 			}
 		}
-		if (n >= base) {
+
+		if (n >= b) {
 			break;
 		}
 
-		if (value > limit || (value == limit && n > rem)) {
-			return CTB_ERANGE;
+		j = (r * b) + n;
+		if (UNLIKELY(j > UINT32_MAX)) {
+			end[0]    = s;
+
+			result[0] = UINT32_MAX;
+			return 0;
 		}
-		value = (value * (UTYPE) base) + (UTYPE) n;
+		r = (uint32) j;
 	}
 
-	num[0] = (UTYPE) value;
-	if (end) {
-		end[0] = src;
-	}
-	return CTB_OK;
+	end[0]    = s;
+	result[0] = r;
+	return 1;
 }
 
-eintxx
-GETFNNAME(str2i)(const char* src, const char** end, ITYPE* num, uintxx base)
+uintxx
+str2i32(const char* src, const char** end, int32* result, uintxx base)
 {
-	UTYPE value;
-	UTYPE limit;
-	eintxx r;
-	uintxx n;
-	ASSERT(src && num);
+	const char* s;
+	const char* e[1];
+	uintxx isnegative;
+	uint32 r[1];
+	ASSERT(src && result);
 
-	n = isnegative(&src);
-	limit = ITYPEMAX;
-	if (n) {
-		limit = ITYPEMIN;
+	s = src;
+	while (ctb_isspace(s[0]))
+		s++;
+
+	for(isnegative = 0; s[0]; s++) {
+		switch (s[0]) {
+			case 0x2d: isnegative = 1; continue;
+			case 0x2b: isnegative = 0; continue;
+		}
+		break;
 	}
 
-	if ((r = GETFNNAME(str2n)(src, end, &value, base))) {
-		return r;
+	base = getbase(&s, base);
+	if (base == 0) {
+		if (end)
+			end[0] = src;
+		return STR2INT_EBADBASE;
+	}
+
+	parseu32(s, e, r, base);
+	if (s == e[0]) {
+		result[0] = 0;
+		return STR2INT_ENAN;
 	}
 	else {
-		if (value > limit) {
-			return CTB_ERANGE;
+		if (end)
+			end[0] = e[0];
+	}
+
+	if (isnegative) {
+		if (r[0] > (uint32) INT32_MIN) {
+			result[0] = INT32_MIN;
+			return STR2INT_EOVERFLOW;
 		}
+		result[0] = -r[0];
 	}
-
-	num[0] = (ITYPE) value;
-	if (n) {
-		num[0] = -num[0];
+	else {
+		if (r[0] > (uint32) INT32_MAX) {
+			result[0] = INT32_MAX;
+			return STR2INT_EOVERFLOW;
+		}
+		result[0] = +r[0];
 	}
-	return CTB_OK;
+	return 0;
 }
 
-eintxx
-GETFNNAME(str2u)(const char* src, const char** end, UTYPE* num, uintxx base)
+uintxx
+str2u32(const char* src, const char** end, uint32* result, uintxx base)
 {
-	eintxx r;
-	uintxx n;
-	ASSERT(src && num);
+	const char* s;
+	const char* e[1];
+	ASSERT(src && result);
 
-	n = isnegative(&src);
-	if ((r = GETFNNAME(str2n)(src, end, num, base))) {
-		return r;
-	}
-	if (n) {
-		num[0] = -((ITYPE) num[0]);
+	s = src;
+	while (ctb_isspace(s[0]))
+		s++;
+
+	for(;s[0]; s++) {
+		switch (s[0]) {
+			case 0x2d: continue;
+			case 0x2b: continue;
+		}
+		break;
 	}
 
-	return CTB_OK;
+	base = getbase(&s, base);
+	if (base == 0) {
+		if (end)
+			end[0] = s;
+		return STR2INT_EBADBASE;
+	}
+
+	if (parseu32(s, e, result, base) == 0) {
+		return STR2INT_EOVERFLOW;
+	}
+	if (s == e[0]) {
+		return STR2INT_ENAN;
+	}
+	else {
+		if (end)
+			end[0] = e[0];
+	}
+	return 0;
 }
 
 
-#undef ITYPE
-#undef UTYPE
+#if defined(__has_builtin)
+	#if __has_builtin(__builtin_mul_overflow)
+		#define HAS_SAFE_MUL
+	#endif
+	#if __has_builtin(__builtin_add_overflow)
+		#define HAS_SAFE_ADD
+	#endif
 
+	#if defined(HAS_SAFE_MUL) && defined(HAS_SAFE_ADD)
+		#define HAS_SAFE_OPERATORS 1
+	#endif
 
+	#undef HAS_SAFE_MUL
+	#undef HAS_SAFE_ADD
 #endif
+
+#if !defined(HAS_SAFE_OPERATORS)
+	#if defined __GNUC__ && __GNUC__ >= 5
+		#define HAS_SAFE_OPERATORS 1
+	#else
+		#define HAS_SAFE_OPERATORS 0
+	#endif
+#endif
+
+
+#if HAS_SAFE_OPERATORS == 0
+
+#define GENLIMITx1(A, D) ((A) / (D))
+#define GENLIMITx2(A, D) GENLIMITx1(A, (D) + 0), GENLIMITx1(A, (D + 1))
+#define GENLIMITx4(A, D) GENLIMITx2(A, (D) + 0), GENLIMITx2(A, (D + 2))
+#define GENLIMITx8(A, D) GENLIMITx4(A, (D) + 0), GENLIMITx2(A, (D + 4))
+
+static const uint64 limit64[] = {
+	GENLIMITx8(UINT64_MAX, 2+(8*0)),
+	GENLIMITx8(UINT64_MAX, 2+(8*1)),
+	GENLIMITx8(UINT64_MAX, 2+(8*2))
+};
+
+#undef GENLIMITx1
+#undef GENLIMITx2
+#undef GENLIMITx4
+#undef GENLIMITx8
+#endif
+
+
+static bool
+parseu64(const char* src, const char** end, uint64* result, uintxx b)
+{
+	const char* s;
+	bool overflow;
+	uint64 r;
+	uint64 n;
+	uint64 c;
+#if HAS_SAFE_OPERATORS == 0
+	uint64 limit1;
+	uint64 limit2;
+
+	limit2 = UINT64_MAX - ((limit1 = limit64[b - 2]) * b);
+#endif
+
+	overflow = 0;
+	s = src;
+	for (r = 0; (c = s[0]); s++) {
+		if (ctb_isdigit(c)) {
+			n = c - 0x30;
+		}
+		else {
+			c = c | 0x20;
+			if (ctb_isalpha(c)) {
+				n = c - (0x61 - 10);
+			}
+			else {
+				break;
+			}
+		}
+
+		if (n >= b) {
+			break;
+		}
+#if HAS_SAFE_OPERATORS == 0
+		if (r > limit1 || (r == limit1 && n > limit2)) {
+			overflow = 1;
+			break;
+		}
+		r = (r * b) + n;
+#else
+		if (__builtin_mul_overflow(r, b, &r)) {
+			overflow = 1;
+			break;
+		}
+		if (__builtin_add_overflow(r, n, &r)) {
+			overflow = 1;
+			break;
+		}
+#endif
+	}
+
+	if (end)
+		end[0] = s;
+
+	if (UNLIKELY(overflow)) {
+		result[0] = UINT64_MAX;
+		return 0;
+	}
+	result[0] = r;
+	return 1;
+}
+
+#undef HAS_SAFE_OPERATORS
+
+
+uintxx
+str2i64(const char* src, const char** end, int64* result, uintxx base)
+{
+	uintxx isnegative;
+	uint64 r[1];
+	ASSERT(src && result);
+
+	while (ctb_isspace(src[0]))
+		src++;
+
+	for(isnegative = 0; src[0]; src++) {
+		switch (src[0]) {
+			case 0x2d: isnegative = 1; continue;
+			case 0x2b: isnegative = 0; continue;
+		}
+		break;
+	}
+
+	base = getbase(&src, base);
+	if (base == 0) {
+		if (end)
+			end[0] = src;
+		return STR2INT_EBADBASE;
+	}
+
+	parseu64(src, end, r, base);
+
+	if (isnegative) {
+		if (r[0] > (uint64) INT64_MIN) {
+			result[0] = INT32_MIN;
+			return STR2INT_EOVERFLOW;
+		}
+		result[0] = -r[0];
+	}
+	else {
+		if (r[0] > (uint64) INT64_MAX) {
+			result[0] = INT64_MAX;
+			return STR2INT_EOVERFLOW;
+		}
+		result[0] = +r[0];
+	}
+	return 0;
+}
+
+uintxx
+str2u64(const char* src, const char** end, uint64* result, uintxx base)
+{
+	while (ctb_isspace(src[0]))
+		src++;
+
+	for(;src[0]; src++) {
+		switch (src[0]) {
+			case 0x2d: continue;
+			case 0x2b: continue;
+		}
+		break;
+	}
+
+	base = getbase(&src, base);
+	if (base == 0) {
+		if (end)
+			end[0] = src;
+		return STR2INT_EBADBASE;
+	}
+
+	if (parseu64(src, end, result, base) == 0) {
+		return STR2INT_EOVERFLOW;
+	}
+	return 0;
+}
+
