@@ -609,7 +609,7 @@ static const uint64 tiger_table[1024] = {
 
 
 #define AUTOINCLUDE_1
-	#include __FILE__
+	#include "tiger.c"
 #undef  AUTOINCLUDE_1
 
 #endif

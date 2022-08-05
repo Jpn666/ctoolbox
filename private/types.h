@@ -45,6 +45,13 @@
 	#endif
 #endif
 
+#if !defined(CTB_CFG_NOINTTYPES)
+	#if defined(_MSC_VER) && (_MSC_VER >= 1600) /* >= msvc 2010 */
+		#undef CTB_CFG_NOINTTYPES
+		#include <inttypes.h>
+	#endif
+#endif
+
 
 /*
  * Boolean */
@@ -169,6 +176,25 @@ typedef void (*TFreeFn)(void*);
 
 /* */
 typedef void (*TUnaryFn)(void*);
+
+/* allocator function */
+typedef void* (*TReserveFn)(void* user, uintxx amount);
+
+/* deallocator function */
+typedef void (*TReleaseFn)(void* user, void* memory);
+
+
+/* Allocator interface */
+struct TAllocator {
+	/* */
+	TReserveFn reservefn;
+	TReleaseFn releasefn;
+
+	/* user data */
+	void* user;
+};
+
+typedef struct TAllocator TAllocator;
 
 
 /* integers limits */

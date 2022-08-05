@@ -941,7 +941,7 @@ static const uint32 crc32_combinetable[32][32] =
 
 
 #define AUTOINCLUDE_1
-	#include __FILE__
+	#include "crc32.c"
 #undef  AUTOINCLUDE_1
 
 #endif
