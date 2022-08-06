@@ -110,16 +110,16 @@
 
 #if defined(CTB_CFG_NOSTDLIB)
 	#if !defined(CTB_MALLOC)
-		#define CTB_MALLOC(X)       NULL
+		#define CTB_MALLOC(A)       NULL
 	#endif
 	#if !defined(CTB_CALLOC)
-		#define CTB_CALLOC(X, X, X) NULL
+		#define CTB_CALLOC(A, B, C) NULL
 	#endif
 	#if !defined(CTB_REALLOC)
-		#define CTB_REALLOC(X, X)   NULL
+		#define CTB_REALLOC(A, B)   NULL
 	#endif
 	#if !defined(CTB_FREE)
-		#define CTB_FREE(X)
+		#define CTB_FREE(A)
 	#endif
 #else
 	#include <stdlib.h>
@@ -137,7 +137,6 @@
 #if !defined(CTB_FREE)
 	#define CTB_FREE    free
 #endif
-
 
 
 /* Error values */
