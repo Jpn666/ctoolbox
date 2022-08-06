@@ -34,6 +34,7 @@
 	#define NULL ((*void) 0)
 #endif
 
+
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 	#if !defined(CTB_CFG_NOINTTYPES)
 		#define CTB_HAVEINTTYPES
@@ -187,8 +188,8 @@ typedef void (*TReleaseFn)(void* user, void* memory);
 /* Allocator interface */
 struct TAllocator {
 	/* */
-	TReserveFn reservefn;
-	TReleaseFn releasefn;
+	TReserveFn reserve;
+	TReleaseFn release;
 
 	/* user data */
 	void* user;

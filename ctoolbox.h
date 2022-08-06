@@ -24,8 +24,6 @@
 
 
 #include <ctbconfig.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 #if defined(_MSC_VER)
@@ -108,12 +106,38 @@
 
 
 /*
- * Memory allocation */
+ * Memory allocation macros */
 
-#define CTB_MALLOC  malloc
-#define CTB_CALLOC  calloc
-#define CTB_REALLOC realloc
-#define CTB_FREE    free
+#if defined(CTB_CFG_NOSTDLIB)
+	#if !defined(CTB_MALLOC)
+		#define CTB_MALLOC(X)       NULL
+	#endif
+	#if !defined(CTB_CALLOC)
+		#define CTB_CALLOC(X, X, X) NULL
+	#endif
+	#if !defined(CTB_REALLOC)
+		#define CTB_REALLOC(X, X)   NULL
+	#endif
+	#if !defined(CTB_FREE)
+		#define CTB_FREE(X)
+	#endif
+#else
+	#include <stdlib.h>
+#endif
+
+#if !defined(CTB_MALLOC)
+	#define CTB_MALLOC  malloc
+#endif
+#if !defined(CTB_CALLOC)
+	#define CTB_CALLOC  calloc
+#endif
+#if !defined(CTB_REALLOC)
+	#define CTB_REALLOC realloc
+#endif
+#if !defined(CTB_FREE)
+	#define CTB_FREE    free
+#endif
+
 
 
 /* Error values */
