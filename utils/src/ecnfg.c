@@ -100,20 +100,20 @@ ecnfg_fetchchr(struct TECnfg* cfg)
 	
 	if (cfg->inputfn == NULL) {
 		SETERROR(ECNFG_EINPUT);
-		return EOF;
+		return (uintxx) EOF;
 	}
 	r = cfg->inputfn(cfg->inputbgn, ECNFG_INPUTBFFRSZ, cfg->payload);
 	if (r) {
 		if ((uintxx) r > ECNFG_INPUTBFFRSZ) {
 			SETERROR(ECNFG_EINPUT);
-			return EOF;
+			return (uintxx) EOF;
 		}
 		cfg->input    = cfg->inputbgn;
 		cfg->inputend = cfg->inputbgn + r;
 		
 		return *cfg->input++;
 	}
-	return EOF;
+	return (uintxx) EOF;
 }
 
 static void

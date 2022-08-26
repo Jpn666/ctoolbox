@@ -204,7 +204,7 @@ tiger_generate_table(uint64 table[1024], uint32 src[16], intxx passes)
 	uint8 (*tablech)[8];
 	intxx i;
 	intxx j;
-	intxx c;
+	intxx m;
 	intxx cnt;
 	intxx sb;
 	intxx abc;
@@ -220,8 +220,8 @@ tiger_generate_table(uint64 table[1024], uint32 src[16], intxx passes)
 		((uint8 *) tmp)[j] = ((uint8 *) src)[j];
 
 	for(i = 0; i < 1024; i++)
-		for(c = 0; c < 8; c++)
-			tablech[i][c] = i & 0xff;
+		for(m = 0; m < 8; m++)
+			tablech[i][m] = i & 0xff;
 
 	abc = 2;
 	for (cnt = 0; cnt < passes; cnt++) {
@@ -238,10 +238,10 @@ tiger_generate_table(uint64 table[1024], uint32 src[16], intxx passes)
 					TIGER_COMPRESS(table, tmp, state)
 					abc = 0;
 				}
-				for (c = 0; c < 8; c++) {
-					uint8 tmp = tablech[sb + i][c];
-					tablech[sb + i][c] = tablech[sb + statech[abc][c]][c];
-					tablech[sb + statech[abc][c]][c] = tmp;
+				for (m = 0; m < 8; m++) {
+					uint8 tmpb = tablech[sb + i][m];
+					tablech[sb + i][m] = tablech[sb + statech[abc][m]][m];
+					tablech[sb + statech[abc][m]][m] = tmpb;
 				}
 			}
 		}

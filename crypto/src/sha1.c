@@ -253,15 +253,15 @@ sha1_final(TSHA1ctx* context, uint32 digest[5])
 	if ((nlo += ((uint32) context->rmnng << 3)) < tmp)
 		nhi++;
 	
-	context->rdata[56] = nhi >> 0x18;
-	context->rdata[57] = nhi >> 0x10;
-	context->rdata[58] = nhi >> 0x08;
-	context->rdata[59] = nhi;
+	context->rdata[56] = (uint8) (nhi >> 0x18);
+	context->rdata[57] = (uint8) (nhi >> 0x10);
+	context->rdata[58] = (uint8) (nhi >> 0x08);
+	context->rdata[59] = (uint8) (nhi);
 	
-	context->rdata[60] = nlo >> 0x18;
-	context->rdata[61] = nlo >> 0x10;
-	context->rdata[62] = nlo >> 0x08;
-	context->rdata[63] = nlo;
+	context->rdata[60] = (uint8) (nlo >> 0x18);
+	context->rdata[61] = (uint8) (nlo >> 0x10);
+	context->rdata[62] = (uint8) (nlo >> 0x08);
+	context->rdata[63] = (uint8) (nlo);
 	
 	sha1_compress(context->state, context->rdata);
 	digest[0] = context->state[0];

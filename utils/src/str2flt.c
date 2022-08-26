@@ -67,7 +67,7 @@ str2flt64(const char* src, const char** end, flt64* num, uintxx flags)
 	if (flags == 0)
 		flags = STR2FLT_FPOINT;
 
-	for (d = 0; (c = src[0]); src++) {
+	for (d = 0; (c = src[0]) != 0; src++) {
 		if (ISDIGIT(c)) {
 			if (d) {
 				v = v + ((c - 0x30) / (float64) d);
@@ -100,7 +100,7 @@ str2flt64(const char* src, const char** end, flt64* num, uintxx flags)
 			case 0x2B:
 				src++;
 		}
-		for (e = 0; (c = src[0]); src++) {
+		for (e = 0; (c = src[0]) != 0; src++) {
 			if (ISDIGIT(c))
 				e = (e * 10) + (c - 0x30);
 			else

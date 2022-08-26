@@ -120,7 +120,7 @@ parseu32(const char* src, const char** end, uint32* result, uintxx b)
 	uint32 c;
 
 	s = src;
-	for (r = 0; (c = s[0]); s++) {
+	for (r = 0; (c = s[0]) != 0; s++) {
 		uint64 j;
 		if (ctb_isdigit(c)) {
 			n = c - 0x30;
@@ -197,7 +197,7 @@ str2i32(const char* src, const char** end, int32* result, uintxx base)
 			result[0] = INT32_MIN;
 			return STR2INT_EOVERFLOW;
 		}
-		result[0] = -r[0];
+		result[0] = -((int32) r[0]);
 	}
 	else {
 		if (r[0] > (uint32) INT32_MAX) {
@@ -311,7 +311,7 @@ parseu64(const char* src, const char** end, uint64* result, uintxx b)
 
 	overflow = 0;
 	s = src;
-	for (r = 0; (c = s[0]); s++) {
+	for (r = 0; (c = s[0]) != 0; s++) {
 		if (ctb_isdigit(c)) {
 			n = c - 0x30;
 		}
@@ -392,7 +392,7 @@ str2i64(const char* src, const char** end, int64* result, uintxx base)
 			result[0] = INT32_MIN;
 			return STR2INT_EOVERFLOW;
 		}
-		result[0] = -r[0];
+		result[0] = ((int64) -r[0]);
 	}
 	else {
 		if (r[0] > (uint64) INT64_MAX) {

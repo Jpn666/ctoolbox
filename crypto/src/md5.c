@@ -238,15 +238,15 @@ md5_final(TMD5ctx* context, uint32 digest[4])
 	if ((nlo += ((uint32) context->rmnng << 3)) < tmp)
 		nhi++;
 
-	context->rdata[56] = nlo;
-	context->rdata[57] = nlo >> 0x08;
-	context->rdata[58] = nlo >> 0x10;
-	context->rdata[59] = nlo >> 0x18;
+	context->rdata[56] = (uint8) (nlo);
+	context->rdata[57] = (uint8) (nlo >> 0x08);
+	context->rdata[58] = (uint8) (nlo >> 0x10);
+	context->rdata[59] = (uint8) (nlo >> 0x18);
 
-	context->rdata[60] = nhi;
-	context->rdata[61] = nhi >> 0x08;
-	context->rdata[62] = nhi >> 0x10;
-	context->rdata[63] = nhi >> 0x18;
+	context->rdata[60] = (uint8) (nhi);
+	context->rdata[61] = (uint8) (nhi >> 0x08);
+	context->rdata[62] = (uint8) (nhi >> 0x10);
+	context->rdata[63] = (uint8) (nhi >> 0x18);
 
 	md5_compress(context->state, context->rdata);
 	digest[0] = ctb_swap32(context->state[0]);
