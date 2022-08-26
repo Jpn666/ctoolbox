@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, jpn 
+ * Copyright (C) 2015, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,23 +47,26 @@ str2flt64(const char* src, const char** end, flt64* num, uintxx flags)
 	uintxx negative;
 	flt64 v;
 	ASSERT(src && num);
-	
+
 	v = 0.0f;
-	
+
 	while (ISSPACE(src[0]))
 		src++;
-	
+
 	for (negative = 0; src[0]; src++) {
 		switch (src[0]) {
-			case 0x2D: negative = 1; continue;
-			case 0x2B: negative = 0;
+			case 0x2D:
+				negative = 1;
+				continue;
+			case 0x2B:
+				negative = 0;
 				continue;
 		}
 		break;
 	}
 	if (flags == 0)
 		flags = STR2FLT_FPOINT;
-	
+
 	for (d = 0; (c = src[0]); src++) {
 		if (ISDIGIT(c)) {
 			if (d) {
@@ -83,17 +86,17 @@ str2flt64(const char* src, const char** end, flt64* num, uintxx flags)
 		}
 		break;
 	}
-	
+
 	if ((src[0] | 0x20) == 0x65) {  /* have an exponent */
 		uintxx e;
-		uintxx expnegative; 
+		uintxx expnegative;
 		      flt64  exp;
 		const flt64* p10;
-		
+
 		src++;
 		expnegative = 0;
 		switch (src[0]) {
-			case 0x2D: expnegative = 1;
+			case 0x2D: expnegative = 1;  /* fallthrough */
 			case 0x2B:
 				src++;
 		}
@@ -103,7 +106,7 @@ str2flt64(const char* src, const char** end, flt64* num, uintxx flags)
 			else
 				break;
 		}
-		
+
 		if (e > DBL_MAX_EXP || (expnegative && (-((intxx) e) < DBL_MIN_EXP))) {
 			v = HUGE_VAL;
 		}
@@ -120,7 +123,7 @@ str2flt64(const char* src, const char** end, flt64* num, uintxx flags)
 				v = v * exp;
 		}
 	}
-	
+
 	if (negative) {
 		v = -v;
 	}
@@ -128,7 +131,7 @@ str2flt64(const char* src, const char** end, flt64* num, uintxx flags)
 	if (end) {
 		end[0] = src;
 	}
-	
+
 	if (v == HUGE_VAL || v == -HUGE_VAL) {
 		return CTB_ERANGE;
 	}
@@ -145,10 +148,10 @@ str2flt32(const char* src, const char** end, flt32* num, uintxx flags)
 	eintxx r;
 	flt64 n;
 	ASSERT(src && num);
-	
+
 	r = str2flt64(src, end, &n, flags);
 	num[0] = (flt32) n;
-	
+
 	if (r || num[0] == HUGE_VAL || num[0] == -HUGE_VAL)
 		return CTB_ERANGE;
 	return CTB_OK;

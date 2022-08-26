@@ -1,12 +1,12 @@
 /*
  * Copyright (C) 2022, jpn
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,7 +18,7 @@
 
 
 #define ROTL(X, N) (((X) << (N)) | ((X) >> (32 - (N))))
- 
+
 /* F, G, H and I are basic MD5 functions. */
 
 #define F(X, Y, Z) (((X) & (Y)) | ((~(X)) & (Z)))
@@ -70,7 +70,7 @@ md5_compress(uint32 state[4], const uint8 data[64])
 	uint32 d;
 	uint32 v[16];
 	uintxx i;
-	
+
 	for (i = 0; i < 16; i++) {
 		v[i] = ((uint32) data[3]) << 0x18 |
 		       ((uint32) data[2]) << 0x10 |
@@ -78,12 +78,12 @@ md5_compress(uint32 state[4], const uint8 data[64])
 		       ((uint32) data[0]);
 		data += 4;
 	}
-	
+
 	a = state[0];
 	b = state[1];
 	c = state[2];
 	d = state[3];
-	
+
 	/* round 1 */
 	FF(a, b, c, d, v[ 0], S11, 0xd76aa478UL);  /*  1 */
 	FF(d, a, b, c, v[ 1], S12, 0xe8c7b756UL);  /*  2 */
@@ -101,7 +101,7 @@ md5_compress(uint32 state[4], const uint8 data[64])
 	FF(d, a, b, c, v[13], S12, 0xfd987193UL);  /* 14 */
 	FF(c, d, a, b, v[14], S13, 0xa679438eUL);  /* 15 */
 	FF(b, c, d, a, v[15], S14, 0x49b40821UL);  /* 16 */
-	
+
 	/* round 2 */
 	GG(a, b, c, d, v[ 1], S21, 0xf61e2562UL);  /* 17 */
 	GG(d, a, b, c, v[ 6], S22, 0xc040b340UL);  /* 18 */
@@ -119,7 +119,7 @@ md5_compress(uint32 state[4], const uint8 data[64])
 	GG(d, a, b, c, v[ 2], S22, 0xfcefa3f8UL);  /* 30 */
 	GG(c, d, a, b, v[ 7], S23, 0x676f02d9UL);  /* 31 */
 	GG(b, c, d, a, v[12], S24, 0x8d2a4c8aUL);  /* 32 */
-	
+
 	/* round 3 */
 	HH(a, b, c, d, v[ 5], S31, 0xfffa3942UL);  /* 33 */
 	HH(d, a, b, c, v[ 8], S32, 0x8771f681UL);  /* 34 */
@@ -137,7 +137,7 @@ md5_compress(uint32 state[4], const uint8 data[64])
 	HH(d, a, b, c, v[12], S32, 0xe6db99e5UL);  /* 46 */
 	HH(c, d, a, b, v[15], S33, 0x1fa27cf8UL);  /* 47 */
 	HH(b, c, d, a, v[ 2], S34, 0xc4ac5665UL);  /* 48 */
-	
+
 	/* round 4 */
 	II(a, b, c, d, v[ 0], S41, 0xf4292244UL);  /* 49 */
 	II(d, a, b, c, v[ 7], S42, 0x432aff97UL);  /* 50 */
@@ -155,7 +155,7 @@ md5_compress(uint32 state[4], const uint8 data[64])
 	II(d, a, b, c, v[11], S42, 0xbd3af235UL);  /* 62 */
 	II(c, d, a, b, v[ 2], S43, 0x2ad7d2bbUL);  /* 63 */
 	II(b, c, d, a, v[ 9], S44, 0xeb86d391UL);  /* 64 */
-	
+
 	state[0] += a;
 	state[1] += b;
 	state[2] += c;
@@ -169,20 +169,20 @@ md5_update(TMD5ctx* context, const uint8* data, uintxx size)
 	uintxx rmnng;
 	uintxx i;
 	ASSERT(context && data);
-	
+
 	if (context->rmnng) {
 		rmnng = MD5_BLOCKSZ - context->rmnng;
 		if (rmnng > size)
 			rmnng = size;
-		
+
 		for (i = 0; i < rmnng; i++) {
 			context->rdata[context->rmnng++] = *data++;
 		}
 		size -= i;
-		
+
 		if (context->rmnng == MD5_BLOCKSZ) {
 			md5_compress(context->state, context->rdata);
-			
+
 			context->rmnng = 0;
 			context->blcks++;
 		}
@@ -190,15 +190,15 @@ md5_update(TMD5ctx* context, const uint8* data, uintxx size)
 			return;
 		}
 	}
-	
+
 	while (size >= MD5_BLOCKSZ) {
 		md5_compress(context->state, data);
-		
+
 		size -= MD5_BLOCKSZ;
 		data += MD5_BLOCKSZ;
 		context->blcks++;  /* we 'll scale it later */
 	}
-	
+
 	if (size) {
 		for (i = 0; i < size; i++) {
 			context->rdata[context->rmnng++] = *data++;
@@ -207,47 +207,47 @@ md5_update(TMD5ctx* context, const uint8* data, uintxx size)
 }
 
 void
-md5_final(TMD5ctx* context, uint32 digest[8])
+md5_final(TMD5ctx* context, uint32 digest[4])
 {
 	uintxx length;
 	uintxx tmp;
 	uint32 nlo;
 	uint32 nhi;
 	ASSERT(context && digest);
-	
+
 	context->rdata[length = context->rmnng] = 0x80;
 	length++;
-	
+
 	if (length > MD5_BLOCKSZ - 8) {
 		while (length < MD5_BLOCKSZ)
 			context->rdata[length++] = 0;
-		
+
 		md5_compress(context->state, context->rdata);
 		length = 0;
 	}
-	
+
 	while (length < (MD5_BLOCKSZ - 8))  /* pad with zeros */
 		context->rdata[length++] = 0;
-	
+
 	/* scales the numbers of bits */
 	nhi = context->blcks >> (32 - 9);
 	nlo = context->blcks << 9;
-	
+
 	/* add the remainings bits */
 	tmp = nlo;
 	if ((nlo += ((uint32) context->rmnng << 3)) < tmp)
 		nhi++;
-	
+
 	context->rdata[56] = nlo;
 	context->rdata[57] = nlo >> 0x08;
 	context->rdata[58] = nlo >> 0x10;
 	context->rdata[59] = nlo >> 0x18;
-	
+
 	context->rdata[60] = nhi;
 	context->rdata[61] = nhi >> 0x08;
 	context->rdata[62] = nhi >> 0x10;
 	context->rdata[63] = nhi >> 0x18;
-	
+
 	md5_compress(context->state, context->rdata);
 	digest[0] = ctb_swap32(context->state[0]);
 	digest[1] = ctb_swap32(context->state[1]);

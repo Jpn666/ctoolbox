@@ -1,12 +1,12 @@
 /*
  * Copyright (C) 2022, jpn
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,7 +46,7 @@ CTB_INLINE void md5_init(TMD5ctx*);
 
 /*
  * */
-CTB_INLINE void md5_getdigest(uint32 dgst[4], const uint8* data, uintxx sz);
+CTB_INLINE void md5_getdigest(uint32 dgst[4], const uint8* data, uintxx size);
 
 /*
  * */
@@ -78,9 +78,9 @@ md5_getdigest(uint32 digest[4], const uint8* data, uintxx size)
 {
 	struct TMD5ctx md5;
 	ASSERT(data && digest);
-	
+
 	md5_init(&md5);
-	
+
 	md5_update(&md5, data, size);
 	md5_final(&md5, digest);
 }

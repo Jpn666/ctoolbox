@@ -24,6 +24,7 @@
 
 
 #include <ctbconfig.h>
+#include <string.h>
 
 
 #if defined(_MSC_VER)
