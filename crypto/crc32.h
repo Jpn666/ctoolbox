@@ -37,16 +37,8 @@
 uint32 crc32_ncombine(uint32 crc1, uint32 crc2, uint32 size2);
 
 /*
- * Computes the crc32 using four bytes at time. */
-uint32 crc32_updateby4(uint32 crc, const uint8* data, uintxx size);
-
-/*
- * Computes the crc32 using eigth bytes at time. */
-uint32 crc32_updateby8(uint32 crc, const uint8* data, uintxx size);
-
-/*
  * Updates the crc. */
-CTB_INLINE uint32 crc32_update(uint32 crc, const uint8* data, uintxx size);
+uint32 crc32_update(uint32 crc, const uint8* data, uintxx size);
 
 /*
  * Gets the crc of a memory block. */
@@ -64,22 +56,8 @@ CTB_INLINE uint32
 crc32_getcrc(const uint8* data, uintxx size)
 {
 	ASSERT(data);
-
 	return crc32_update(0xFFFFFFFFUL, data, size) ^ 0xFFFFFFFFUL;
 }
-
-CTB_INLINE uint32
-crc32_update(uint32 crc, const uint8* data, uintxx size)
-{
-	ASSERT(data);
-
-#if defined(CTB_ENV64)
-	return crc32_updateby8(crc, data, size);
-#else
-	return crc32_updateby4(crc, data, size);
-#endif
-}
-
 
 #endif
 

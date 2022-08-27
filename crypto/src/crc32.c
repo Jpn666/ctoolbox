@@ -68,7 +68,9 @@ crc32_ncombine(uint32 crc1, uint32 crc2, uint32 size2)
 #endif
 
 
-#define CRC32_DOBY4 \
+#if !defined(CRC32_CFG_EXTERNALASM)
+
+#define CRC32_SLICEBY4 \
 	crc = CTB_SWAP32ONBE(crc) ^ *ptr32++; \
 	crc = crc32_table[3][0xFF & (crc >> CRC32_4BYTE1_OFFSET)] ^ \
 	      crc32_table[2][0xFF & (crc >> CRC32_4BYTE2_OFFSET)] ^ \
@@ -77,7 +79,7 @@ crc32_ncombine(uint32 crc1, uint32 crc2, uint32 size2)
 
 
 uint32
-crc32_updateby4(uint32 crc, const uint8* data, uintxx size)
+crc32_sliceby4(uint32 crc, const uint8* data, uintxx size)
 {
 	const uint32* ptr32;
 	for (; size; size--) {
@@ -88,13 +90,13 @@ crc32_updateby4(uint32 crc, const uint8* data, uintxx size)
 	}
 	ptr32 = (void*) data;
 	for (; size >= 16; size -= 16) {
-		CRC32_DOBY4
-		CRC32_DOBY4
-		CRC32_DOBY4
-		CRC32_DOBY4
+		CRC32_SLICEBY4
+		CRC32_SLICEBY4
+		CRC32_SLICEBY4
+		CRC32_SLICEBY4
 	}
 	for (; size >= 4; size -= 4) {
-		CRC32_DOBY4
+		CRC32_SLICEBY4
 	}
 	if (size) {
 		data = (void*) ptr32;
@@ -106,7 +108,7 @@ crc32_updateby4(uint32 crc, const uint8* data, uintxx size)
 }
 
 
-#define CRC32_DOBY8 \
+#define CRC32SLICEBY8 \
 	rg1 = CTB_SWAP32ONBE(crc) ^ *ptr32++; \
 	rg2 = *ptr32++; \
 	crc = crc32_table[7][0xFF & (rg1 >> CRC32_4BYTE1_OFFSET)] ^ \
@@ -120,7 +122,7 @@ crc32_updateby4(uint32 crc, const uint8* data, uintxx size)
 
 
 uint32
-crc32_updateby8(uint32 crc, const uint8* data, uintxx size)
+crc32_sliceby8(uint32 crc, const uint8* data, uintxx size)
 {
 	const uint32* ptr32;
 	uint32 rg1;
@@ -134,17 +136,17 @@ crc32_updateby8(uint32 crc, const uint8* data, uintxx size)
 	}
 	ptr32 = (void*) data;
 	for (; size >= 64; size -= 64) {
-		CRC32_DOBY8
-		CRC32_DOBY8
-		CRC32_DOBY8
-		CRC32_DOBY8
-		CRC32_DOBY8
-		CRC32_DOBY8
-		CRC32_DOBY8
-		CRC32_DOBY8
+		CRC32SLICEBY8
+		CRC32SLICEBY8
+		CRC32SLICEBY8
+		CRC32SLICEBY8
+		CRC32SLICEBY8
+		CRC32SLICEBY8
+		CRC32SLICEBY8
+		CRC32SLICEBY8
 	}
 	for (; size >= 8; size -= 8) {
-		CRC32_DOBY8
+		CRC32SLICEBY8
 	}
 	if (size) {
 		data = (void*) ptr32;
@@ -154,6 +156,18 @@ crc32_updateby8(uint32 crc, const uint8* data, uintxx size)
 	}
 	return crc;
 }
+
+uint32
+crc32_update(uint32 crc, const uint8* data, uintxx size)
+{
+#if defined(CTB_ENV64)
+	return crc32_sliceby8(crc, data, size);
+#else
+	return crc32_sliceby4(crc, data, size);
+#endif
+}
+
+#endif
 
 static uint32
 crc32_reflect(uint32 value, uint8 size)
@@ -206,6 +220,8 @@ crc32_createtable(uint32 table[8][256])
 /* ****************************************************************************
  * Lookup Table
  *************************************************************************** */
+
+#if !defined(CRC32_CFG_EXTERNALASM)
 
 static const uint32 crc32_table[8][256] =
 {
@@ -642,6 +658,8 @@ static const uint32 crc32_table[8][256] =
 		0X264B06E6UL
 	}
 };
+
+#endif
 
 /* ****************************************************************************
  *
