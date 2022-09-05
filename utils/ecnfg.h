@@ -21,7 +21,7 @@
  * ecnfg.h
  * An small event based configuration parser.
  *
- * Example sintaxis:
+ * Example file:
  * ############################################################################
  * # Single entry key-value
  * ############################################################################
