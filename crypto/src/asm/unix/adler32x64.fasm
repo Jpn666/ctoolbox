@@ -180,7 +180,7 @@ adler32update:
 
 .done:
 	; modulo reduction
-.r1:
+
 	mov			 r8d, eax
 	shr			 r8d, 0x10
 	mov			r10d, r8d
@@ -189,7 +189,8 @@ adler32update:
 	sub			r10d, r8d
 	add			 eax, r10d
 	cmp			 eax, 65521
-	jge	.r1
+	jb	.r2
+	sub			 eax, 65521
 
 .r2:
 	mov			 r8d, ebx
@@ -200,8 +201,10 @@ adler32update:
 	sub			r10d, r8d
 	add			 ebx, r10d
 	cmp			 ebx, 65521
-	jge	.r2
+	jge	.r3
+	sub			 ebx, 65521
 
+.r3:
 	; combine a and b
 	shl			ebx, 0x10
 	or			eax, ebx
@@ -401,7 +404,7 @@ sse2_adler32update:
 
 .done:
 	; modulo reduction
-.r1:
+
 	mov			 r8d, eax
 	shr			 r8d, 0x10
 	mov			r10d, r8d
@@ -410,7 +413,8 @@ sse2_adler32update:
 	sub			r10d, r8d
 	add			 eax, r10d
 	cmp			 eax, 65521
-	jge	.r1
+	jb	.r2
+	sub			 eax, 65521
 
 .r2:
 	mov			 r8d, ebx
@@ -421,8 +425,10 @@ sse2_adler32update:
 	sub			r10d, r8d
 	add			 ebx, r10d
 	cmp			 ebx, 65521
-	jge	.r2
+	jb	.r2
+	sub			 ebx, 65521
 
+.r3:
 	; combine a and b
 	shl			ebx, 0x10
 	or			eax, ebx
@@ -593,7 +599,7 @@ ssse3_adler32update:
 
 .done:
 	; modulo reduction
-.r1:
+
 	mov			 r8d, eax
 	shr			 r8d, 0x10
 	mov			r10d, r8d
@@ -602,7 +608,8 @@ ssse3_adler32update:
 	sub			r10d, r8d
 	add			 eax, r10d
 	cmp			 eax, 65521
-	jge	.r1
+	jb	.r2
+	sub			 eax, 65521
 
 .r2:
 	mov			 r8d, ebx
@@ -613,8 +620,10 @@ ssse3_adler32update:
 	sub			r10d, r8d
 	add			 ebx, r10d
 	cmp			 ebx, 65521
-	jge	.r2
+	jb	.r3
+	sub			 ebx, 65521
 
+.r3:
 	; combine a and b
 	shl			ebx, 0x10
 	or			eax, ebx
