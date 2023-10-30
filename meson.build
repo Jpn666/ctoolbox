@@ -187,8 +187,8 @@ if cc.get_linker_id() == 'ld.bfd'
 endif
 
 
-static_build = static_library('ctoolbox', sources: projectsources, objects: externalobjs, pic: true, install: true)
+static_build = static_library('ctoolbox', sources: projectsources, objects: externalobjs, pic: true, install: true, include_directories: include_directories('.'))
 
-ctoolbox_dep = declare_dependency(
-  link_with: static_build, include_directories:  include_directories('.'), link_args: largs
+lib = declare_dependency(
+  link_with: static_build, include_directories: include_directories('.'), link_args: largs
 )
