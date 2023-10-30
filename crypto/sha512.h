@@ -1,12 +1,12 @@
 /*
  * Copyright (C) 2022, jpn
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,11 +23,6 @@
  */
 
 #include "../ctoolbox.h"
-
-
-#if !CTB_HAVEINT64
-#	error "Your compiler does not seems to support 64 bit integers"
-#endif
 
 
 #define SHA512_BLOCKSZ  128
@@ -68,7 +63,7 @@ void sha512_final(TSHA512ctx*, uint64 digest[8]);
 CTB_INLINE void
 sha512_init(TSHA512ctx* context)
 {
-	ASSERT(context);
+	CTB_ASSERT(context);
 	context->state[0] = 0x6a09e667f3bcc908ULL;
 	context->state[1] = 0xbb67ae8584caa73bULL;
 	context->state[2] = 0x3c6ef372fe94f82bULL;
@@ -86,10 +81,10 @@ CTB_INLINE void
 sha512_getdigest(uint64 digest[8], const uint8* data, uintxx size)
 {
 	struct TSHA512ctx sha512;
-	ASSERT(data && digest);
-	
+	CTB_ASSERT(data && digest);
+
 	sha512_init(&sha512);
-	
+
 	sha512_update(&sha512, data, size);
 	sha512_final(&sha512, digest);
 }

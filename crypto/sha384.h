@@ -1,12 +1,12 @@
 /*
  * Copyright (C) 2022, jpn
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,7 +55,7 @@ CTB_INLINE void sha384_final(TSHA384ctx*, uint64 digest[6]);
 CTB_INLINE void
 sha384_init(TSHA384ctx* context)
 {
-	ASSERT(context);
+	CTB_ASSERT(context);
 	context->state[0] = 0xcbbb9d5dc1059ed8LL;
 	context->state[1] = 0x629a292a367cd507LL;
 	context->state[2] = 0x9159015a3070dd17LL;
@@ -73,18 +73,18 @@ CTB_INLINE void
 sha384_getdigest(uint64 digest[6], const uint8* data, uintxx size)
 {
 	struct TSHA512ctx context;
-	ASSERT(data && digest);
-	
+	CTB_ASSERT(data && digest);
+
 	sha384_init(&context);
 	sha384_update(&context, data, size);
-	
+
 	sha384_final(&context, digest);
 }
 
 CTB_INLINE void
 sha384_update(TSHA384ctx* context, const uint8* data, uintxx size)
 {
-	ASSERT(context && data);
+	CTB_ASSERT(context && data);
 	sha512_update(context, data, size);
 }
 
@@ -92,8 +92,8 @@ CTB_INLINE void
 sha384_final(TSHA384ctx* context, uint64 digest[6])
 {
 	uint64 result[8];
-	ASSERT(context && digest);
-	
+	CTB_ASSERT(context && digest);
+
 	sha512_final(context, result);
 	digest[0] = result[0];
 	digest[1] = result[1];

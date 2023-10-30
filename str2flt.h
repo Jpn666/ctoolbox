@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017, jpn 
+ * Copyright (C) 2023, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,31 +14,32 @@
  * limitations under the License.
  */
 
-#ifndef d23989c4_4a8b_4d24_a0ec_f62492460c10
-#define d23989c4_4a8b_4d24_a0ec_f62492460c10
+#ifndef a4fb3255_6736_4d17_85a2_1959d8f88ecd
+#define a4fb3255_6736_4d17_85a2_1959d8f88ecd
 
 /*
  * str2flt.h
- * String to float conversion.
+ * String (decimal only) to float IEEE754 conversion.
  */
 
-#include "../ctoolbox.h"
+#include "ctoolbox.h"
 
 
-/* flags */
-#define	STR2FLT_FPOINT  0x01UL
-#define	STR2FLT_FCOMMA  0x02UL
-#define	STR2FLT_FANY    (STR2FLT_FPOINT | STR2FLT_FCOMMA)
+/* Error codes */
+typedef enum {
+	STR2FLT_OK     = 0,
+	STR2FLT_ENAN   = 1,
+	STR2FLT_ERANGE = 2
+} eSTR2FLTError;
 
 
 /*
- * ... */
-eintxx str2flt32(const char* src, const char** end, flt32* num, uintxx flags);
+ * */
+eintxx str2flt64(const uint8* src, const uint8** end, flt64* r);
 
 /*
- * ... */
-eintxx str2flt64(const char* src, const char** end, flt64* num, uintxx flags);
+ * */
+eintxx str2flt32(const uint8* src, const uint8** end, flt32* r);
 
 
 #endif
-

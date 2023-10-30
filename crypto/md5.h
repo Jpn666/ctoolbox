@@ -63,7 +63,7 @@ void md5_final(TMD5ctx*, uint32 digest[4]);
 CTB_INLINE void
 md5_init(TMD5ctx* context)
 {
-	ASSERT(context);
+	CTB_ASSERT(context);
 	context->state[0] = 0x67452301UL;
 	context->state[1] = 0xefcdab89UL;
 	context->state[2] = 0x98badcfeUL;
@@ -77,7 +77,7 @@ CTB_INLINE void
 md5_getdigest(uint32 digest[4], const uint8* data, uintxx size)
 {
 	struct TMD5ctx md5;
-	ASSERT(data && digest);
+	CTB_ASSERT(data && digest);
 
 	md5_init(&md5);
 

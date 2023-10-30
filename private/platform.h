@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, jpn
+ * Copyright (C) 2023, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef C35BB22C_EEDB_4B27_AFBE_61BC41FE51C6
-#define C35BB22C_EEDB_4B27_AFBE_61BC41FE51C6
+#ifndef c35bb22c_eedb_4b27_afbe_61bc41fe51c6
+#define c35bb22c_eedb_4b27_afbe_61bc41fe51c6
 
 /*
  * platform.h
@@ -30,8 +30,6 @@
 #define CTB_PLATFORM_UNIX     0x01
 #define CTB_PLATFORM_BEOS     0x02
 #define CTB_PLATFORM_WINDOWS  0x03
-#define CTB_PLATFORM_DOS      0x04
-#define CTB_PLATFORM_OS2      0x05
 #define CTB_PLATFORM_UNKNOWN  0x00
 
 
@@ -48,69 +46,20 @@
 	#define CTB_PLATFORM CTB_PLATFORM_WINDOWS
 #endif
 
-#if !defined(CTB_PLATFORM) && defined(CTB_CFG_PLATFORM_DOS)
-	#define CTB_PLATFORM CTB_PLATFORM_DOS
-#endif
-
-#if !defined(CTB_PLATFORM) && defined(CTB_CFG_PLATFORM_OS2)
-	#define CTB_PLATFORM CTB_PLATFORM_OS2
-#endif
-
 #if !defined(CTB_PLATFORM)
 	#define CTB_PLATFORM CTB_PLATFORM_UNKNOWN
 #endif
 
 
 /*
- * The follow code tries to determine the word size */
+ * Processor word size */
 
-#if defined(__GNUC__) && defined(__WORDSIZE)
-	#if __WORDSIZE == 32
-		#define CTB_WORDSIZE 32
-	#endif
-	#if __WORDSIZE == 64
-		#define CTB_WORDSIZE 64
-	#endif
-#endif
-
-#if defined(__POCC__) && (__POCC__ >= 500)
-	#if __POCC_TARGET__ == 1
-		#define CTB_WORDSIZE 32
-	#endif
-	#if __POCC_TARGET__ == 3
-		#define CTB_WORDSIZE 64
-	#endif
-#endif
-
-#if defined(__MSVC__)
-	#if defined(_M_X64)
-		#define CTB_WORDSIZE 64
-	#else
-		#define CTB_WORDSIZE 32
-	#endif
-#endif
-
-
-#if !defined(CTB_WORDSIZE)
-	#if defined(__x86_64__)
-		#define CTB_WORDSIZE 64
-	#endif
-#endif
-
-
-/* ... */
 #if defined(CTB_CFG_ENV64)
-	#if defined(CTB_WORDSIZE)
-		#undef CTB_WORDSIZE
-	#endif
 	#define CTB_WORDSIZE 64
-#endif
 
-#if defined(CTB_WORDSIZE)
-	#if CTB_WORDSIZE == 64
-		#define CTB_ENV64
-	#endif
-	#undef CTB_WORDSIZE
+	#define CTB_ENV64
+#else
+	#define CTB_WORDSIZE 32
 #endif
 
 
@@ -122,11 +71,6 @@
 #if defined(CTB_CFG_FASTUNALIGNED)
 	#define CTB_FASTUNALIGNED
 #endif
-
-
-#undef CTB_CFG_ENV64
-#undef CTB_CFG_STRICTALIGNMENT
-#undef CTB_CFG_FASTUNALIGNED
 
 #endif
 

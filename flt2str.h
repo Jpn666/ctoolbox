@@ -14,31 +14,32 @@
  * limitations under the License.
  */
 
-#ifndef fee43bef_bb4d_4550_b044_fb3f533ab30d
-#define fee43bef_bb4d_4550_b044_fb3f533ab30d
+#ifndef ccb4a9e2_6f3e_4dbb_847b_a53f3a92007b
+#define ccb4a9e2_6f3e_4dbb_847b_a53f3a92007b
 
 /*
- * tiger.h
- * Tiger hash. Based on the reference implemetation
- * http://www.cs.technion.ac.il/~biham/Reports/Tiger/
+ * flt2str.h
+ * Float IEEE754 to decimal string conversion.
  */
 
-#include "../ctoolbox.h"
+#include "ctoolbox.h"
 
 
-#define TIGER_PASSES    3
-#define TIGER_BLOCKSZ  64
-#define TIGER_DIGESTSZ 24
+/* Float format mode */
+typedef enum {
+	FLTF_MODEG = 0,  /* same as libc "%.<precision>g" */
+	FLTF_MODEE = 1,  /* same as libc "%.<precision>e" */
+	FLTF_MODED = 2   /* like "%.16e" using all the significant digits */
+} eFLTFormatMode;
 
 
 /*
- * Get the tiger hash value. */
-void tiger_getdigest(uint64 digest[3], const uint8* data, uintxx size);
+ * */
+uintxx f64tostr(flt64 number, eFLTFormatMode m, uintxx precision, uint8 r[24]);
 
 /*
- * ... */
-void tiger_createtable(uint64 table[1024]);
+ * */
+uintxx f32tostr(flt32 number, eFLTFormatMode m, uintxx precision, uint8 r[24]);
 
 
 #endif
-

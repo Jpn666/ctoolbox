@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, jpn
+ * Copyright (C) 2023, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef FCEB37D0_F06E_4D01_A070_0F8C481D6196
-#define FCEB37D0_F06E_4D01_A070_0F8C481D6196
+#ifndef fceb37d0_f06e_4d01_a070_0f8c481d6196
+#define fceb37d0_f06e_4d01_a070_0f8c481d6196
 
 /*
  * types.h
@@ -35,99 +35,50 @@
 #endif
 
 
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-	#if !defined(CTB_CFG_NOINTTYPES)
-		#define CTB_HAVEINTTYPES
-		#include <inttypes.h>
-	#endif
-	#if !defined(CTB_CFG_NOSTDBOOL)
-		#define CTB_HAVESTDBOOL
-		#include <stdbool.h>
-	#endif
-#endif
-
-#if !defined(CTB_CFG_NOINTTYPES)
-	#if defined(_MSC_VER) && (_MSC_VER >= 1600) /* >= msvc 2010 */
-		#undef CTB_CFG_NOINTTYPES
-		#include <inttypes.h>
-	#endif
-#endif
-
-
 /*
  * Boolean */
 
-#if !defined(CTB_HAVESTDBOOL)
-typedef int custombool;
+#if defined(CTB_CFG_NOSTDBOOL)
+	typedef int ctb_bool;
+
 	#if !defined(bool)
-		#define bool custombool
+		#define bool ctb_bool
 	#endif
+#else
+	#include <stdbool.h>
 #endif
 
 
 /*
  * Integers */
 
-#if defined(CTB_HAVEINTTYPES)
-	#define ADD_TYPE(A, B) typedef B##_t B
+#if defined(CTB_CFG_NOSTDINT)
+	#define ADD_TYPEDEF(A, B) typedef A B
 #else
-	#define ADD_TYPE(A, B) typedef A B
-#endif
+	#include <stdint.h>
 
-ADD_TYPE(signed int, int32);
-ADD_TYPE(unsigned int, uint32);
-ADD_TYPE(signed short int, int16);
-ADD_TYPE(unsigned short int, uint16);
-ADD_TYPE(signed char, int8);
-ADD_TYPE(unsigned char, uint8);
-
-
-#if defined(CTB_CFG_NOINT64)  /* configuration flag */
-	#define CTB_NOINT64
-#endif
-
-#if (defined(__MSVC__) && !defined(__POCC__)) || defined(__BORLANDC__)
-typedef   signed __int64  int64;
-typedef unsigned __int64 uint64;
-	#define CTB_HAVEINT64 1
-#endif
-
-/* using gcc extension in c89 */
-#if !defined(CTB_NOINT64) && !defined(__STDC_VERSION__) && defined(__GNUC__)
-__extension__ typedef signed long long int    int64;
-__extension__ typedef unsigned long long int uint64;
-	#define CTB_HAVEINT64 1
+	#define ADD_TYPEDEF(A, B) typedef B##_t B
 #endif
 
 
-/* ISO C90 does not support long long */
-#if !defined(CTB_NOINT64) && !defined(__STDC_VERSION__)
-	#if !defined(__POCC__)
-		#define CTB_NOINT64
-	#endif
-#endif
-
-#if !defined(CTB_HAVEINT64) && !defined(CTB_NOINT64)
-ADD_TYPE(signed long long int, int64);
-ADD_TYPE(unsigned long long int, uint64);
-	#define CTB_HAVEINT64 1
-#endif
-
-#undef ADD_TYPE
+ADD_TYPEDEF(  signed int,  int32);
+ADD_TYPEDEF(unsigned int, uint32);
+ADD_TYPEDEF(  signed short int,  int16);
+ADD_TYPEDEF(unsigned short int, uint16);
+ADD_TYPEDEF(  signed char,  int8);
+ADD_TYPEDEF(unsigned char, uint8);
 
 
-#if !defined(CTB_HAVEINT64)
-	#define CTB_HAVEINT64 0
-#endif
-
-/* fast (target platform word size) integer */
-#if CTB_HAVEINT64 && defined(CTB_ENV64)
-typedef  int64  intxx;
-typedef uint64 uintxx;
+#if defined(_MSC_VER)
+	typedef   signed __int64  int64;
+	typedef unsigned __int64 uint64;
 #else
-typedef  int32  intxx;  /* it's the same on 16-bits platforms */
-typedef uint32 uintxx;
+	ADD_TYPEDEF(  signed long long int,  int64);
+	ADD_TYPEDEF(unsigned long long int, uint64);
 #endif
+
+#undef ADD_TYPEDEF
+
 
 /* produce compile errors if the sizes aren't right */
 typedef union
@@ -138,12 +89,19 @@ typedef union
 	char u2_incorrect[-1 + (sizeof(uint16) == 2) * 2];
 	char i4_incorrect[-1 + (sizeof( int32) == 4) * 2];
 	char u4_incorrect[-1 + (sizeof(uint32) == 4) * 2];
-
-#if CTB_HAVEINT64 == 1
 	char i8_incorrect[-1 + (sizeof( int64) == 8) * 2];
 	char u8_incorrect[-1 + (sizeof(uint64) == 8) * 2];
-#endif
 } TTypeStaticAssert;
+
+
+/* fast (target platform word size) integer */
+#if defined(CTB_ENV64)
+	typedef  int64  intxx;
+	typedef uint64 uintxx;
+#else
+	typedef  int32  intxx;
+	typedef uint32 uintxx;
+#endif
 
 
 /*
@@ -178,17 +136,25 @@ typedef void (*TFreeFn)(void*);
 /* */
 typedef void (*TUnaryFn)(void*);
 
+
+/*
+ * Custom allocator */
+
 /* allocator function */
 typedef void* (*TReserveFn)(void* user, uintxx amount);
+
+/* ... */
+typedef void* (*TReallocFn)(void* user, void* memory, uintxx amount);
 
 /* deallocator function */
 typedef void (*TReleaseFn)(void* user, void* memory);
 
 
-/* Allocator interface */
+/* ... */
 struct TAllocator {
 	/* */
 	TReserveFn reserve;
+	TReallocFn realloc;
 	TReleaseFn release;
 
 	/* user data */
@@ -198,19 +164,21 @@ struct TAllocator {
 typedef struct TAllocator TAllocator;
 
 
-/* integers limits */
+/* signed limits */
 #ifndef INT8_MIN
 	#define  INT8_MIN 0x00000080L
 #endif
 #ifndef INT8_MAX
 	#define  INT8_MAX 0x0000007FL
 #endif
+
 #ifndef INT16_MIN
 	#define INT16_MIN 0x00008000L
 #endif
 #ifndef INT16_MAX
 	#define INT16_MAX 0x00007FFFL
 #endif
+
 #ifndef INT32_MIN
 	#define INT32_MIN 0x80000000L
 #endif
@@ -218,16 +186,15 @@ typedef struct TAllocator TAllocator;
 	#define INT32_MAX 0x7FFFFFFFL
 #endif
 
-#if CTB_HAVEINT64
-	#ifndef INT64_MIN
-		#define INT64_MIN 0x8000000000000000LL
-	#endif
-	#ifndef INT64_MAX
-		#define INT64_MAX 0x7FFFFFFFFFFFFFFFLL
-	#endif
+#ifndef INT64_MIN
+	#define INT64_MIN 0x8000000000000000LL
+#endif
+#ifndef INT64_MAX
+	#define INT64_MAX 0x7FFFFFFFFFFFFFFFLL
 #endif
 
 
+/* unsigned limits */
 #ifndef UINT8_MAX
 	#define  UINT8_MAX 0x000000FFUL
 #endif
@@ -237,15 +204,12 @@ typedef struct TAllocator TAllocator;
 #ifndef UINT16_MAX
 	#define UINT16_MAX 0x0000FFFFUL
 #endif
-
-#if CTB_HAVEINT64
-	#ifndef UINT64_MAX
-		#define UINT64_MAX 0xFFFFFFFFFFFFFFFFULL
-	#endif
+#ifndef UINT64_MAX
+	#define UINT64_MAX 0xFFFFFFFFFFFFFFFFULL
 #endif
 
 
-#if CTB_HAVEINT64 && defined(CTB_ENV64)
+#if defined(CTB_ENV64)
 	/* 64 bits */
 	#define INTXX_MIN INT64_MIN
 	#define INTXX_MAX INT64_MAX

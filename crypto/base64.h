@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2014, jpn 
- * 
+ * Copyright (C) 2023, jpn
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,53 +14,121 @@
  * limitations under the License.
  */
 
-#ifndef f373f456_d150_46f0_92e7_2bda6949bcb2
-#define f373f456_d150_46f0_92e7_2bda6949bcb2
+#ifndef abf33644_6d5e_4a96_a46d_a70d8c9c58e1
+#define abf33644_6d5e_4a96_a46d_a70d8c9c58e1
 
 /*
  * base64.h
- * Standard base 64 encoding/decoding (rfc4648).
+ * Stream oriented base64 (rfc4648) encoder and decoder.
  */
 
 #include "../ctoolbox.h"
 
 
-/* flags */
-/* #define BASE64_CFG_IGNORE_WHITESPACE 1 */
+/* Return codes for encode or decode call */
+typedef enum {
+	B64STRM_OK        = 0,
+	B64STRM_SRCEXHSTD = 1,
+	B64STRM_TGTEXHSTD = 2,
+	B64STRM_ERROR     = 3
+} eB64StrmResult;
+
+
+/* */
+struct TBase64Strm {
+	uint32 state;
+	uint32 mode;
+	uint32 final;
+
+	/* stream buffer */
+	uint8* source;
+	uint8* target;
+	uint8* sbgn;
+	uint8* send;
+	uint8* tbgn;
+	uint8* tend;
+
+	/* remaining input (or output) bytes */
+	uint32 rcount;
+	uint32 r;
+};
+
+typedef struct TBase64Strm TBase64Strm;
 
 
 /*
- * Transform the input to base64 encoded format, returns the output len. */
-uintxx base64_encode(const uint8* in, uintxx size, uint8* out);
+ * */
+CTB_INLINE void b64strm_init(TBase64Strm*);
 
 /*
- * Decodes the input (base64 encoded) to binary format, returns the output len
- * or zero if there was an error. */
-uintxx base64_decode(const uint8* in, uintxx size, uint8* out);
+ * */
+CTB_INLINE void b64strm_setsrc(TBase64Strm*, uint8* source, uintxx size);
 
 /*
- * Returns the numbers of bytes resulting of decoding the input, zero on
- * error. */
-uintxx base64_getdecodesz(const uint8* in, uintxx size);
+ * */
+CTB_INLINE void b64strm_settgt(TBase64Strm*, uint8* target, uintxx size);
 
 /*
- * Returns the numbers of bytes resulting of encoding n numbers of bytes to
- * base64. */
-CTB_INLINE uintxx base64_getencodesz(uintxx size);
+ * */
+CTB_INLINE uintxx b64strm_srcend(TBase64Strm*);
+
+/*
+ * */
+CTB_INLINE uintxx b64strm_tgtend(TBase64Strm*);
+
+/*
+ * */
+uintxx b64strm_encode(TBase64Strm*, uintxx final);
+
+/*
+ * */
+uintxx b64strm_decode(TBase64Strm*, uintxx final);
 
 
 /*
  * Inlines */
 
-CTB_INLINE
-uintxx base64_getencodesz(uintxx size)
+CTB_INLINE void
+b64strm_init(TBase64Strm* strm)
 {
-	size = (size * 4) / 3;
-	if (size & 3)
-		return size + (4 - (size & 3));
-	return size;
+	CTB_ASSERT(strm);
+	strm->state  = 0;
+	strm->mode   = 0;
+	strm->rcount = 0;
+	strm->final  = 0;
+	strm->r = 0;
+	strm->source = strm->sbgn = strm->send = NULL;
+	strm->target = strm->tbgn = strm->tend = NULL;
 }
 
+CTB_INLINE void
+b64strm_setsrc(TBase64Strm* strm, uint8* source, uintxx size)
+{
+	CTB_ASSERT(strm);
+	strm->sbgn = strm->source = source;
+	strm->send = source + size;
+}
+
+CTB_INLINE void
+b64strm_settgt(TBase64Strm* strm, uint8* target, uintxx size)
+{
+	CTB_ASSERT(strm);
+	strm->tbgn = strm->target = target;
+	strm->tend = target + size;
+}
+
+CTB_INLINE uintxx
+b64strm_srcend(TBase64Strm* strm)
+{
+	CTB_ASSERT(strm);
+	return (uintxx) (strm->source - strm->sbgn);
+}
+
+CTB_INLINE uintxx
+b64strm_tgtend(TBase64Strm* strm)
+{
+	CTB_ASSERT(strm);
+	return (uintxx) (strm->target - strm->tbgn);
+}
 
 #endif
-

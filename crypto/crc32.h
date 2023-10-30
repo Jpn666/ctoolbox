@@ -27,9 +27,8 @@
 
 #define CRC32_POLYNOMIAL 0x04C11DB7UL
 
-
-#define CRC32_INIT(A)     ((A) =       0xFFFFFFFFUL)
-#define CRC32_FINALIZE(A) ((A) = (A) ^ 0xFFFFFFFFUL)
+#define CRC32_INIT(A)     ((A) =       0xfffffffful)
+#define CRC32_FINALIZE(A) ((A) = (A) ^ 0xfffffffful)
 
 
 /*
@@ -37,8 +36,16 @@
 uint32 crc32_ncombine(uint32 crc1, uint32 crc2, uint32 size2);
 
 /*
+ * ... */
+uint32 crc32_sliceby4(uint32 crc, const uint8* data, uintxx size);
+
+/*
+ * ... */
+uint32 crc32_sliceby8(uint32 crc, const uint8* data, uintxx size);
+
+/*
  * Updates the crc. */
-uint32 crc32_update(uint32 crc, const uint8* data, uintxx size);
+CTB_INLINE uint32 crc32_update(uint32 crc, const uint8* data, uintxx size);
 
 /*
  * Gets the crc of a memory block. */
@@ -55,9 +62,35 @@ void crc32_createtable(uint32 table[8][256]);
 CTB_INLINE uint32
 crc32_getcrc(const uint8* data, uintxx size)
 {
-	ASSERT(data);
-	return crc32_update(0xFFFFFFFFUL, data, size) ^ 0xFFFFFFFFUL;
+	CTB_ASSERT(data);
+	return crc32_update(0xfffffffful, data, size) ^ 0xfffffffful;
 }
+
+#if defined(CRC32_CFG_EXTERNALASM)
+
+uint32 crc32_updateASM(uint32, const uint8*, uintxx);
+
+CTB_INLINE uint32
+crc32_update(uint32 crc, const uint8* data, uintxx size)
+{
+	CTB_ASSERT(data);
+	return crc32_updateASM(crc, data, size);
+}
+
+#else
+
+CTB_INLINE uint32
+crc32_update(uint32 crc, const uint8* data, uintxx size)
+{
+	CTB_ASSERT(data);
+#if defined(CTB_ENV64)
+	return crc32_sliceby8(crc, data, size);
+#else
+	return crc32_sliceby4(crc, data, size);
+#endif
+}
+
+#endif
 
 #endif
 

@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2017, jpn 
- * 
+ * Copyright (C) 2023, jpn
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -87,13 +87,13 @@ CTB_INLINE intxx ctb_isascii(uintxx c);
 #define GET_PROPERTY(c) (ctb_ctypeproperties[(intxx) ((uint8) (c))])
 
 
-CTB_INLINE intxx 
+CTB_INLINE intxx
 ctb_isspace(uintxx c)
 {
 	return (GET_PROPERTY(c) & (CTB_CTYPESPACE)) != 0;
 }
 
-CTB_INLINE intxx 
+CTB_INLINE intxx
 ctb_isalpha(uintxx c)
 {
 	return (GET_PROPERTY(c) & (CTB_CTYPEALPHA)) != 0;

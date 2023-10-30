@@ -29,7 +29,7 @@ xmmF equ xmm15
 section 'text' executable align 16
 
 
-public adler32_update
+public adler32_updateASM
 ; Parameters:
 ; adler32, buffer (pointer), size
 
@@ -73,7 +73,7 @@ initjump:
 	pop			rcx
 
 
-adler32_update:
+adler32_updateASM:
 	jmp qword[jumptable.update]
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, jpn 
+ * Copyright (C) 2016, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,26 +25,34 @@
 #include "ctoolbox.h"
 
 
+/*
+ * */
+CTB_INLINE uintxx ctb_u32log2(uint32 v);
+
+/*
+ * */
+CTB_INLINE uintxx ctb_u64log2(uint64 v);
+
+
 #if defined(CTB_ENV64)
-#	define CLZ_ILOG2(A) (__builtin_clzll(A) ^ 63)
+	#define ctb_uxxlog2 ctb_u64log2
 #else
-#	define CLZ_ILOG2(A) (__builtin_clz(A)   ^ 31)
+	#define ctb_uxxlog2 ctb_u32log2
 #endif
 
+
+/*
+ * Inlines */
 
 CTB_INLINE uintxx
-ctb_ilog2(uintxx v)
+ctb_u32log2(uint32 v)
 {
 #if defined(__GNUC__)
-	return CLZ_ILOG2(v);
+	return __builtin_clz(v) ^ 31;
 #else
 	uintxx i;
-	
+
 	i = 0;
-#if defined(CTB_ENV64)
-	if (v >= (((uintxx) 1) << 0x20)) { i += 0x20; v >>= 0x20; }
-#endif
-	
 	if (v >= (((uintxx) 1) << 0x10)) { i += 0x10; v >>= 0x10; }
 	if (v >= (((uintxx) 1) << 0x08)) { i += 0x08; v >>= 0x08; }
 	if (v >= (((uintxx) 1) << 0x04)) { i += 0x04; v >>= 0x04; }
@@ -54,8 +62,25 @@ ctb_ilog2(uintxx v)
 #endif
 }
 
-#undef CLZ_ILOG2
 
+CTB_INLINE uintxx
+ctb_u64log2(uint64 v)
+{
+#if defined(__GNUC__)
+	return __builtin_clzll(v) ^ 63;
+#else
+	uintxx i;
+
+	i = 0;
+	if (v >= (((uintxx) 1) << 0x20)) { i += 0x20; v >>= 0x20; }
+	if (v >= (((uintxx) 1) << 0x10)) { i += 0x10; v >>= 0x10; }
+	if (v >= (((uintxx) 1) << 0x08)) { i += 0x08; v >>= 0x08; }
+	if (v >= (((uintxx) 1) << 0x04)) { i += 0x04; v >>= 0x04; }
+	if (v >= (((uintxx) 1) << 0x02)) { i += 0x02; v >>= 0x02; }
+	if (v >= (((uintxx) 1) << 0x01)) { i += 0x01; v >>= 0x01; }
+	return i;
+#endif
+}
 
 #endif
 

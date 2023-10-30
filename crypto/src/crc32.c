@@ -68,8 +68,6 @@ crc32_ncombine(uint32 crc1, uint32 crc2, uint32 size2)
 #endif
 
 
-#if !defined(CRC32_CFG_EXTERNALASM)
-
 #define CRC32_SLICEBY4 \
 	crc = CTB_SWAP32ONBE(crc) ^ *ptr32++; \
 	crc = crc32_table[3][0xFF & (crc >> CRC32_4BYTE1_OFFSET)] ^ \
@@ -157,18 +155,6 @@ crc32_sliceby8(uint32 crc, const uint8* data, uintxx size)
 	return crc;
 }
 
-uint32
-crc32_update(uint32 crc, const uint8* data, uintxx size)
-{
-#if defined(CTB_ENV64)
-	return crc32_sliceby8(crc, data, size);
-#else
-	return crc32_sliceby4(crc, data, size);
-#endif
-}
-
-#endif
-
 static uint32
 crc32_reflect(uint32 value, uint8 size)
 {
@@ -220,8 +206,6 @@ crc32_createtable(uint32 table[8][256])
 /* ****************************************************************************
  * Lookup Table
  *************************************************************************** */
-
-#if !defined(CRC32_CFG_EXTERNALASM)
 
 static const uint32 crc32_table[8][256] =
 {
@@ -659,7 +643,6 @@ static const uint32 crc32_table[8][256] =
 	}
 };
 
-#endif
 
 /* ****************************************************************************
  *

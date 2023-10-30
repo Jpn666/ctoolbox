@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, jpn 
+ * Copyright (C) 2023, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,34 +15,71 @@
  */
 
 #include "../dynarray.h"
+#include "../cmemory.h"
+
+
+CTB_INLINE void*
+_reserve(struct TDynArray* p, uintxx amount)
+{
+	if (p->allctr) {
+		return p->allctr->reserve(p->allctr->user, amount);
+	}
+	return CTB_RESERVE(amount);
+}
+
+CTB_INLINE void*
+_realloc(struct TDynArray* p, void* memory, uintxx amount)
+{
+	if (p->allctr) {
+		return p->allctr->realloc(p->allctr->user, memory, amount);
+	}
+	return CTB_REALLOC(memory, amount);
+}
+
+CTB_INLINE void
+_release(struct TDynArray* p, void* memory)
+{
+	if (p->allctr) {
+		p->allctr->release(p->allctr->user, memory);
+		return;
+	}
+	CTB_RELEASE(memory);
+}
 
 
 TDynArray*
-dynarray_create(uintxx capacity, uintxx datasize)
+dynarray_create(uintxx size, uintxx datasize, TAllocator* allctr)
 {
 	struct TDynArray* array;
-	
+
 	if (datasize == 0) {
 		return NULL;
 	}
-	
-	array = CTB_MALLOC(sizeof(struct TDynArray));
+
+	if (allctr) {
+		array = allctr->reserve(allctr->user, sizeof(struct TDynArray));
+	}
+	else {
+		array = CTB_RESERVE(sizeof(struct TDynArray));
+	}
 	if (array == NULL) {
 		return NULL;
 	}
-	
-	if (DYNARRAY_MINSIZE > capacity)
-		capacity = DYNARRAY_MINSIZE;
-	array->capacity = capacity;
+
+	array->allctr = allctr;
+	if (DYNARRAY_MINSIZE > size) {
+		size = DYNARRAY_MINSIZE;
+	}
+	array->capacity = size;
 	array->datasize = datasize;
 	array->used = 0;
-	
-	array->buffer = CTB_MALLOC(capacity * datasize);
+
+	array->buffer = _reserve(array, size * datasize);
 	if (array->buffer == NULL) {
-		CTB_FREE(array);
+		_release(array, array);
 		return NULL;
 	}
-	
+
 	return array;
 }
 
@@ -52,9 +89,8 @@ dynarray_destroy(TDynArray* array)
 	if (array == NULL) {
 		return;
 	}
-	
-	CTB_FREE(array->buffer);
-	CTB_FREE(array);
+	_release(array, array->buffer);
+	_release(array, array);
 }
 
 
@@ -64,8 +100,8 @@ eintxx
 dynarray_insert(TDynArray* array, void* element, uintxx index)
 {
 	uintxx i;
-	ASSERT(array);
-	
+	CTB_ASSERT(array);
+
 	if (index < array->used) {
 		if (array->used >= array->capacity) {
 			if (dynarray_reserve(array, array->used + 1)) {
@@ -74,7 +110,7 @@ dynarray_insert(TDynArray* array, void* element, uintxx index)
 		}
 		array->used++;
 		for (i = array->used; index < i; i--) {
-			memcpy(AS_POINTER(i), AS_POINTER(i - 1), array->datasize);
+			ctb_memcpy(AS_POINTER(i), AS_POINTER(i - 1), array->datasize);
 		}
 	}
 	else {
@@ -84,12 +120,12 @@ dynarray_insert(TDynArray* array, void* element, uintxx index)
 			}
 		}
 		for (i = array->used; i < index; i++) {
-			memset(AS_POINTER(i), 0, array->datasize);
+			ctb_memset(AS_POINTER(i), 0, array->datasize);
 		}
 		array->used = index + 1;
 	}
-	memcpy(AS_POINTER(index), element, array->datasize);
-	
+	ctb_memcpy(AS_POINTER(index), element, array->datasize);
+
 	return CTB_OK;
 }
 
@@ -97,21 +133,21 @@ eintxx
 dynarray_remove(TDynArray* array, uintxx index)
 {
 	uintxx i;
-	ASSERT(array && dynarray_checkrange(array, index));
-	
+	CTB_ASSERT(array && dynarray_checkrange(array, index));
+
 	for (i = index + 1; i < array->used; i++) {
-		memcpy(AS_POINTER(i - 1), AS_POINTER(i), array->datasize);
+		ctb_memcpy(AS_POINTER(i - 1), AS_POINTER(i), array->datasize);
 	}
 	array->used--;
-	
+
 	return CTB_OK;
 }
 
 eintxx
 dynarray_clear(TDynArray* array, TFreeFn freefn)
 {
-	ASSERT(array);
-	
+	CTB_ASSERT(array);
+
 	if (freefn) {
 		while (array->used) {
 			array->used--;
@@ -121,68 +157,22 @@ dynarray_clear(TDynArray* array, TFreeFn freefn)
 	else {
 		array->used = 0;
 	}
-	
+
 	if (dynarray_shrink(array)) {
 		return CTB_EOOM;
 	}
-	
 	return CTB_OK;
-}
-
-static void
-sortdynarray_r(TDynArray* array, uintxx a, uintxx b, TCmpFn cmpfn, void* s)
-{
-	uint8* p1;
-	uint8* p2;
-	uint8* pp;
-	void*  sp;
-	uintxx p, j, i;
-	
-	p  = a;
-	j  = b;
-	sp = s;
-	pp = AS_POINTER(p);
-	for (i = a;;) {
-		while (cmpfn(pp, (p1 = AS_POINTER(i))) >= 0 && i < b)
-			i++;
-		while (cmpfn(pp, (p2 = AS_POINTER(j))) <  0 && j > a)
-			j--;
-		
-		if (i >= j) {
-			break;
-		}
-		memcpy(sp, p1, array->datasize);
-		memcpy(p1, p2, array->datasize);
-		memcpy(p2, sp, array->datasize);
-	}
-	p2 = AS_POINTER(j);
-	memcpy(sp, p2, array->datasize);
-	memcpy(p2, pp, array->datasize);
-	memcpy(pp, sp, array->datasize);
-	
-	if (j > a)
-		sortdynarray_r(array,     a, j - 1, cmpfn, s);
-	if (j < b)
-		sortdynarray_r(array, j + 1,     b, cmpfn, s);
 }
 
 #undef AS_POINTER
 
-
-void
-dynarray_sort(TDynArray* array, TCmpFn cmpfn, void* swapv)
-{
-	ASSERT(array);
-	if (cmpfn && (array->used > 0))
-		sortdynarray_r(array, 0, array->used - 1, cmpfn, swapv);
-}
 
 static eintxx
 dynarray_resize(TDynArray* array, uintxx size)
 {
 	uint8* buffer;
 	uintxx v;
-	
+
 	v = size;
 	v--;
 	v |= v >> 0x01;
@@ -194,27 +184,27 @@ dynarray_resize(TDynArray* array, uintxx size)
 	v |= v >> 0x20;
 #endif
 	v++;
-	
+
 	if (v > array->capacity) {
 		if (array->capacity > v - (array->capacity >> 1))
 			v = v << 1;
-		
-		buffer = CTB_REALLOC(array->buffer, v * array->datasize);
+
+		buffer = _realloc(array, array->buffer, v * array->datasize);
 		if (buffer == NULL) {
 			return CTB_EOOM;
 		}
 		array->capacity = v;
 		array->buffer   = buffer;
 	}
-	
+
 	return CTB_OK;
 }
 
 eintxx
 dynarray_reserve(TDynArray* array, uintxx size)
 {
-	ASSERT(array);
-	
+	CTB_ASSERT(array);
+
 	if (size >= array->capacity) {
 		if (dynarray_resize(array, size)) {
 			return CTB_EOOM;
@@ -228,18 +218,18 @@ dynarray_shrink(TDynArray* array)
 {
 	uint8* buffer;
 	uintxx v;
-	ASSERT(array);
-	
+	CTB_ASSERT(array);
+
 	v = array->used;
 	if (v < DYNARRAY_MINSIZE)
 		v = DYNARRAY_MINSIZE;
-	
+
 	if (array->capacity > v) {
-		buffer = CTB_REALLOC(array->buffer, v * array->datasize);
+		buffer = _realloc(array, array->buffer, v * array->datasize);
 		if (buffer == NULL) {
 			return CTB_EOOM;
 		}
-		
+
 		array->capacity = v;
 		array->buffer   = buffer;
 	}

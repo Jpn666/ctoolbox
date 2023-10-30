@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, jpn 
+ * Copyright (C) 2015, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ typedef enum {
 struct TAESctx {
 	uint8  state[4][4];
 	uint32 swork[60];
-	uintxx nrnds;  
+	uintxx nrnds;
 };
 
 typedef struct TAESctx TAESctx;
@@ -48,7 +48,7 @@ typedef struct TAESctx TAESctx;
  * ... */
 CTB_INLINE void aes_init(TAESctx*);
 
-/* 
+/*
  * ... */
 bool aes_setupkey(TAESctx*, const uint8* key, uintxx keylen);
 
@@ -68,7 +68,7 @@ CTB_INLINE void
 aes_init(TAESctx* context)
 {
 	uintxx i;
-	ASSERT(context);
+	CTB_ASSERT(context);
 
 	for (i = 0; i < 4; i++) {
 		context->state[i][0] = 0;

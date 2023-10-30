@@ -20,10 +20,6 @@
 /* largest prime smaller than 65536 */
 #define ADLER_BASE 65521
 
-
-#if !defined(ADLER32_CFG_EXTERNALASM)
-
-
 #define ADLER32_SLICEBY8 \
 		b += (a += *data++); \
 		b += (a += *data++); \
@@ -35,43 +31,43 @@
 		b += (a += *data++);
 
 uint32
-adler32_update(uint32 adler, const uint8* data, uintxx size)
+adler32_slideby8(uint32 adler, const uint8* data, uintxx size)
 {
 	uint32 a;
 	uint32 b;
 	uint32 ra;
 	uint32 rb;
 	uintxx i;
-	ASSERT(data);
+	CTB_ASSERT(data);
 
 	a = 0xffff & adler;
 	b = 0xffff & adler >> 16;
 
 	i = 32;
-	for (; size >= 512; size -= 512) {		
+	for (; size >= 512; size -= 512) {
 		do {
 			ADLER32_SLICEBY8
 			ADLER32_SLICEBY8
 		} while(--i);
 		i = 32;
-		
+
 		/* modulo reduction */
 		ra = a >> 16;
 		rb = b >> 16;
 		a = (a & 0xffff) + ((ra << 4) - ra);
 		b = (b & 0xffff) + ((rb << 4) - rb);
 	}
-	
+
 	for (; size >= 16; size -= 16) {
 		ADLER32_SLICEBY8
 		ADLER32_SLICEBY8
 	}
-	
+
 	while (size) {
 		b += (a += *data++);
 		size--;
 	}
-	
+
 	/* modulo reduction */
 	ra = a >> 16;
 	rb = b >> 16;
@@ -86,6 +82,3 @@ adler32_update(uint32 adler, const uint8* data, uintxx size)
 }
 
 #undef ADLER32_SLICEBY8
-
-
-#endif

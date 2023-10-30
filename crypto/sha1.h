@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2014, jpn 
- * 
+ * Copyright (C) 2014, jpn
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -63,7 +63,7 @@ void sha1_final(TSHA1ctx*, uint32 digest[5]);
 CTB_INLINE void
 sha1_init(TSHA1ctx* context)
 {
-	ASSERT(context);
+	CTB_ASSERT(context);
 	context->state[0] = 0x67452301UL;
 	context->state[1] = 0xefcdab89UL;
 	context->state[2] = 0x98badcfeUL;
@@ -78,11 +78,11 @@ CTB_INLINE void
 sha1_getdigest(uint32 digest[5], const uint8* data, uintxx size)
 {
 	struct TSHA1ctx sha1;
-	ASSERT(data && digest);
-	
+	CTB_ASSERT(data && digest);
+
 	sha1_init(&sha1);
 	sha1_update(&sha1, data, size);
-	
+
 	sha1_final(&sha1, digest);
 }
 

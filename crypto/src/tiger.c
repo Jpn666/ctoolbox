@@ -149,7 +149,7 @@ tiger_getdigest(uint64 digest[3], const uint8* data, uintxx size)
 	uint64 i;
 	uint64 j;
 	uint8 tmp[64];
-	ASSERT(data && digest);
+	CTB_ASSERT(data && digest);
 
 	digest[0] = 0x0123456789ABCDEFULL;
 	digest[1] = 0xFEDCBA9876543210ULL;
@@ -251,7 +251,7 @@ tiger_generate_table(uint64 table[1024], uint32 src[16], intxx passes)
 void
 tiger_createtable(uint64 table[1024])
 {
-	ASSERT(table);
+	CTB_ASSERT(table);
 	tiger_generate_table(table, (void *) TGEN, 5);
 }
 

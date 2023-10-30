@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022, jpn
+ * Copyright (C) 2023, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,37 +24,37 @@
 
 
 #include <ctbconfig.h>
-#include <string.h>
 
-
-#if defined(_MSC_VER)
-	#define __MSVC__
+#if !defined(__has_builtin)
+	#define __has_builtin(x) 0
 #endif
 
+#if defined(NDEBUG)
+	#define CTB_ASSERT(x) ((void) 0)
+#else
+	#if defined(CTB_CFG_NOSTDLIB)
+		#define CTB_ASSERT(x) ((void) 0)
+	#else
+		#include <assert.h>
+		#define CTB_ASSERT(x) assert(x)
+	#endif
 
-#if !defined(NDEBUG)
-	#define NDEBUG
-#endif
-#if defined(DEBUG) || defined(__DEBUG__) || defined(_DEBUG)
-	#undef NDEBUG
 	#define CTB_DEBUG
 #endif
-
-#define ASSERT(x) assert(x)
-#include <assert.h>
 
 
 /*
  * Inline and force inline */
 
-#if defined(__MSVC__) || defined(__BORLANDC__) || defined(__POCC__)
+#if defined(_MSC_VER)
 	#define CTB_INLINE static __inline
 #endif
 
 #if !defined(CTB_INLINE)
 	#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 		#define CTB_INLINE static inline
-#else  /* ansi c */
+	#else
+		/* ansi c */
 		#if defined(__GNUC__)
 			#define CTB_INLINE static __inline__
 		#else
@@ -64,7 +64,7 @@
 #endif
 
 
-#if defined(__MSVC__)
+#if defined(_MSC_VER)
 	#define CTB_FORCEINLINE static __forceinline
 #endif
 
@@ -81,11 +81,9 @@
 	#define   LIKELY(X) __builtin_expect((X), 1)
 	#define UNLIKELY(X) __builtin_expect((X), 0)
 #else
-	#if defined(__has_builtin)
-		#if __has_builtin(__builtin_expect)
-			#define   LIKELY(X) __builtin_expect((X), 1)
-			#define UNLIKELY(X) __builtin_expect((X), 0)
-		#endif
+	#if __has_builtin(__builtin_expect)
+		#define   LIKELY(X) __builtin_expect((X), 1)
+		#define UNLIKELY(X) __builtin_expect((X), 0)
 	#endif
 #endif
 
@@ -106,40 +104,6 @@
 #undef CTB_INTERNAL_INCLUDE_GUARD
 
 
-/*
- * Memory allocation macros */
-
-#if defined(CTB_CFG_NOSTDLIB)
-	#if !defined(CTB_MALLOC)
-		#define CTB_MALLOC(A)       NULL
-	#endif
-	#if !defined(CTB_CALLOC)
-		#define CTB_CALLOC(A, B, C) NULL
-	#endif
-	#if !defined(CTB_REALLOC)
-		#define CTB_REALLOC(A, B)   NULL
-	#endif
-	#if !defined(CTB_FREE)
-		#define CTB_FREE(A)
-	#endif
-#else
-	#include <stdlib.h>
-#endif
-
-#if !defined(CTB_MALLOC)
-	#define CTB_MALLOC  malloc
-#endif
-#if !defined(CTB_CALLOC)
-	#define CTB_CALLOC  calloc
-#endif
-#if !defined(CTB_REALLOC)
-	#define CTB_REALLOC realloc
-#endif
-#if !defined(CTB_FREE)
-	#define CTB_FREE    free
-#endif
-
-
 /* Error values */
 typedef enum {
 	CTB_OK     =  0,
@@ -148,11 +112,6 @@ typedef enum {
 	CTB_EOOM   = -3,
 	CTB_ENKEY  = -4
 } eCTBError;
-
-
-/*
- * */
-extern void (*ctb_memzero)(void* buffer, uintxx size);
 
 
 #endif

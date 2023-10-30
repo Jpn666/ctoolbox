@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, jpn 
+ * Copyright (C) 2015, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,9 +91,9 @@ aes_setupkey(TAESctx* context, const uint8* key, uintxx keylen)
 	uintxx i;
 	uintxx j;
 	uintxx r;
-	
-	ASSERT(context && key);
-	
+
+	CTB_ASSERT(context && key);
+
 	switch (keylen) {
 		case 128: kwords = 4; context->nrnds = 10; break;
 		case 192: kwords = 6; context->nrnds = 12; break;
@@ -101,19 +101,19 @@ aes_setupkey(TAESctx* context, const uint8* key, uintxx keylen)
 		default:
 			return 0;
 	}
-	
+
 	for (i = 0; i < kwords; i++) {
-		context->swork[i] = 
+		context->swork[i] =
 		    (key[0] << 0x18) |
 		    (key[1] << 0x10) |
 		    (key[2] << 0x08) | (key[3]);
 		key += 4;
 	}
-	
+
 	r = 0;
 	for (j = kwords; i < ((context->nrnds + 1) << 2); i++) {
 		uint32 n;
-		
+
 		n = context->swork[i - 1];
 		if (i == j) {
 			n = subword(ROTWORD(n)) ^ rcon[r++];
@@ -136,17 +136,17 @@ ssubbytes(uint8 state[][4])
 	state[0][1] = aes_ssbox[state[0][1]];
 	state[0][2] = aes_ssbox[state[0][2]];
 	state[0][3] = aes_ssbox[state[0][3]];
-	
+
 	state[1][0] = aes_ssbox[state[1][0]];
 	state[1][1] = aes_ssbox[state[1][1]];
 	state[1][2] = aes_ssbox[state[1][2]];
 	state[1][3] = aes_ssbox[state[1][3]];
-	
+
 	state[2][0] = aes_ssbox[state[2][0]];
 	state[2][1] = aes_ssbox[state[2][1]];
 	state[2][2] = aes_ssbox[state[2][2]];
 	state[2][3] = aes_ssbox[state[2][3]];
-	
+
 	state[3][0] = aes_ssbox[state[3][0]];
 	state[3][1] = aes_ssbox[state[3][1]];
 	state[3][2] = aes_ssbox[state[3][2]];
@@ -190,22 +190,22 @@ isubbytes(uint8 state[][4])
 		0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26,
 		0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
 	};
-	
+
 	state[0][0] = aes_isbox[state[0][0]];
 	state[0][1] = aes_isbox[state[0][1]];
 	state[0][2] = aes_isbox[state[0][2]];
 	state[0][3] = aes_isbox[state[0][3]];
-	
+
 	state[1][0] = aes_isbox[state[1][0]];
 	state[1][1] = aes_isbox[state[1][1]];
 	state[1][2] = aes_isbox[state[1][2]];
 	state[1][3] = aes_isbox[state[1][3]];
-	
+
 	state[2][0] = aes_isbox[state[2][0]];
 	state[2][1] = aes_isbox[state[2][1]];
 	state[2][2] = aes_isbox[state[2][2]];
 	state[2][3] = aes_isbox[state[2][3]];
-	
+
 	state[3][0] = aes_isbox[state[3][0]];
 	state[3][1] = aes_isbox[state[3][1]];
 	state[3][2] = aes_isbox[state[3][2]];
@@ -216,21 +216,21 @@ CTB_INLINE void
 sshftrows(uint8 state[][4])
 {
 	uint8 n;
-	
+
 	n = state[1][0];
 	state[1][0] = state[1][1];
 	state[1][1] = state[1][2];
 	state[1][2] = state[1][3];
 	state[1][3] = n;
-	
+
 	n = state[2][0];  /* swap [2][0] [2][2] */
 	state[2][0] = state[2][2];
 	state[2][2] = n;
-	
+
 	n = state[2][1];  /* swap [2][1] [2][3] */
 	state[2][1] = state[2][3];
 	state[2][3] = n;
-	
+
 	n = state[3][0];
 	state[3][0] = state[3][3];
 	state[3][3] = state[3][2];
@@ -243,21 +243,21 @@ CTB_INLINE void
 ishftrows(uint8 state[][4])
 {
 	uint8 n;
-	
+
 	n = state[1][0];
 	state[1][0] = state[1][3];
 	state[1][3] = state[1][2];
 	state[1][2] = state[1][1];
 	state[1][1] = n;
-	
+
 	n = state[2][0];  /* swap [2][0] [2][2] */
 	state[2][0] = state[2][2];
 	state[2][2] = n;
-	
+
 	n = state[2][1];  /* swap [2][1] [2][3] */
 	state[2][1] = state[2][3];
 	state[2][3] = n;
-	
+
 	n = state[3][0];
 	state[3][0] = state[3][1];
 	state[3][1] = state[3][2];
@@ -304,19 +304,19 @@ smixclmns(uint8 state[][4])
 	};
 	uint8  m[5];
 	uintxx i;
-	
+
 	for (i = 0; i < 4; i++) {
 		m[0] = GF2_mulx2[state[0][i]];
 		m[1] = GF2_mulx2[state[1][i]];
 		m[2] = GF2_mulx2[state[2][i]];
 		m[3] = GF2_mulx2[state[3][i]];
-		
+
 		m[4] = m[0];
-		m[0] = m[0] ^ m[1] ^ state[1][i] ^ state[2][i] ^ state[3][i]; 
-		m[1] = m[1] ^ m[2] ^ state[2][i] ^ state[3][i] ^ state[0][i]; 
+		m[0] = m[0] ^ m[1] ^ state[1][i] ^ state[2][i] ^ state[3][i];
+		m[1] = m[1] ^ m[2] ^ state[2][i] ^ state[3][i] ^ state[0][i];
 		m[2] = m[2] ^ m[3] ^ state[3][i] ^ state[0][i] ^ state[1][i];
 		m[3] = m[3] ^ m[4] ^ state[0][i] ^ state[1][i] ^ state[2][i];
-		
+
 		state[0][i] = m[0];
 		state[1][i] = m[1];
 		state[2][i] = m[2];
@@ -400,10 +400,10 @@ GF2_mul(uint8 a, uint8 b)
 
 	uintxx n;
 	uint8  r;
-	
+
 	n = GF2_logtable[a] + GF2_logtable[b];
 	n = (n & 0xff) + (n >> 8);
-	
+
 	r = GF2_exptable[n];
 	if (a == 0 || b == 0) {
 		return 0;
@@ -416,62 +416,62 @@ imixclmns(uint8 state[][4])
 {
 	uintxx i;
 	uint8  m[4];
-	
+
 	for (i = 0; i < 4; i++) {
 		m[0] = (uint8) (
 			GF2_mul(0x0e, state[0][i]) ^
 			GF2_mul(0x0b, state[1][i]) ^
 			GF2_mul(0x0d, state[2][i]) ^
 			GF2_mul(0x09, state[3][i]));
-			   
+
 		m[1] = (uint8) (
 			GF2_mul(0x09, state[0][i]) ^
 			GF2_mul(0x0e, state[1][i]) ^
 			GF2_mul(0x0b, state[2][i]) ^
 			GF2_mul(0x0d, state[3][i]));
-			   
+
 		m[2] = (uint8) (
 			GF2_mul(0x0d, state[0][i]) ^
 			GF2_mul(0x09, state[1][i]) ^
 			GF2_mul(0x0e, state[2][i]) ^
 			GF2_mul(0x0b, state[3][i]));
-			   
+
 		m[3] = (uint8) (
 			GF2_mul(0x0b, state[0][i]) ^
 			GF2_mul(0x0d, state[1][i]) ^
 			GF2_mul(0x09, state[2][i]) ^
 			GF2_mul(0x0e, state[3][i]));
-		
+
 		state[0][i] = m[0];
 		state[1][i] = m[1];
 		state[2][i] = m[2];
 		state[3][i] = m[3];
-	} 
+	}
 }
 
 CTB_INLINE void
 addroundkey(TAESctx* context, uintxx round)
 {
 	uintxx n;
-	
+
 	n = context->swork[(round << 2) + 0];
 	context->state[0][0] ^= (n >> 0x18) & 0xff;
 	context->state[1][0] ^= (n >> 0x10) & 0xff;
 	context->state[2][0] ^= (n >> 0x08) & 0xff;
 	context->state[3][0] ^= (n >> 0x00) & 0xff;
-	
+
 	n = context->swork[(round << 2) + 1];
 	context->state[0][1] ^= (n >> 0x18) & 0xff;
 	context->state[1][1] ^= (n >> 0x10) & 0xff;
 	context->state[2][1] ^= (n >> 0x08) & 0xff;
 	context->state[3][1] ^= (n >> 0x00) & 0xff;
-	
+
 	n = context->swork[(round << 2) + 2];
 	context->state[0][2] ^= (n >> 0x18) & 0xff;
 	context->state[1][2] ^= (n >> 0x10) & 0xff;
 	context->state[2][2] ^= (n >> 0x08) & 0xff;
 	context->state[3][2] ^= (n >> 0x00) & 0xff;
-	
+
 	n = context->swork[(round << 2) + 3];
 	context->state[0][3] ^= (n >> 0x18) & 0xff;
 	context->state[1][3] ^= (n >> 0x10) & 0xff;
@@ -484,9 +484,9 @@ aes_encrypt(TAESctx* context, uint8 ptxt[16], uint8 ctxt[16])
 {
 	uintxx i;
 	uintxx j;
-	
-	ASSERT(context && ptxt && ctxt);
-	
+
+	CTB_ASSERT(context && ptxt && ctxt);
+
 	j = 0;
 	for (i = 0; i < 4; i++) {
 		context->state[0][i] = ptxt[j++];
@@ -494,19 +494,19 @@ aes_encrypt(TAESctx* context, uint8 ptxt[16], uint8 ctxt[16])
 		context->state[2][i] = ptxt[j++];
 		context->state[3][i] = ptxt[j++];
 	}
-	
+
 	addroundkey(context, 0);
 	for (i = 1; i < context->nrnds; i++) {
 		ssubbytes(context->state);
 		sshftrows(context->state);
 		smixclmns(context->state);
-		
+
 		addroundkey(context, i);
 	}
 	ssubbytes(context->state);
 	sshftrows(context->state);
 	addroundkey(context, i);
-	
+
 	j = 0;
 	for (i = 0; i < 4; i++) {
 		ctxt[j++] = context->state[0][i];
@@ -521,9 +521,9 @@ aes_decrypt(TAESctx* context, uint8 ctxt[16], uint8 ptxt[16])
 {
 	uintxx i;
 	uintxx j;
-	
-	ASSERT(context && ptxt && ctxt);
-	
+
+	CTB_ASSERT(context && ptxt && ctxt);
+
 	j = 0;
 	for (i = 0; i < 4; i++) {
 		context->state[0][i] = ctxt[j++];
@@ -531,20 +531,20 @@ aes_decrypt(TAESctx* context, uint8 ctxt[16], uint8 ptxt[16])
 		context->state[2][i] = ctxt[j++];
 		context->state[3][i] = ctxt[j++];
 	}
-	
+
 	addroundkey(context, context->nrnds);
 	for (i = context->nrnds - 1; i; i--) {
 		isubbytes(context->state);
 		ishftrows(context->state);
-		
+
 		addroundkey(context, i);
-		
+
 		imixclmns(context->state);
 	}
 	isubbytes(context->state);
 	ishftrows(context->state);
 	addroundkey(context, i);
-	
+
 	j = 0;
 	for (i = 0; i < 4; i++) {
 		ptxt[j++] = context->state[0][i];

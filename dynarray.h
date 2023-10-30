@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, jpn 
+ * Copyright (C) 2023, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 
 #include "ctoolbox.h"
 #include "iterator.h"
+#include "cmemory.h"
 
 
 #define DYNARRAY_MINSIZE  8
@@ -34,8 +35,11 @@ struct TDynArray {
 	uintxx capacity;
 	uintxx used;
 	uintxx datasize;
-	
+
 	uint8* buffer;
+
+	/* allocator */
+	TAllocator* allctr;
 };
 
 typedef struct TDynArray TDynArray;
@@ -46,7 +50,7 @@ typedef struct TDynArray TDynArray;
 
 /*
  * Creates a new array, returns NULL on failure. */
-TDynArray* dynarray_create(uintxx capacity, uintxx datasize);
+TDynArray* dynarray_create(uintxx size, uintxx datasize, TAllocator* allctr);
 
 /*
  * Destroys and free the given array. */
@@ -76,10 +80,6 @@ eintxx dynarray_shrink(TDynArray*);
 /*
  * Ensures that the array has (at least) a size equal to size. */
 eintxx dynarray_reserve(TDynArray*, uintxx size);
-
-/*
- * Sort the elements in the array using the given function. */
-void dynarray_sort(TDynArray*, TCmpFn cmpfn, void* swapv);
 
 /*
  * Added to keep the same interface for all array like types. */
@@ -114,20 +114,20 @@ CTB_INLINE uintxx dynarray_capacity(TDynArray*);
 CTB_INLINE bool dynarray_checkrange(TDynArray*, uintxx index);
 
 
-/* 
+/*
  * Inlines */
 
 CTB_INLINE eintxx
 dynarray_append(TDynArray* array, void* element)
 {
-	ASSERT(array);
+	CTB_ASSERT(array);
 	return dynarray_insert(array, element, array->used);
 }
 
 CTB_INLINE eintxx
 dynarray_pop(TDynArray* array)
 {
-	ASSERT(array);
+	CTB_ASSERT(array);
 
 	if (array->used) {
 		return dynarray_remove(array, array->used - 1);
@@ -138,20 +138,20 @@ dynarray_pop(TDynArray* array)
 CTB_INLINE void*
 dynarray_at(TDynArray* array, uintxx index)
 {
-	ASSERT(array && dynarray_checkrange(array, index));
-	
+	CTB_ASSERT(array && dynarray_checkrange(array, index));
+
 	return (void*) DYNARRAY_AT(array, index);
 }
 
 CTB_INLINE void*
 dynarray_safe_at(TDynArray* array, uintxx index)
 {
-	ASSERT(array);
+	CTB_ASSERT(array);
 
 	if (!dynarray_checkrange(array, index)) {
 		return NULL;
 	}
-	
+
 	return (void*) DYNARRAY_AT(array, index);
 }
 
@@ -159,8 +159,8 @@ CTB_INLINE void*
 dynarray_next(TDynArray* array, TIterator* it)
 {
 	void* tmp;
-	ASSERT(array && it);
-	
+	CTB_ASSERT(array && it);
+
 	if ((tmp = dynarray_safe_at(array, it->index1))) {
 		it->index1++;
 		return tmp;
@@ -173,12 +173,12 @@ CTB_INLINE eintxx
 dynarray_set(TDynArray* array, uintxx index, void* element)
 {
 	void* p;
-	ASSERT(array);
-	
+	CTB_ASSERT(array);
+
 	if ((p = dynarray_safe_at(array, index))) {
 		if (p != element)
-			memcpy(p, element, array->datasize);
-		
+			ctb_memcpy(p, element, array->datasize);
+
 		return CTB_OK;
 	}
 	return dynarray_insert(array, element, index);
@@ -187,21 +187,21 @@ dynarray_set(TDynArray* array, uintxx index, void* element)
 CTB_INLINE uintxx
 dynarray_size(TDynArray* array)
 {
-	ASSERT(array);
+	CTB_ASSERT(array);
 	return array->used;
 }
 
 CTB_INLINE uintxx
 dynarray_capacity(TDynArray* array)
 {
-	ASSERT(array);
+	CTB_ASSERT(array);
 	return array->capacity;
 }
 
 CTB_INLINE bool
 dynarray_checkrange(TDynArray* array, uintxx index)
 {
-	ASSERT(array);
+	CTB_ASSERT(array);
 	return (index < array->used);
 }
 

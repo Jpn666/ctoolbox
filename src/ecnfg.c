@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022, jpn
+ * Copyright (C) 2023, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-#include "../../ctype.h"
+#include "../ctype.h"
 #include "../ecnfg.h"
+#include "../cmemory.h"
 
 
 #define ECNFG_INPUTBFFRSZ 0x1000UL
@@ -25,52 +26,93 @@
 #endif
 
 
+CTB_INLINE void*
+_reserve(struct TECnfg* p, uintxx amount)
+{
+	if (p->allctr) {
+		return p->allctr->reserve(p->allctr->user, amount);
+	}
+	return CTB_RESERVE(amount);
+}
+
+CTB_INLINE void*
+_realloc(struct TECnfg* p, void* memory, uintxx amount)
+{
+	if (p->allctr) {
+		return p->allctr->realloc(p->allctr->user, memory, amount);
+	}
+	return CTB_REALLOC(memory, amount);
+}
+
+CTB_INLINE void
+_release(struct TECnfg* p, void* memory)
+{
+	if (p->allctr) {
+		p->allctr->release(p->allctr->user, memory);
+		return;
+	}
+	CTB_RELEASE(memory);
+}
+
+
+#define ECFGTOTALSIZE (sizeof(struct TECnfg) + ECNFG_INPUTBFFRSZ)
+
 TECnfg*
-ecnfg_create(void)
+ecnfg_create(TAllocator* allctr)
 {
 	struct TECnfg* cfg;
 	uint8* buffer;
-	
-	cfg = CTB_MALLOC(sizeof(struct TECnfg) + ECNFG_INPUTBFFRSZ);
+
+	if (allctr) {
+		cfg = allctr->reserve(allctr->user, ECFGTOTALSIZE);
+	}
+	else {
+		cfg = CTB_RESERVE(ECFGTOTALSIZE);
+	}
 	if (cfg == NULL) {
 		return NULL;
 	}
-	buffer = CTB_MALLOC(ECNFG_MINBFFRSZ);
+
+	cfg->allctr = allctr;
+	buffer = _reserve(cfg, ECNFG_MINBFFRSZ);
 	if (buffer == NULL) {
-		CTB_FREE(cfg);
+		_release(cfg, cfg);
 		return NULL;
 	}
 	cfg->buffersz  = ECNFG_MINBFFRSZ;
-	
+
 	cfg->inputbgn  = (void*) (cfg + 1);
 	cfg->buffermem = buffer;
 	cfg->bufferend = buffer + ECNFG_MINBFFRSZ;
 	ecnfg_reset(cfg);
-	
+
 	return cfg;
 }
+
+#undef ECFGTOTALSIZE
+
 
 void
 ecnfg_reset(TECnfg* cfg)
 {
-	ASSERT(cfg);
-		
+	CTB_ASSERT(cfg);
+
 	cfg->state = 0;
 	cfg->rvcnt = 0;
 	cfg->sncnt = 0;
 	cfg->event = 0;
-	
+
 	cfg->inputfn  = NULL;
 	cfg->payload  = NULL;
 	cfg->input    = cfg->inputbgn;
 	cfg->inputend = cfg->inputbgn;
-	
+
 	/* lexer stuff */
 	cfg->lastchr = 0x20;  /* space */
 	cfg->line  = 0;
 	cfg->token = 0;
 	cfg->error = 0;
-	
+
 	cfg->buffer    = cfg->buffermem;
 	cfg->bufferbgn = cfg->buffermem;
 }
@@ -81,9 +123,9 @@ ecnfg_destroy(TECnfg* cfg)
 	if (cfg == NULL) {
 		return;
 	}
-	
-	CTB_FREE(cfg->buffermem);
-	CTB_FREE(cfg);
+
+	_release(cfg, cfg->buffermem);
+	_release(cfg, cfg);
 }
 
 
@@ -93,11 +135,11 @@ CTB_INLINE uintxx
 ecnfg_fetchchr(struct TECnfg* cfg)
 {
 	intxx r;
-	
+
 	if (cfg->input < cfg->inputend) {
 		return *cfg->input++;
 	}
-	
+
 	if (cfg->inputfn == NULL) {
 		SETERROR(ECNFG_EINPUT);
 		return (uintxx) EOF;
@@ -110,7 +152,7 @@ ecnfg_fetchchr(struct TECnfg* cfg)
 		}
 		cfg->input    = cfg->inputbgn;
 		cfg->inputend = cfg->inputbgn + r;
-		
+
 		return *cfg->input++;
 	}
 	return (uintxx) EOF;
@@ -129,11 +171,11 @@ ecnfg_appendchr(struct TECnfg* cfg, uintxx c)
 	uint8* buffer;
 	uintxx nsize;
 	uintxx j;
-	
+
 	if (cfg->error) {
 		return;
 	}
-	
+
 	/* ascii character */
 	if (c < 0x00080UL) {
 		if (cfg->bufferend > cfg->buffer) {
@@ -149,31 +191,31 @@ ecnfg_appendchr(struct TECnfg* cfg, uintxx c)
 		else
 			j = 4;
 	}
-	
+
 	if (cfg->buffer + j >= cfg->bufferend) {
 		nsize = cfg->buffersz << 1;
 		if (nsize > ECNFG_MAXBFFRSZ)
 			nsize = ECNFG_MAXBFFRSZ;
-		
+
 		if (cfg->buffersz == nsize) {
 			SETERROR(ECNFG_EBUFFERLIMIT);
 			return;
 		}
 		/* resize */
-		buffer = CTB_REALLOC(cfg->buffermem, nsize);
+		buffer = _realloc(cfg, cfg->buffermem, nsize);
 		if (buffer == NULL) {
 			SETERROR(ECNFG_EOOM);
 			return;
 		}
 		cfg->buffersz = nsize;
-		
+
 		cfg->buffer    = buffer + (cfg->buffer    - cfg->buffermem);
 		cfg->bufferbgn = buffer + (cfg->bufferbgn - cfg->buffermem);
 		cfg->bufferend = buffer + nsize;
-		
+
 		cfg->buffermem = buffer;
 	}
-	
+
 	buffer = (cfg->buffer = cfg->buffer + j);
 	switch (j) {
 		case 4: *--buffer = ((c | 0x80) & 0xbf); c >>= 6;  /* fallthrough */
@@ -194,7 +236,7 @@ CTB_INLINE uintxx
 ecnfg_fetchunicode(struct TECnfg* cfg)
 {
 	uintxx c;
-	
+
 	c = ecnfg_fetchchr(cfg);
 	if (c < 0x80 || c == (uintxx) EOF) {
 		return c;
@@ -203,10 +245,10 @@ ecnfg_fetchunicode(struct TECnfg* cfg)
 		uintxx c1;
 		uintxx c2;
 		uintxx c3;
-		
+
 		if ((c & 0xe0) == 0xc0) {
 			c1 = ecnfg_fetchchr(cfg);
-			
+
 			if (!ISCONTINUATIONBYTE(c1))
 				return INVALIDCHR;
 			c = c << 6; c += c1;
@@ -219,7 +261,7 @@ ecnfg_fetchunicode(struct TECnfg* cfg)
 		if ((c & 0xf0) == 0xe0) {
 			c1 = ecnfg_fetchchr(cfg);
 			c2 = ecnfg_fetchchr(cfg);
-			
+
 			if (!ISCONTINUATIONBYTE(c1) ||
 			    !ISCONTINUATIONBYTE(c2))
 				return INVALIDCHR;
@@ -235,7 +277,7 @@ ecnfg_fetchunicode(struct TECnfg* cfg)
 			c1 = ecnfg_fetchchr(cfg);
 			c2 = ecnfg_fetchchr(cfg);
 			c3 = ecnfg_fetchchr(cfg);
-			
+
 			if (!ISCONTINUATIONBYTE(c1) ||
 			    !ISCONTINUATIONBYTE(c2) ||
 			    !ISCONTINUATIONBYTE(c3))
@@ -253,14 +295,14 @@ ecnfg_fetchunicode(struct TECnfg* cfg)
 }
 
 CTB_INLINE uintxx
-ecnfg_readhexa(struct TECnfg* cfg)
+ecnfg_readhex(struct TECnfg* cfg)
 {
 	uintxx c;
 	uintxx b;
 	uintxx n;
 	uintxx i;
 	uintxx overflow;
-	
+
 	n = overflow = i = 0;
 	for (c = cfg->lastchr; ;c = ecnfg_fetchchr(cfg)) {
 		if (ctb_isdigit(c)) {
@@ -275,7 +317,7 @@ ecnfg_readhexa(struct TECnfg* cfg)
 				break;
 			}
 		}
-		
+
 		if (overflow || n > 0xfffffffUL) {
 			overflow = 1;
 			continue;
@@ -283,7 +325,7 @@ ecnfg_readhexa(struct TECnfg* cfg)
 		n = (n << 4) + b;
 		i++;
 	}
-	
+
 	if (i == 0 || overflow) {
 		return UINT_MAX;
 	}
@@ -298,7 +340,7 @@ enum {
 	ECNFG_TKNSTR     = ECNFG_TYPESTR,  /* 1 */
 	ECNFG_TKNINT     = ECNFG_TYPEINT,  /* 2 */
 	ECNFG_TKNFLT     = ECNFG_TYPEFLT,  /* 3 */
-	
+
 	ECNFG_TKNIDENT   = 4,
 	ECNFG_TKNCOLON   = 5,
 	ECNFG_TKNLBRACE  = 6,
@@ -311,19 +353,19 @@ ecnfg_parsestring(struct TECnfg* cfg)
 {
 	uintxx j;
 	uintxx c;
-	
+
 	j = 0;
 	while ((c = ecnfg_fetchunicode(cfg)) != 0x22) {
 		if (c == 0x0a || c == (uintxx) EOF) {
 			break;
 		}
-		
+
 		/* unicode characters are only allowed in strings */
 		if (c == INVALIDCHR || (ctb_isascii(c) && ctb_iscntrl(c))) {
 			SETERROR(ECNFG_EINVALIDCHR);
 			return ECNFG_TKNINVALID;
 		}
-		
+
 		if (j == 0x00) {
 			if (c == 0x24) {
 				j = 1;
@@ -336,22 +378,22 @@ ecnfg_parsestring(struct TECnfg* cfg)
 			ecnfg_appendchr(cfg, 0x24);
 			continue;
 		}
-		
+
 		/* escape sequence */
 		cfg->lastchr = ecnfg_fetchchr(cfg);
 		for (;;) {
 			while (cfg->lastchr == 0x20)
 				cfg->lastchr = ecnfg_fetchchr(cfg);
-			
+
 			if (cfg->lastchr == 0x29)
 				break;
-			
-			c = ecnfg_readhexa(cfg);
+
+			c = ecnfg_readhex(cfg);
 			if (c == UINT_MAX) {
 				SETERROR(ECNFG_EINVALIDESCAPESQ);
 				return ECNFG_TKNINVALID;
 			}
-			
+
 			if (c == 0 || c > 0x10ffffUL || (c >= 0xd800 && c <= 0xdfff)) {
 				SETERROR(ECNFG_EINVALIDCHR);
 				return ECNFG_TKNINVALID;
@@ -360,12 +402,12 @@ ecnfg_parsestring(struct TECnfg* cfg)
 		}
 		j = 0;
 	}
-	
+
 	if (cfg->error) {
 		return ECNFG_TKNINVALID;
 	}
 	ecnfg_appendchr(cfg, 0);
-	
+
 	if (c != 0x22) {
 		SETERROR(ECNFG_EUNTERMINATEDSTR);
 		return ECNFG_TKNINVALID;
@@ -383,7 +425,7 @@ ecnfg_guesttype(struct TECnfg* cfg)
 	uintxx expsign;
 	uintxx e, n, c;
 	uintxx lchr;
-	
+
 	c = 0;
 	n = 0;
 	for (lchr = cfg->lastchr; lchr; lchr = ecnfg_fetchchr(cfg)) {
@@ -393,26 +435,26 @@ ecnfg_guesttype(struct TECnfg* cfg)
 	}
 	if (c)
 		ecnfg_appendchr(cfg, c);
-	
+
 	exponent = 0;
 	expsign  = 0;
-	
+
 	ishex = 0;
 	isint = 1;
 	if (lchr == 0x30) {
 		ecnfg_appendchr(cfg, lchr);
 		lchr = ecnfg_fetchchr(cfg);
 		n++;
-		
+
 		if ((lchr | 0x20) == 0x78) {
 			ecnfg_appendchr(cfg, lchr);
 			lchr = ecnfg_fetchchr(cfg);
-			
+
 			ishex = 1;
 			n = 0;
 		}
 	}
-	
+
 	for (e = 0; lchr; lchr = ecnfg_fetchchr(cfg)) {
 		if (ctb_isdigit(lchr)) {
 			if (exponent)
@@ -453,7 +495,7 @@ ecnfg_guesttype(struct TECnfg* cfg)
 		}
 		ecnfg_appendchr(cfg, lchr);
 	}
-	
+
 	if (n) {
 		if (isint) {
 			if (exponent == 0 || e == 0) {
@@ -477,11 +519,11 @@ ecnfg_parsenumber(struct TECnfg* cfg)
 {
 	uintxx ntype;
 	uintxx lchr;
-	
+
 	ntype = ecnfg_guesttype(cfg);
 	if (cfg->error)
 		return ECNFG_TKNINVALID;
-	
+
 	if (ntype == ECNFG_TKNFLT || ntype == ECNFG_TKNINT) {
 		lchr = cfg->lastchr;
 		if (lchr == 0x7b ||
@@ -490,7 +532,7 @@ ecnfg_parsenumber(struct TECnfg* cfg)
 		    lchr == 0x2b || lchr == (uintxx) EOF || ctb_isspace(lchr))
 			return ntype;
 	}
-	
+
 	SETERROR(ECNFG_EINVALIDTKN);
 	return ECNFG_TKNINVALID;
 }
@@ -500,12 +542,12 @@ ecnfg_nexttoken(struct TECnfg* cfg)
 {
 	uintxx r;
 	uintxx lchr;
-	
+
 	cfg->buffer    = cfg->bufferbgn;
 	cfg->buffer[0] = 0x00;
-	
+
 	lchr = cfg->lastchr;
-	
+
 L_LOOP:
 	while (ctb_isspace(lchr)) {
 		if (lchr == 0x0a) {
@@ -515,20 +557,20 @@ L_LOOP:
 		}
 		lchr = ecnfg_fetchchr(cfg);
 	}
-	
+
 	switch (lchr) {
 		case 0x7b:
 			cfg->lastchr = ecnfg_fetchchr(cfg);
 			return ECNFG_TKNLBRACE;
-			
+
 		case 0x7d:
 			cfg->lastchr = ecnfg_fetchchr(cfg);
 			return ECNFG_TKNRBRACE;
-			
+
 		case 0x3a:
 			cfg->lastchr = ecnfg_fetchchr(cfg);
 			return ECNFG_TKNCOLON;
-		
+
 		case 0x23:
 			while ((lchr = ecnfg_fetchchr(cfg)) != 0x0a) {
 				if (lchr == 0) {
@@ -547,25 +589,25 @@ L_LOOP:
 			lchr = ecnfg_fetchchr(cfg);
 			cfg->line++;
 			goto L_LOOP;
-		
+
 		case EOF:
 			if (cfg->error) {
 				return ECNFG_TKNINVALID;
 			}
 			return ECNFG_TKNEOF;
 	}
-	
+
 	if (ctb_iscntrl(lchr) || !ctb_isascii(lchr)) {
 		if (cfg->error == 0) {
 			SETERROR(ECNFG_EINVALIDCHR);
 		}
 		return ECNFG_TKNINVALID;
 	}
-	
+
 	if (ctb_isalpha(lchr)) {
 		do {
 			ecnfg_appendchr(cfg, lchr);
-			
+
 			lchr = ecnfg_fetchchr(cfg);
 			if (lchr == 0x2d ||
 			    lchr == 0x2b || ctb_isalnum(lchr)) {
@@ -573,29 +615,29 @@ L_LOOP:
 			}
 			break;
 		} while (1);
-		
+
 		if (cfg->error) {
 			return ECNFG_TKNINVALID;
 		}
 		ecnfg_appendchr(cfg, 0);
-		
+
 		cfg->lastchr = lchr;
 		return ECNFG_TKNIDENT;
 	}
-	
+
 	if (lchr == 0x2e ||
 	    lchr == 0x2d ||
 	    lchr == 0x2b || ctb_isdigit(lchr)) {
 		cfg->lastchr = lchr;
 		return ecnfg_parsenumber(cfg);
 	}
-	
+
 	if (lchr == 0x22) {
 		r = ecnfg_parsestring(cfg);
 		cfg->lastchr = ecnfg_fetchchr(cfg);
 		return r;
 	}
-	
+
 	while (!ctb_isspace(lchr))
 		lchr = ecnfg_fetchchr(cfg);
 	SETERROR(ECNFG_EINVALIDTKN);
@@ -611,12 +653,12 @@ ecnfg_readnextstr(struct TECnfg* cfg)
 {
 	uintxx r;
 	uintxx lchr;
-	
+
 	if (cfg->buffer - cfg->bufferbgn)
 		cfg->buffer--;
-	
+
 	lchr = cfg->lastchr;
-	
+
 L_LOOP:
 	while (ctb_isspace(lchr)) {
 		if (lchr == 0x0a) {
@@ -626,7 +668,7 @@ L_LOOP:
 		}
 		lchr = ecnfg_fetchchr(cfg);
 	}
-	
+
 	switch (lchr) {
 		case 0x23:
 			while ((lchr = ecnfg_fetchchr(cfg)) != 0x0a)
@@ -639,7 +681,7 @@ L_LOOP:
 			cfg->lastchr = lchr;
 			return 0;
 	}
-	
+
 	if (ctb_isalpha(lchr)) {
 		cfg->lastchr = lchr;
 		return 0;
@@ -649,7 +691,7 @@ L_LOOP:
 	    lchr == 0x2b || ctb_isdigit(lchr)) {
 		return 0;
 	}
-	
+
 	if (lchr == 0x22) {
 		r = ecnfg_parsestring(cfg);
 		if (r == ECNFG_TKNINVALID) {
@@ -659,7 +701,7 @@ L_LOOP:
 		cfg->lastchr = ecnfg_fetchchr(cfg);
 		return 1;
 	}
-	
+
 	cfg->lastchr = lchr;
 	return 0;
 }
@@ -671,29 +713,29 @@ eECNFGType
 ecnfg_nextrvaltype(TECnfg* cfg)
 {
 	uintxx rtype;
-	ASSERT(cfg);
-	
+	CTB_ASSERT(cfg);
+
 	rtype = ECNFG_TYPENONE;
 	if (cfg->state != ECNFG_PARSING) {
 		return rtype;
 	}
-	
+
 	switch (cfg->event) {
 		case ECNFG_EVNTDIRECTIVE:
 			if (cfg->rvcnt) {
 				NEXTTOKEN(cfg);
 			}
-			
+
 			if (ISRVALUE(cfg->token))
 				rtype = cfg->token;
 			cfg->rvcnt = 1;
 			break;
-		
+
 		case ECNFG_EVNTENTRY:
 			if (cfg->rvcnt) {
 				break;
 			}
-			
+
 			rtype = cfg->token;
 			cfg->rvcnt = 1;
 			break;
@@ -730,8 +772,8 @@ eECNFGEvent
 ecnfg_nextevnttype(TECnfg* cfg)
 {
 	uintxx colon;
-	ASSERT(cfg);
-	
+	CTB_ASSERT(cfg);
+
 	if (cfg->state != ECNFG_PARSING) {
 		if (cfg->state == ECNFG_READY) {
 			cfg->state = ECNFG_PARSING;
@@ -741,17 +783,17 @@ ecnfg_nextevnttype(TECnfg* cfg)
 		}
 	}
 	restorebuffer(cfg);
-	
+
 	colon = 0;
 	cfg->rvcnt = 0;
-	
+
 	switch (cfg->token) {
 		case ECNFG_TKNIDENT:
 			cfg->bufferbgn = cfg->buffer;
-			
+
 			NEXTTOKEN(cfg);
 			goto L_HASIDENT;
-		
+
 		case ECNFG_TKNRBRACE:
 			cfg->sncnt--;
 			if (cfg->sncnt < 0) {
@@ -759,17 +801,17 @@ ecnfg_nextevnttype(TECnfg* cfg)
 				goto L_ERROR;
 			}
 			DISPATCH(ECNFG_EVNTSECTIONEND);
-		
+
 		case ECNFG_TKNLBRACE:
 		case ECNFG_TKNSTR:
 		case ECNFG_TKNINT:
 		case ECNFG_TKNFLT:
 		case ECNFG_TKNCOLON:
 			SETERROR(ECNFG_EUNSPECTEDTKN);
-		
+
 		case ECNFG_TKNINVALID:
 			goto L_ERROR;
-		
+
 		case ECNFG_TKNEOF:
 			if (cfg->sncnt) {
 				SETERROR(ECNFG_EUNPAIREDSECTION);
@@ -778,15 +820,15 @@ ecnfg_nextevnttype(TECnfg* cfg)
 			cfg->state = ECNFG_DONE;
 			DISPATCH(ECNFG_EVNTNONE);
 	}
-	
+
 L_HASIDENT:
 	switch (cfg->token) {
 		case ECNFG_TKNCOLON:
 			colon = 1;
-			
+
 			NEXTTOKEN(cfg);
 			goto L_HASIDENT;
-		
+
 		case ECNFG_TKNLBRACE:
 			cfg->sncnt++;
 			if (cfg->sncnt == INTXX_MAX) {
@@ -794,7 +836,7 @@ L_HASIDENT:
 				goto L_ERROR;
 			}
 			DISPATCH(ECNFG_EVNTSECTIONBGN);
-		
+
 		case ECNFG_TKNSTR:
 			if (colon) {
 				while (ecnfg_readnextstr(cfg))
@@ -818,20 +860,20 @@ L_HASIDENT:
 				goto L_ERROR;
 			}
 			DISPATCH(ECNFG_EVNTDIRECTIVE);
-		
+
 		case ECNFG_TKNIDENT:
 			if (colon) {
 				SETERROR(ECNFG_EUNSPECTEDTKN);
 				goto L_ERROR;
 			}
-			
+
 			/* we have 2 identifiers in the buffer now */
 			DISPATCH(ECNFG_EVNTDIRECTIVE);
-		
+
 		case ECNFG_TKNINVALID:
 			goto L_ERROR;
 	}
-	
+
 L_ERROR:
 	cfg->state = ECNFG_ABORTED;
 	DISPATCH(ECNFG_EVNTNONE);
@@ -845,8 +887,8 @@ L_ERROR:
 const char*
 ecnfg_getlval(TECnfg* cfg)
 {
-	ASSERT(cfg);
-	
+	CTB_ASSERT(cfg);
+
 	if (cfg->state != ECNFG_PARSING) {
 		return NULL;
 	}
@@ -862,8 +904,8 @@ ecnfg_getlval(TECnfg* cfg)
 const char*
 ecnfg_getrval(TECnfg* cfg)
 {
-	ASSERT(cfg);
-	
+	CTB_ASSERT(cfg);
+
 	if (cfg->state != ECNFG_PARSING) {
 		return NULL;
 	}

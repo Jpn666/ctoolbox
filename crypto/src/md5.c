@@ -15,6 +15,7 @@
  */
 
 #include "../md5.h"
+#include "../../cmemory.h"
 
 
 #define ROTL(X, N) (((X) << (N)) | ((X) >> (32 - (N))))
@@ -168,7 +169,7 @@ md5_update(TMD5ctx* context, const uint8* data, uintxx size)
 {
 	uintxx rmnng;
 	uintxx i;
-	ASSERT(context && data);
+	CTB_ASSERT(context && data);
 
 	if (context->rmnng) {
 		rmnng = MD5_BLOCKSZ - context->rmnng;
@@ -213,7 +214,7 @@ md5_final(TMD5ctx* context, uint32 digest[4])
 	uintxx tmp;
 	uint32 nlo;
 	uint32 nhi;
-	ASSERT(context && digest);
+	CTB_ASSERT(context && digest);
 
 	context->rdata[length = context->rmnng] = 0x80;
 	length++;

@@ -14,13 +14,13 @@
 ; limitations under the License.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-format ELF64
+format MS64 COFF
 
 
-section '.text' executable align 16
+section '.code' code executable align 16
 
 
-public crc32_update
+public crc32_updateASM
 ; Parameters:
 ; crc32, buffer (pointer), size
 
@@ -65,7 +65,7 @@ initjump:
 	pop			rcx
 
 
-crc32_update:
+crc32_updateASM:
 	jmp qword[jumptable.update]
 
 
@@ -95,8 +95,14 @@ poly: dq 0x01db710641, 0x01f7011641
 mask: dd 0xffffffff, 0x00000000, 0xffffffff, 0x00000000
 
 
-; rdi=crc32, rsi=buffer, rdx=size
+; rcx=crc32, rdx=buffer, r8=size
 sse4_crc32update:
+	push		rdi
+	push		rsi
+	mov 		rdi, rcx
+	mov 		rsi, rdx
+	mov 		rdx, r8
+
 	cmp			rdx, 128 + 16
 	jnb .unrolled
 
@@ -121,12 +127,21 @@ sse4_crc32update:
 
 .done1:
 	mov			eax, edi
+	pop			rsi
+	pop			rdi
 	ret
 
 .unrolled:
 	; end limit
 	add			rdx, rsi
 	lea			 r8, [table0]
+
+	; preserve xmm6, xmm7 and xmm8
+	sub			rsp, 38h
+	movdqa		[rsp+0x00], xmm6
+	movdqa		[rsp+0x10], xmm7
+	movdqa		[rsp+0x20], xmm8
+
 .loop2:
 	cmp			rsi, rdx
 	je .done1
@@ -262,6 +277,12 @@ sse4_crc32update:
 	pclmulqdq	xmm2, xmm0, 0x00
 	pxor		xmm1, xmm2
 
+	; restore xmm registers
+	movdqa		xmm6, [rsp+0x00]
+	movdqa		xmm7, [rsp+0x10]
+	movdqa		xmm8, [rsp+0x20]
+	add			rsp, 38h
+
 	test		rdx, rdx
 	jz .done
 
@@ -270,6 +291,8 @@ sse4_crc32update:
 	jmp .loop1
 
 .done:
+	pop			rsi
+	pop			rdi
 	; return the crc32
 	pextrd		eax, xmm1, 1
 	ret
@@ -281,8 +304,14 @@ sse4_crc32update:
 ; Based on: http://create.stephan-brumme.com/crc32/
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; rdi=crc32, rsi=buffer, rdx=size
+; rcx=crc32, rdx=buffer, r8=size
 crc32update:
+	push		rdi
+	push		rsi
+	mov 		rdi, rcx
+	mov 		rsi, rdx
+	mov 		rdx, r8
+
 	cmp			rdx, 128 + 8
 	jnb .unrolled
 
@@ -301,12 +330,14 @@ crc32update:
 	mov			eax, dword[r8+rax*4]
 
 	shr			edi, 0x08
-	xor			edi, rax
+	xor			edi, eax
 	inc			rsi
 	jmp .loop1
 
 .done1:
-	mov			rax, rdi
+	mov			eax, edi
+	pop			rsi
+	pop			rdi
 	ret
 
 .unrolled:
@@ -319,7 +350,7 @@ crc32update:
 
 	mov			r9d, esi
 	mov			eax, edi
-	and			r9d, 0x07  ; check if aligned
+	and			r9d, 0x07
 	jz .done2
 
 	movzx		ecx, byte[rsi]
@@ -340,6 +371,7 @@ crc32update:
 	shr			 r9, 6
 	push		rbx
 	push		rdx
+
 	mov			eax, edi
 
 .loop3:
@@ -430,7 +462,9 @@ crc32update:
 	jmp .loop4
 
 .done:
-	mov			rax, rdi
+	mov			eax, edi
+	pop			rsi
+	pop			rdi
 	ret
 
 

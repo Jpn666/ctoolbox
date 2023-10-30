@@ -1,12 +1,12 @@
 /*
  * Copyright (C) 2022, jpn
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -63,7 +63,7 @@ void sha256_final(TSHA256ctx*, uint32 digest[8]);
 CTB_INLINE void
 sha256_init(TSHA256ctx* context)
 {
-	ASSERT(context);
+	CTB_ASSERT(context);
 	context->state[0] = 0x6a09e667UL;
 	context->state[1] = 0xbb67ae85UL;
 	context->state[2] = 0x3c6ef372UL;
@@ -81,10 +81,10 @@ CTB_INLINE void
 sha256_getdigest(uint32 digest[8], const uint8* data, uintxx size)
 {
 	struct TSHA256ctx sha256;
-	ASSERT(data && digest);
-	
+	CTB_ASSERT(data && digest);
+
 	sha256_init(&sha256);
-	
+
 	sha256_update(&sha256, data, size);
 	sha256_final(&sha256, digest);
 }

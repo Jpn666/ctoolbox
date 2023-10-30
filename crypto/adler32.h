@@ -25,27 +25,42 @@
 #include "../ctoolbox.h"
 
 
-#define ADLER32_INIT(A) ((A) = 1UL)
+#define ADLER32_INIT(A) ((A) = 1ul)
 
 
 /*
  * */
-CTB_INLINE uint32 adler32_getdigest(const uint8* data, uintxx size);
+CTB_INLINE uint32 adler32_update(uint32 adler, const uint8* data, uintxx size);
 
 /*
  * */
-uint32 adler32_update(uint32 adler, const uint8* data, uintxx size);
+uint32 adler32_slideby8(uint32 adler, const uint8* data, uintxx size);
 
 
 /*
  * Inlines */
 
+#if defined(ADLER32_CFG_EXTERNALASM)
+
+uint32 adler32_updateASM(uint32, const uint8*, uintxx);
+
 CTB_INLINE uint32
-adler32_getdigest(const uint8* data, uintxx size)
+adler32_update(uint32 adler, const uint8* data, uintxx size)
 {
-	ASSERT(data && size);
-	return adler32_update(1L, data, size);
+	CTB_ASSERT(data);
+	return adler32_updateASM(adler, data, size);
 }
+
+#else
+
+CTB_INLINE uint32
+adler32_update(uint32 adler, const uint8* data, uintxx size)
+{
+	CTB_ASSERT(data);
+	return adler32_slideby8(adler, data, size);
+}
+
+#endif
 
 #endif
 

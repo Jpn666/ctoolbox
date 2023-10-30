@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022, jpn
+ * Copyright (C) 2023, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@
  *
  */
 
-#include "../ctoolbox.h"
+#include "ctoolbox.h"
 
 
 #define ECNFG_MINBFFRSZ 0x1000UL
@@ -192,6 +192,9 @@ struct TECnfg {
 	/* input callback parameter */
 	void* payload;
 
+	/* allocator */
+	TAllocator* allctr;
+
 	/* lexer */
 	uintxx lastchr;
 	uintxx line;
@@ -217,7 +220,7 @@ typedef struct TECnfg TECnfg;
 
 /*
  * Creates a new TECnfg struct. */
-TECnfg* ecnfg_create(void);
+TECnfg* ecnfg_create(TAllocator* allctr);
 
 /*
  * ... */
@@ -262,7 +265,7 @@ const char* ecnfg_getrval(TECnfg*);
 CTB_INLINE void
 ecnfg_setinputfn(TECnfg* cfg, TECInputFn inputfn, void* payload)
 {
-	ASSERT(cfg);
+	CTB_ASSERT(cfg);
 
 	cfg->inputfn = inputfn;
 	cfg->payload = payload;
@@ -271,7 +274,7 @@ ecnfg_setinputfn(TECnfg* cfg, TECInputFn inputfn, void* payload)
 CTB_INLINE eECNFGState
 ecnfg_getstate(TECnfg* cfg, uintxx* error, uintxx* lline)
 {
-	ASSERT(cfg);
+	CTB_ASSERT(cfg);
 
 	if (error)
 		error[0] = cfg->error;
@@ -283,7 +286,7 @@ ecnfg_getstate(TECnfg* cfg, uintxx* error, uintxx* lline)
 CTB_INLINE void
 ecnfg_abort(TECnfg* cfg)
 {
-	ASSERT(cfg);
+	CTB_ASSERT(cfg);
 
 	cfg->state = ECNFG_ABORTED;
 }
