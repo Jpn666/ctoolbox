@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, jpn
+ * Copyright (C) 2023, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,6 @@
 /* */
 struct TIterator {
 	uintxx index1;
-	uintxx index2;
-	uintxx position;
-	uintxx flags;
-	void*  next;
 };
 
 typedef struct TIterator TIterator;
@@ -51,10 +47,6 @@ iterator_reset(TIterator* iterator)
 	CTB_ASSERT(iterator);
 
 	iterator->index1 = 0;
-	iterator->index2 = 2;
-	iterator->position = 0;
-	iterator->flags    = 0;
-	iterator->next = NULL;
 }
 
 

@@ -18,7 +18,7 @@
 #define f2ec55ae_87d4_4a1c_bb78_808b27454f0c
 
 /*
- * cmemory.h
+ * ctbmemory.h
  * Memory management routines.
  */
 

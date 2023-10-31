@@ -15,7 +15,7 @@
  */
 
 #include "../dynarray.h"
-#include "../cmemory.h"
+#include "../ctbmemory.h"
 
 
 CTB_INLINE void*

@@ -16,7 +16,7 @@
 
 #include "../ctype.h"
 #include "../ecnfg.h"
-#include "../cmemory.h"
+#include "../ctbmemory.h"
 
 
 #define ECNFG_INPUTBFFRSZ 0x1000UL
