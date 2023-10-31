@@ -1,4 +1,4 @@
-project('ctoolbox', 'c', default_options: ['c_std=c99', 'buildtype=release', 'warning_level=3'], version: run_command('python', 'tools/version.py', check: true).stdout().strip())
+project('ctoolbox', 'c', default_options: ['c_std=c99', 'buildtype=release', 'warning_level=3'], version: run_command('python', join_paths(meson.current_source_dir(), 'tools/version.py'), check: true).stdout().strip())
 
 # major, minor and path
 versionarray = [0, 0, 0]
@@ -137,7 +137,7 @@ externalobjs   = []
 
 
 python = find_program('python3')
-script = join_paths(meson.source_root(), 'tools/listfiles.py')
+script = join_paths(meson.current_source_dir(), 'tools/listfiles.py')
 newline = '''
 '''
 
