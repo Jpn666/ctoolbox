@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include "../dynarray.h"
-#include "../ctbmemory.h"
+#include <ctoolbox/dynarray.h>
+#include <ctoolbox/memory.h>
 
 
 CTB_INLINE void*

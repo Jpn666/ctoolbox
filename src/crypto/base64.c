@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-#include "../base64.h"
+#include <ctoolbox/crypto/base64.h>
 
 
 /* stream mode */

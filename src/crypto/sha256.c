@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include "../sha256.h"
-#include "../../ctbmemory.h"
+#include <ctoolbox/crypto/sha256.h>
+#include <ctoolbox/memory.h>
 
 
 #define ROTR(X, N) (((X) >> (N)) | ((X) << (32 - (N))))

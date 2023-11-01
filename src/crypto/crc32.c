@@ -17,7 +17,7 @@
 /* Based on:
  * create.stephan-brumme.com/crc32/ */
 
-#include "../crc32.h"
+#include <ctoolbox/crypto/crc32.h>
 
 
 #if defined(AUTOINCLUDE_1)

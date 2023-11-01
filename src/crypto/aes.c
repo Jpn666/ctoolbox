@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "../aes.h"
+#include <ctoolbox/crypto/aes.h>
 
 
 static const uint8 aes_ssbox[] = {

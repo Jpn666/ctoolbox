@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-#include "../int2str.h"
+#include <ctoolbox/int2str.h>
 
 
 static const uint8 radix100[] = {

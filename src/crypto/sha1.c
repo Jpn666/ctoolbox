@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include "../sha1.h"
-#include "../../ctbmemory.h"
+#include <ctoolbox/crypto/sha1.h>
+#include <ctoolbox/memory.h>
 
 
 #define ROTL(X, N) (((X) << (N)) | ((X) >> (32 - (N))))

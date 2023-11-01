@@ -15,7 +15,7 @@
  */
 
 
-#include "../tiger.h"
+#include <ctoolbox/crypto/tiger.h>
 
 
 #if defined(AUTOINCLUDE_1)

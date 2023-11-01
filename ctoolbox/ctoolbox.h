@@ -23,7 +23,7 @@
  */
 
 
-#include <ctbconfig.h>
+#include <ctoolboxconfig.h>
 
 #if !defined(__has_builtin)
 	#define __has_builtin(x) 0

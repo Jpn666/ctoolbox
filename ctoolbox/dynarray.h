@@ -24,7 +24,7 @@
 
 #include "ctoolbox.h"
 #include "iterator.h"
-#include "ctbmemory.h"
+#include "memory.h"
 
 
 #define DYNARRAY_MINSIZE  8

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include "../md5.h"
-#include "../../ctbmemory.h"
+#include <ctoolbox/crypto/md5.h>
+#include <ctoolbox/memory.h>
 
 
 #define ROTL(X, N) (((X) << (N)) | ((X) >> (32 - (N))))

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "../ctype.h"
+#include <ctoolbox/ctype.h>
 
 
 /*

@@ -18,7 +18,7 @@
 #define f6fc5398_0274_42a2_9186_20cc03b729d0
 
 /*
- * ctbconfig.h
+ * ctoolboxbconfig.h
  * Configuration flags.
  */
 
@@ -65,14 +65,16 @@
 #mesondefine CTB_CFG_PLATFORM_BEOS
 
 
-/* */
-#define CTB_VERSION_MAJOR @version_major@
-#define CTB_VERSION_MINOR @version_minor@
+/* ***************************************************************************
+ * Version number
+ *************************************************************************** */
 
+#define CTOOLBOX_VERSION_MAJOR @version_major@
+#define CTOOLBOX_VERSION_MINOR @version_minor@
 /* revision */
-#define CTB_VERSION_RPATH @version_rpath@
+#define CTOOLBOX_VERSION_RPATH @version_rpath@
 
-#define CTB_VERSION_STRING "@version@"
 
+#define CTOOLBOX_VERSION_STRING "@version@"
 
 #endif

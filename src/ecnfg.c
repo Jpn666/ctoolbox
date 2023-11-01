@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "../ctype.h"
-#include "../ecnfg.h"
-#include "../ctbmemory.h"
+#include <ctoolbox/ctype.h>
+#include <ctoolbox/ecnfg.h>
+#include <ctoolbox/memory.h>
 
 
 #define ECNFG_INPUTBFFRSZ 0x1000UL

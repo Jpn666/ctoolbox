@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "../adler32.h"
+#include <ctoolbox/crypto/adler32.h>
 
 
 /* largest prime smaller than 65536 */

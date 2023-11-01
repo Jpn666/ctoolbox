@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "../ctbmemory.h"
+#include <ctoolbox/memory.h>
 
 
 void

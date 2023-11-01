@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include "../str2flt.h"
-#include "../ctype.h"
+#include <ctoolbox/str2flt.h>
+#include <ctoolbox/ctype.h>
 
 
 #if defined(AUTOINCLUDE_1)

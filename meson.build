@@ -129,18 +129,15 @@ if ckdintfailback
   message('checked int not supported, using fallback')
 endif
 
-configure_file(input: 'ctbconfig.template', output: 'ctbconfig.h', configuration: conf)
-
-
-projectsources = []
-externalobjs   = []
-
 
 python = find_program('python3')
 script = join_paths(meson.current_source_dir(), 'tools/listfiles.py')
 newline = '''
 '''
 
+
+projectsources = []
+externalobjs   = []
 
 base = 'src'
 r = run_command(python, script, base, '.c', check: true).stdout()
@@ -150,7 +147,7 @@ foreach file: r.split(newline)
   endif
 endforeach
 
-base = 'crypto/src'
+base = 'src/crypto'
 r = run_command(python, script, base, '.c', check: true).stdout()
 foreach file: r.split(newline)
   if not (file == '')
@@ -162,7 +159,7 @@ endforeach
 if target == 'x86_64'
   supported = false
 
-  path = 'crypto/src/asm/'
+  path = 'src/crypto/asm'
   if isunix
     path = path / 'unix'
     supported = true
@@ -181,14 +178,45 @@ if target == 'x86_64'
 endif
 
 
+headerfiles = []
+
+base = 'ctoolbox'
+r = run_command(python, script, base, '.h', check: true).stdout()
+foreach file: r.split(newline)
+  if not (file == '')
+    headerfiles += [file]
+  endif
+endforeach
+
+base = 'ctoolbox/private'
+r = run_command(python, script, base, '.h', check: true).stdout()
+foreach file: r.split(newline)
+  if not (file == '')
+    headerfiles += [file]
+  endif
+endforeach
+
+base = 'ctoolbox/crypto'
+r = run_command(python, script, base, '.h', check: true).stdout()
+foreach file: r.split(newline)
+  if not (file == '')
+    headerfiles += [file]
+  endif
+endforeach
+
+configfile = configure_file(input: 'ctoolboxconfig.template', output: 'ctoolboxconfig.h', configuration: conf)
+headerfiles += [configfile]
+
+
 largs = []
 if cc.get_linker_id() == 'ld.bfd'
   largs += ['-z', 'noexecstack']
 endif
 
 
-static_build = static_library('ctoolbox', sources: projectsources, objects: externalobjs, pic: true, install: true, include_directories: include_directories('.'))
-
+static_build = static_library('ctoolbox', sources: projectsources, objects: externalobjs, pic: true, install: true)
 lib = declare_dependency(
   link_with: static_build, include_directories: include_directories('.'), link_args: largs
 )
+
+install_headers(headerfiles, preserve_path: true)

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "../str2int.h"
-#include "../ctype.h"
-#include "../ckdint.h"
+#include <ctoolbox/str2int.h>
+#include <ctoolbox/ctype.h>
+#include <ctoolbox/ckdint.h>
 
 
 static const uint8 hexamap[] = {
