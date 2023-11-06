@@ -22,11 +22,7 @@
  * ...
  */
 
-#if defined(CTB_CFG_BUILD)
-	#include <ctoolboxconfig.h>
-#else
-	#include <ctoolbox/ctoolboxconfig.h>
-#endif
+#include <ctoolboxconfig.h>
 
 
 #if !defined(__has_builtin)

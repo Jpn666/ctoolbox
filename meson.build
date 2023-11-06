@@ -205,14 +205,13 @@ foreach file: r.split(newline)
 endforeach
 
 configfile = configure_file(input: 'ctoolboxconfig.h.in', output: 'ctoolboxconfig.h', configuration: conf)
+headerfiles += [configfile]
 
 
 largs = []
 if cc.get_linker_id() == 'ld.bfd'
   largs += ['-z', 'noexecstack']
 endif
-
-add_project_arguments('-DCTB_CFG_BUILD', language: 'c')
 
 
 static_build = static_library('ctoolbox', sources: projectsources, objects: externalobjs, pic: true, install: true)
@@ -221,4 +220,3 @@ lib = declare_dependency(
 )
 
 install_headers(headerfiles, preserve_path: true)
-install_headers(configfile, subdir: 'ctoolbox')
