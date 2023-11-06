@@ -172,8 +172,8 @@ if target == 'x86_64'
   if supported
     externalobjs += [path / 'adler32-' + target + '.o']
     externalobjs += [path /   'crc32-' + target + '.o']
-    add_project_arguments('-DADLER32_CFG_EXTERNALASM', language: 'c')
-    add_project_arguments(  '-DCRC32_CFG_EXTERNALASM', language: 'c')
+    conf.set('ADLER32_CFG_EXTERNALASM', true)
+    conf.set('CRC32_CFG_EXTERNALASM', true)
   endif
 endif
 
