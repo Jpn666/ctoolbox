@@ -63,10 +63,10 @@ todigits(uint32 number, uint8* buffer, uint32 total[1])
 	}
 	else {
 		p -= 1;
-		p[0] = 0x30 + number;
+		p[0] = (uint8) (0x30 + number);
 	}
 
-	total[0] = 9 - (p - buffer);
+	total[0] = (uint32) (9 - (p - buffer));
 	return p;
 }
 
@@ -155,7 +155,7 @@ u64tostr(uint64 number, uint8 r[24])
 
 	s = z.buffer + 11;
 	if (number < 1000000000) {
-		s = todigits(number, s, total);
+		s = todigits((uint32) number, s, total);
 	}
 	else {
 		uint64 a;

@@ -646,11 +646,11 @@ L1:
 					n = n * 10 + (*src++ - 0x30);
 
 					c = *src++ - 0x30;
-					if (ckdu64_mul(n, 10, v))
+					if (ckdu32_mul(n, 10, v))
 						goto L2;
 					n = v[0];
 
-					if (ckdu64_add(n, c, v))
+					if (ckdu32_add(n, c, v))
 						goto L2;
 					n = v[0];
 				}
