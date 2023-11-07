@@ -1,4 +1,4 @@
-project('ctoolbox', 'c', default_options: ['c_std=c99', 'buildtype=release', 'warning_level=3'], version: run_command('python', join_paths(meson.current_source_dir(), 'tools/version.py'), check: true).stdout().strip())
+project('ctoolbox', 'c', default_options: ['c_std=c99', 'buildtype=release', 'warning_level=3'], version: run_command('python', join_paths(meson.current_source_dir(), 'tools/version.py'), check: true).stdout().strip(), meson_version: '>=1.1.0')
 
 # major, minor and path
 versionarray = [0, 0, 0]
