@@ -210,7 +210,9 @@ headerfiles += [configfile]
 
 largs = []
 if cc.get_linker_id() == 'ld.bfd'
-  largs += ['-z', 'noexecstack']
+  if target_machine.system() == 'unix'
+    largs += ['-z', 'noexecstack']
+  endif
 endif
 
 
