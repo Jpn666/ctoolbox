@@ -204,6 +204,7 @@ u64tostr(uint64 number, uint8 r[24])
 	r[total[0]] = 0x00;
 	return total[0];
 #else
+	m = r;
 	for (; total[0] >= 8; total[0] -= 8) {
 		*r++ = *s++;
 		*r++ = *s++;

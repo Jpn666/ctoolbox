@@ -593,7 +593,9 @@ parsedecimal32(const uint8* src, uintxx total, const uint8** end, uint32* r)
 		}
 	}
 
+#if defined(CTB_FASTUNALIGNED)
 L1:
+#endif
 	if (UNLIKELY(s == src)) {
 		if (end)
 			end[0] = src;
@@ -809,7 +811,9 @@ parsedecimal64(const uint8* src, uintxx total, const uint8** end, uint64* r)
 		}
 	}
 
+#if defined(CTB_FASTUNALIGNED)
 L1:
+#endif
 	if (UNLIKELY(s == src)) {
 		if (end)
 			end[0] = src;
