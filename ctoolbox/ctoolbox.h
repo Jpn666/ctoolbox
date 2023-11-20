@@ -87,7 +87,7 @@
 	#endif
 #endif
 
-#if !defined(LIKELY)
+#if !defined(CTB_LIKELY)
 	#define   CTB_LIKELY(X) (X)
 	#define CTB_UNLIKELY(X) (X)
 #endif
