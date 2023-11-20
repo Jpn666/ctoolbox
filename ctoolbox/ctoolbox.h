@@ -46,7 +46,7 @@
 /*
  * Inline and force inline */
 
-#if defined(_MSC_VER)
+#if defined(__MSVC__)
 	#define CTB_INLINE static __inline
 #endif
 
@@ -78,20 +78,22 @@
 
 
 #if defined(__GNUC__)
-	#define   LIKELY(X) __builtin_expect((X), 1)
-	#define UNLIKELY(X) __builtin_expect((X), 0)
+	#define   CTB_LIKELY(X) __builtin_expect((X), 1)
+	#define CTB_UNLIKELY(X) __builtin_expect((X), 0)
 #else
 	#if __has_builtin(__builtin_expect)
-		#define   LIKELY(X) __builtin_expect((X), 1)
-		#define UNLIKELY(X) __builtin_expect((X), 0)
+		#define   CTB_LIKELY(X) __builtin_expect((X), 1)
+		#define CTB_UNLIKELY(X) __builtin_expect((X), 0)
 	#endif
 #endif
 
 #if !defined(LIKELY)
-	#define   LIKELY(X) (X)
-	#define UNLIKELY(X) (X)
+	#define   CTB_LIKELY(X) (X)
+	#define CTB_UNLIKELY(X) (X)
 #endif
 
+#define LIKELY   CTB_LIKELY
+#define UNLIKELY CTB_UNLIKELY
 
 /*
  * Internal Includes */
