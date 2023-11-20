@@ -92,8 +92,6 @@
 	#define CTB_UNLIKELY(X) (X)
 #endif
 
-#define LIKELY   CTB_LIKELY
-#define UNLIKELY CTB_UNLIKELY
 
 /*
  * Internal Includes */
