@@ -1,5 +1,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Copyright (C) 2022, jpn
+; Copyright (C) 2023, jpn
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.
@@ -14,13 +14,31 @@
 ; limitations under the License.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-format ELF64
+
+default rel
 
 
-section '.text' executable align 16
+%ifidn __?OUTPUT_FORMAT?__, elf64
+	%define SYSTEMV64
+%endif
+%ifidn __?OUTPUT_FORMAT?__, macho64
+	%define SYSTEMV64
+%endif
+
+%ifndef SYSTEMV64
+	%ifidn __?OUTPUT_FORMAT?__, win64
+		%define WINDOWS64
+	%else
+		%error ABI not supported.
+	%endif
+%endif
 
 
-public crc32_updateASM
+section .text
+align 16
+
+
+global crc32_updateASM
 ; Parameters:
 ; crc32, buffer (pointer), size
 
@@ -29,7 +47,7 @@ public crc32_updateASM
 ;  Initialize the jump table according to the CPU capabilities
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-PCLMULQDQ_FLAG = 0x100002 ; sse4.2 | pclmul
+PCLMULQDQ_FLAG equ 0x100002 ; sse4.2 | pclmul
 
 
 initjump:
@@ -95,8 +113,17 @@ poly: dq 0x01db710641, 0x01f7011641
 mask: dd 0xffffffff, 0x00000000, 0xffffffff, 0x00000000
 
 
-; rdi=crc32, rsi=buffer, rdx=size
+; systemv x64: rdi=adler32, rsi=buffer, rdx=size
+; windows x64: rcx=adler32, rdx=buffer, r8
 sse4_crc32update:
+%ifdef WINDOWS64
+	push		rdi
+	push		rsi
+	mov 		rdi, rcx
+	mov 		rsi, rdx
+	mov 		rdx, r8
+%endif
+
 	cmp			rdx, 128 + 16
 	jnb .unrolled
 
@@ -121,12 +148,25 @@ sse4_crc32update:
 
 .done1:
 	mov			eax, edi
+%ifdef WINDOWS64
+	pop			rsi
+	pop			rdi
+%endif
 	ret
 
 .unrolled:
 	; end limit
 	add			rdx, rsi
 	lea			 r8, [table0]
+
+%ifdef WINDOWS64
+	; preserve xmm6, xmm7 and xmm8
+	sub			rsp, 38h
+	movdqa		[rsp+0x00], xmm6
+	movdqa		[rsp+0x10], xmm7
+	movdqa		[rsp+0x20], xmm8
+%endif
+
 .loop2:
 	cmp			rsi, rdx
 	je .done1
@@ -262,6 +302,14 @@ sse4_crc32update:
 	pclmulqdq	xmm2, xmm0, 0x00
 	pxor		xmm1, xmm2
 
+%ifdef WINDOWS64
+	; restore xmm registers
+	movdqa		xmm6, [rsp+0x00]
+	movdqa		xmm7, [rsp+0x10]
+	movdqa		xmm8, [rsp+0x20]
+	add			rsp, 38h
+%endif
+
 	test		rdx, rdx
 	jz .done
 
@@ -270,6 +318,11 @@ sse4_crc32update:
 	jmp .loop1
 
 .done:
+%ifdef WINDOWS64
+	pop			rsi
+	pop			rdi
+%endif
+
 	; return the crc32
 	pextrd		eax, xmm1, 1
 	ret
@@ -281,8 +334,18 @@ sse4_crc32update:
 ; Based on: http://create.stephan-brumme.com/crc32/
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; rdi=crc32, rsi=buffer, rdx=size
+
+; systemv x64: rdi=adler32, rsi=buffer, rdx=size
+; windows x64: rcx=adler32, rdx=buffer, r8
 crc32update:
+%ifdef WINDOWS64
+	push		rdi
+	push		rsi
+	mov 		rdi, rcx
+	mov 		rsi, rdx
+	mov 		rdx, r8
+%endif
+
 	cmp			rdx, 128 + 8
 	jnb .unrolled
 
@@ -306,6 +369,10 @@ crc32update:
 	jmp .loop1
 
 .done1:
+%ifdef WINDOWS64
+	pop			rsi
+	pop			rdi
+%endif
 	mov			rax, rdi
 	ret
 
@@ -319,7 +386,7 @@ crc32update:
 
 	mov			r9d, esi
 	mov			eax, edi
-	and			r9d, 0x07  ; check if aligned
+	and			r9d, 0x07
 	jz .done2
 
 	movzx		ecx, byte[rsi]
@@ -346,7 +413,8 @@ crc32update:
 	test		 r9,  r9
 	jz .done3
 
-	rept 8 counter:0 {
+	%assign counter 0
+	%rep 8
 		; 1st half
 		xor			edi, dword[rsi+counter*8+0]
 		mov			ebx, dword[rsi+counter*8+4]
@@ -379,7 +447,8 @@ crc32update:
 		xor			r11d, dword[(r8+256*0*4)+rdx*4]
 		xor			 edi, r10d
 		xor			 edi, r11d
-	}
+		%assign counter counter+1
+	%endrep
 
 	add			rsi, 64
 	dec			 r9
@@ -430,7 +499,11 @@ crc32update:
 	jmp .loop4
 
 .done:
-	mov			rax, rdi
+%ifdef WINDOWS64
+	pop			rsi
+	pop			rdi
+%endif
+	mov			eax, edi
 	ret
 
 
@@ -868,7 +941,8 @@ table7:
 	dd 0x264B06E6
 
 
-section '.data' align 16
+section .data
+align 16
 
 jumptable:
 	.update:

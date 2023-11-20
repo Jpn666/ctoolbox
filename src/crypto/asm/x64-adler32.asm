@@ -1,5 +1,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Copyright (C) 2022, jpn
+; Copyright (C) 2023, jpn
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.
@@ -14,22 +14,40 @@
 ; limitations under the License.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-format ELF64
+
+default rel
 
 
 ; for better column aligment
-xmmA equ xmm10
-xmmB equ xmm11
-xmmC equ xmm12
-xmmD equ xmm13
-xmmE equ xmm14
-xmmF equ xmm15
+%define xmmA xmm10
+%define xmmB xmm11
+%define xmmC xmm12
+%define xmmD xmm13
+%define xmmE xmm14
+%define xmmF xmm15
 
 
-section 'text' executable align 16
+%ifidn __?OUTPUT_FORMAT?__, elf64
+	%define SYSTEMV64
+%endif
+%ifidn __?OUTPUT_FORMAT?__, macho64
+	%define SYSTEMV64
+%endif
+
+%ifndef SYSTEMV64
+	%ifidn __?OUTPUT_FORMAT?__, win64
+		%define WINDOWS64
+	%else
+		%error ABI not supported.
+	%endif
+%endif
 
 
-public adler32_updateASM
+section .text
+align 16
+
+
+global adler32_updateASM
 ; Parameters:
 ; adler32, buffer (pointer), size
 
@@ -38,7 +56,7 @@ public adler32_updateASM
 ; Initialize the jump table according to the CPU capabilities
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-SSSE3_FLAG = 0000200h
+SSSE3_FLAG equ 0000200h
 
 
 initjump:
@@ -78,144 +96,6 @@ adler32_updateASM:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Scalar version
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-if 0
-
-; rdi=adler32, rsi=buffer, rdx=size
-adler32update:
-	push		rbx
-
-	mov			eax, edi  ; eax=a
-	mov			ebx, edi  ; ebx=b
-	and			eax, 0xffff
-	shr			ebx, 0x10
-
-.loop1:
-	cmp			rdx, 512
-	jb .loop3
-
-	sub			rdx, 512
-	xor			ecx, ecx
-
-.loop2:
-	cmp			ecx, 32
-	je .done2
-
-	rept 4 counter:0 {
-		movzx		 r8d, byte[rsi+0+counter*4]
-		movzx		 r9d, byte[rsi+1+counter*4]
-		movzx		r10d, byte[rsi+2+counter*4]
-		movzx		r11d, byte[rsi+3+counter*4]
-		add			eax, r8d
-		add			ebx, eax
-		add			eax, r9d
-		add			ebx, eax
-		add			eax, r10d
-		add			ebx, eax
-		add			eax, r11d
-		add			ebx, eax
-	}
-	add			rsi, 16
-	inc			ecx
-	jmp .loop2
-
-.done2:
-	; mod 65521 implemented as:
-	; (a mod (1 << 16)) + ((a >> 16) << 4) - (a >> 16))
-	; this requires a second pass because the result can be greater
-	; than 65521.
-	mov			 r8d, eax
-	mov			 r9d, ebx
-	shr			 r8d, 0x10
-	shr			 r9d, 0x10
-
-	mov			r10d, r8d
-	mov			r11d, r9d
-	and			 eax, 0xffff
-	and			 ebx, 0xffff
-
-	shl			r10d, 4
-	shl			r11d, 4
-	sub			r10d, r8d
-	sub			r11d, r9d
-	add			 eax, r10d
-	add			 ebx, r11d
-	jmp .loop1
-
-.loop3:
-	cmp			rdx, 16
-	jb .loop4
-
-	rept 4 counter:0 {
-		movzx		 r8d, byte[rsi+0+counter*4]
-		movzx		 r9d, byte[rsi+1+counter*4]
-		movzx		r10d, byte[rsi+2+counter*4]
-		movzx		r11d, byte[rsi+3+counter*4]
-		add			eax, r8d
-		add			ebx, eax
-		add			eax, r9d
-		add			ebx, eax
-		add			eax, r10d
-		add			ebx, eax
-		add			eax, r11d
-		add			ebx, eax
-	}
-
-	sub			rdx, 16
-	add			rsi, 16
-	jmp .loop3
-
-.loop4:
-	test		rdx, rdx
-	jz .done
-
-	movzx		r8d, byte[rsi]
-	add			eax, r8d
-	add			ebx, eax
-	dec			rdx
-	inc			rsi
-	jmp .loop4
-
-.done:
-	; modulo reduction
-
-	mov			 r8d, eax
-	shr			 r8d, 0x10
-	mov			r10d, r8d
-	and			 eax, 0xffff
-	shl			r10d, 4
-	sub			r10d, r8d
-	add			 eax, r10d
-	cmp			 eax, 65521
-	jb	.r2
-	sub			 eax, 65521
-
-.r2:
-	mov			 r8d, ebx
-	shr			 r8d, 0x10
-	mov			r10d, r8d
-	and			 ebx, 0xffff
-	shl			r10d, 4
-	sub			r10d, r8d
-	add			 ebx, r10d
-	cmp			 ebx, 65521
-	jge	.r3
-	sub			 ebx, 65521
-
-.r3:
-	; combine a and b
-	shl			ebx, 0x10
-	or			eax, ebx
-
-	pop			rbx
-	ret
-
-end if
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; SSE2 version
 ; Ported from https://github.com/mcountryman/simd-adler32
 ;
@@ -235,12 +115,26 @@ c2lo: dw 0x20, 0x1f, 0x1e, 0x1d, 0x1c, 0x1b, 0x1a, 0x19
 c2hi: dw 0x18, 0x17, 0x16, 0x15, 0x14, 0x13, 0x12, 0x11
 
 
-; rdi=adler32, rsi=buffer, rdx=size
+; systemv x64: rdi=adler32, rsi=buffer, rdx=size
+; windows x64: rcx=adler32, rdx=buffer, r8
 sse2_adler32update:
 	push		rbx
+%ifdef WINDOWS64
+	push		rsi
+	mov 		rsi, rdx
+	mov 		rdx, r8
+%endif
+	; rsi=buffer, rdx=size
 
+%ifdef WINDOWS64
+	mov			eax, ecx  ; eax=a
+	mov			ebx, ecx  ; ebx=b
+%endif
+%ifdef SYSTEMV64
 	mov			eax, edi  ; eax=a
 	mov			ebx, edi  ; ebx=b
+%endif
+
 	and			eax, 0xffff
 	shr			ebx, 0x10
 
@@ -248,6 +142,15 @@ sse2_adler32update:
 	mov			 r8, rdx
 	shr			 r8, 9
 	jz .loop3
+
+%ifdef WINDOWS64
+	; preserve xmm registers xmm6, xmm7, xmm8 and xmm9
+	sub			rsp, 48h
+	movdqa		[rsp+0x00], xmm6
+	movdqa		[rsp+0x10], xmm7
+	movdqa		[rsp+0x20], xmm8
+	movdqa		[rsp+0x30], xmm9
+%endif
 
 	mov			 r9, r8
 	shl			 r9, 9
@@ -368,11 +271,22 @@ sse2_adler32update:
 
 .done1:
 	pop			rdx
+
+%ifdef WINDOWS64
+	; restore xmm registers
+	movdqa		xmm6, [rsp+0x00]
+	movdqa		xmm7, [rsp+0x10]
+	movdqa		xmm8, [rsp+0x20]
+	movdqa		xmm9, [rsp+0x30]
+	add			rsp, 48h
+%endif
+
 .loop3:
 	cmp			rdx, 16
 	jb .loop4
 
-	rept 4 counter:0 {
+	%assign counter 0
+	%rep 4
 		movzx		 r8d, byte[rsi+0+counter*4]
 		movzx		 r9d, byte[rsi+1+counter*4]
 		movzx		r10d, byte[rsi+2+counter*4]
@@ -385,7 +299,8 @@ sse2_adler32update:
 		add			ebx, eax
 		add			eax, r11d
 		add			ebx, eax
-	}
+		%assign counter counter+1
+	%endrep
 
 	sub			rdx, 16
 	add			rsi, 16
@@ -404,7 +319,6 @@ sse2_adler32update:
 
 .done:
 	; modulo reduction
-
 	mov			 r8d, eax
 	shr			 r8d, 0x10
 	mov			r10d, r8d
@@ -413,7 +327,7 @@ sse2_adler32update:
 	sub			r10d, r8d
 	add			 eax, r10d
 	cmp			 eax, 65521
-	jb	.r2
+	jb .r2
 	sub			 eax, 65521
 
 .r2:
@@ -425,7 +339,7 @@ sse2_adler32update:
 	sub			r10d, r8d
 	add			 ebx, r10d
 	cmp			 ebx, 65521
-	jb	.r2
+	jb	.r3
 	sub			 ebx, 65521
 
 .r3:
@@ -433,6 +347,9 @@ sse2_adler32update:
 	shl			ebx, 0x10
 	or			eax, ebx
 
+%ifdef WINDOWS64
+	pop			rsi
+%endif
 	pop			rbx
 	ret
 
@@ -450,12 +367,26 @@ c2:
 	db 0x18, 0x17, 0x16, 0x15, 0x14, 0x13, 0x12, 0x11
 
 
-; rdi=adler32, rsi=buffer, rdx=size
+; systemv x64: rdi=adler32, rsi=buffer, rdx=size
+; windows x64: rcx=adler32, rdx=buffer, r8
 ssse3_adler32update:
 	push		rbx
+%ifdef WINDOWS64
+	push		rsi
+	mov 		rsi, rdx
+	mov 		rdx, r8
+%endif
+	; rsi=buffer, rdx=size
 
+%ifdef WINDOWS64
+	mov			eax, ecx  ; eax=a
+	mov			ebx, ecx  ; ebx=b
+%endif
+%ifdef SYSTEMV64
 	mov			eax, edi  ; eax=a
 	mov			ebx, edi  ; ebx=b
+%endif
+
 	and			eax, 0xffff
 	shr			ebx, 0x10
 
@@ -463,6 +394,16 @@ ssse3_adler32update:
 	mov			 r8, rdx
 	shr			 r8, 9
 	jz .loop3
+
+%ifdef WINDOWS64
+	; preserve xmm registers xmm6, xmm7, xmm8 and xmm9, xmmA
+	sub			rsp, 58h
+	movdqa		[rsp+0x00], xmm6
+	movdqa		[rsp+0x10], xmm7
+	movdqa		[rsp+0x20], xmm8
+	movdqa		[rsp+0x30], xmm9
+	movdqa		[rsp+0x40], xmmA
+%endif
 
 	mov			 r9, r8
 	shl			 r9, 9
@@ -563,11 +504,23 @@ ssse3_adler32update:
 
 .done1:
 	pop			rdx
+
+%ifdef WINDOWS64
+	; restore xmm registers
+	movdqa		xmm6, [rsp+0x00]
+	movdqa		xmm7, [rsp+0x10]
+	movdqa		xmm8, [rsp+0x20]
+	movdqa		xmm9, [rsp+0x30]
+	movdqa		xmmA, [rsp+0x40]
+	add			rsp, 58h
+%endif
+
 .loop3:
 	cmp			rdx, 16
 	jb .loop4
 
-	rept 4 counter:0 {
+	%assign counter 0
+	%rep 4
 		movzx		 r8d, byte[rsi+0+counter*4]
 		movzx		 r9d, byte[rsi+1+counter*4]
 		movzx		r10d, byte[rsi+2+counter*4]
@@ -580,7 +533,8 @@ ssse3_adler32update:
 		add			ebx, eax
 		add			eax, r11d
 		add			ebx, eax
-	}
+		%assign counter counter+1
+	%endrep
 
 	sub			rdx, 16
 	add			rsi, 16
@@ -599,7 +553,6 @@ ssse3_adler32update:
 
 .done:
 	; modulo reduction
-
 	mov			 r8d, eax
 	shr			 r8d, 0x10
 	mov			r10d, r8d
@@ -628,11 +581,15 @@ ssse3_adler32update:
 	shl			ebx, 0x10
 	or			eax, ebx
 
+%ifdef WINDOWS64
+	pop			rsi
+%endif
 	pop			rbx
 	ret
 
 
-section '.data' align 16
+section .data
+align 16
 
 jumptable:
 	.update:

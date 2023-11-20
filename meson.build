@@ -14,6 +14,10 @@ endif
 
 
 cc = meson.get_compiler('c')
+if cc.get_id() == 'msvc'
+  add_project_arguments('-D__MSVC__', language: 'c')
+endif
+
 
 # Configuration
 conf = configuration_data()
@@ -161,19 +165,34 @@ if target == 'x86_64'
 
   path = 'src/crypto/asm'
   if isunix
-    path = path / 'unix'
     supported = true
   endif
   if iswindows
-    path = path / 'windows'
     supported = true
   endif
 
   if supported
-    externalobjs += [path / 'adler32-' + target + '.o']
-    externalobjs += [path /   'crc32-' + target + '.o']
-    conf.set('ADLER32_CFG_EXTERNALASM', true)
-    conf.set('CRC32_CFG_EXTERNALASM', true)
+    if add_languages('nasm', required: false, native: false)
+      if isunix
+        if host_machine.system() in ['darwin', 'ios', 'tvos']
+          nasmformat = 'macho64'
+        else
+          nasmformat = 'elf64'
+        endif
+      endif
+      if iswindows
+        nasmformat = 'win64'
+      endif
+
+      add_project_arguments('-f', nasmformat, language: 'nasm')
+      projectsources += [path / 'x64-adler32.asm']
+      projectsources += [path /   'x64-crc32.asm']
+
+      conf.set('ADLER32_CFG_EXTERNALASM', true)
+      conf.set('CRC32_CFG_EXTERNALASM', true)
+    else
+      warning('NASM not found, using C fallback code')
+    endif
   endif
 endif
 
@@ -209,14 +228,8 @@ headerfiles += [configfile]
 
 
 largs = []
-if cc.get_linker_id() == 'ld.bfd'
-  if target_machine.system() == 'unix'
-    largs += ['-z', 'noexecstack']
-  endif
-endif
 
-
-static_build = static_library('ctoolbox', sources: projectsources, objects: externalobjs, pic: true, install: true)
+static_build = static_library('ctoolbox', sources: projectsources, pic: true, install: true)
 lib = declare_dependency(
   link_with: static_build, include_directories: include_directories('.'), link_args: largs
 )
