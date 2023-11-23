@@ -119,7 +119,7 @@ typedef float64 flt64;
 
 
 /*
- * Funtion types */
+ * Function types */
 
 /* used for comparison */
 typedef intxx (*TCmpFn)(const void*, const void*);

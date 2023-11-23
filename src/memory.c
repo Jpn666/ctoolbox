@@ -18,9 +18,9 @@
 
 
 void
-ctb_memcpy(void* destination, void* source, uintxx size)
+ctb_memcpy(void* destination, const void* source, uintxx size)
 {
-	uint8* s;
+	const uint8* s;
 	uint8* t;
 	uintxx m;
 	CTB_ASSERT(destination && source);
@@ -43,22 +43,22 @@ ctb_memcpy(void* destination, void* source, uintxx size)
 	else {
 #if defined(CTB_FASTUNALIGNED)
 	#if defined(CTB_ENV64)
-		uint64* sxx;
+		const uint64* sxx;
 		uint64* txx;
 		uint64* exx;
 
-		sxx = (uint64*) (s);
+		sxx = (const uint64*) (s);
 		txx = (uint64*) (t);
 		exx = (uint64*) (t + (m = (size >> 3) << 3));
 		for (; exx > txx; txx += 1) {
 			txx[0] = *sxx++;
 		}
 	#else
-		uint32* sxx;
+		const uint32* sxx;
 		uint32* txx;
 		uint32* exx;
 
-		sxx = (uint32*) (s);
+		sxx = (const uint32*) (s);
 		txx = (uint32*) (t);
 		exx = (uint32*) (t + (m = (size >> 3) << 3));
 		for (; exx > txx; txx += 2) {
@@ -89,25 +89,25 @@ ctb_memcpy(void* destination, void* source, uintxx size)
 			}
 		}
 		else {
-			uint32* sxx;
+			const uint32* sxx;
 			uint32* txx;
 			uint32* exx;
 
-			sxx = (uint32*) (s);
+			sxx = (const uint32*) (s);
 			txx = (uint32*) (t);
 			exx = (uint32*) (t + (m = (size >> 3) << 3));
 			for (; exx > txx; txx += 2) {
 				txx[0] = *sxx++;
 				txx[1] = *sxx++;
 			}
-			s = (uint8*) sxx;
+			s = (const uint8*) sxx;
 			t = (uint8*) txx;
 		}
 #endif
 		size -= m;
 		if (size) {
 #if defined(CTB_FASTUNALIGNED)
-			s = (uint8*) sxx;
+			s = (const uint8*) sxx;
 			t = (uint8*) txx;
 #endif
 			switch (size) {

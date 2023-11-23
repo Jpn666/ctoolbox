@@ -60,7 +60,7 @@ extern void (*volatile ctb_memzero)(void*, uintxx);
 
 /*
  * Same as C "memcpy". */
-void ctb_memcpy(void* destination, void* source, uintxx size);
+void ctb_memcpy(void* destination, const void* source, uintxx size);
 
 /*
  * Same as C "memset". */
