@@ -33,13 +33,26 @@ typedef enum {
 } eSTR2FLTError;
 
 
-/*
- * */
-eintxx str2flt64(const uint8* src, const uint8** end, flt64* r);
+/* */
+struct TToFltResult {
+    eintxx error;
+
+    union TFltValue {
+        flt32 asf32;
+        flt64 asf64;
+    } value;
+};
+
+typedef struct TToFltResult TToFltResult;
+
 
 /*
  * */
-eintxx str2flt32(const uint8* src, const uint8** end, flt32* r);
+TToFltResult str2flt64(const uint8* src, const uint8** end);
+
+/*
+ * */
+TToFltResult str2flt32(const uint8* src, const uint8** end);
 
 
 #endif

@@ -20,23 +20,29 @@
 
 #if defined(AUTOINCLUDE_1)
 
-/* Float type parameters */
-static const struct TFLTTypeParameters {
-	int32 mbits;  /* mantissa bits */
-	int32 ebits;  /* exponent bits */
-	int32 ebias;  /* exponent bias */
-
-	int32 minexponentroundtoeven;
-	int32 maxexponentroundtoeven;
-}
-flttype[] = {
-	{23,  8,  -127, -17, 23},  /* flt32 */
-	{52, 11, -1023,  -4, 23}   /* flt64 */
-};
-
 
 #define FLT32MODE 0
 #define FLT64MODE 1
+
+/* Float type parameters */
+struct TFLTType {
+	int32 sbits;  /* significand bits */
+	int32 ebits;  /* exponent bits */
+	int32 ebias;  /* exponent bias */
+	int32 emask;  /* exponent mask */
+
+	int32 minexponentroundtoeven;
+	int32 maxexponentroundtoeven;
+};
+
+
+#define FLT32EXPBITS  8
+#define FLT64EXPBITS 11
+
+static const struct TFLTType flttype[] = {
+	{23, FLT32EXPBITS,  -127, (1l << FLT32EXPBITS) - 1, -17, 23},  /* flt32 */
+	{52, FLT64EXPBITS, -1023, (1l << FLT64EXPBITS) - 1,  -4, 23}   /* flt64 */
+};
 
 
 #define FLTINF(MB, EB) (((1ull << ((EB) + 0)) - 1) << (MB))
@@ -46,6 +52,13 @@ flttype[] = {
 #define FLT32NAN FLTNAN(23,  8)
 #define FLT64INF FLTINF(52, 11)
 #define FLT64NAN FLTINF(52, 11)
+
+
+/* */
+struct TFltResult {
+	int64 significand;
+	int64 exponent;
+};
 
 
 /* ****************************************************************************
@@ -64,12 +77,13 @@ struct TDecimal {
 	int32  overflow;
 	uint32 n;
 
-	/* big-enddian representation */
-	uint8 digits[768];
+	/* Big-enddian representation */
+	uint8 digits[800];
 };
 
-/* maximum shift that we can do in one pass without overflow */
-#define DECIMALMAXSHIFT (64 - 4)
+/* Maximum shift that we can do in one pass without overflow */
+#define DECIMALMAXLSHIFT (32 - 6)
+#define DECIMALMAXRSHIFT (64 - 4)
 
 
 static void
@@ -137,74 +151,39 @@ decimalrshift(struct TDecimal* decimal, uintxx amount)
 	decimaltrim(decimal);
 }
 
-/* */
-static const struct TLShiftCheat {
-	uint16 delta;
-	uint16 offset;
-	uint16 n;
-}
-lscheat[] = {
-	{0x0000, 0x0000, 0x0001},
-	{0x0001, 0x0002, 0x0001},
-	{0x0001, 0x0006, 0x0002},
-	{0x0001, 0x0008, 0x0003},
-	{0x0002, 0x000e, 0x0003},
-	{0x0002, 0x0012, 0x0004},
-	{0x0002, 0x0018, 0x0005},
-	{0x0003, 0x001e, 0x0005},
-	{0x0003, 0x0026, 0x0006},
-	{0x0003, 0x002c, 0x0007},
-	{0x0004, 0x0036, 0x0007},
-	{0x0004, 0x003e, 0x0008},
-	{0x0004, 0x0048, 0x0009},
-	{0x0004, 0x0052, 0x000a},
-	{0x0005, 0x005c, 0x000a},
-	{0x0005, 0x0068, 0x000b},
-	{0x0005, 0x0076, 0x000c},
-	{0x0006, 0x0084, 0x000c},
-	{0x0006, 0x0090, 0x000d},
-	{0x0006, 0x009e, 0x000e},
-	{0x0007, 0x00ac, 0x000e},
-	{0x0007, 0x00bc, 0x000f},
-	{0x0007, 0x00ce, 0x0010},
-	{0x0007, 0x00e0, 0x0011},
-	{0x0008, 0x00f2, 0x0011},
-	{0x0008, 0x0106, 0x0012},
-	{0x0008, 0x0118, 0x0013},
-	{0x0009, 0x012e, 0x0013},
-	{0x0009, 0x0142, 0x0014},
-	{0x0009, 0x0158, 0x0015},
-	{0x000a, 0x016e, 0x0015},
-	{0x000a, 0x0186, 0x0016},
-	{0x000a, 0x019c, 0x0017},
-	{0x000a, 0x01b6, 0x0018},
-	{0x000b, 0x01d0, 0x0018},
-	{0x000b, 0x01e8, 0x0019},
-	{0x000b, 0x0202, 0x001a},
-	{0x000c, 0x021c, 0x001a},
-	{0x000c, 0x0238, 0x001b},
-	{0x000c, 0x0256, 0x001c},
-	{0x000d, 0x0274, 0x001c},
-	{0x000d, 0x0290, 0x001d},
-	{0x000d, 0x02ae, 0x001e},
-	{0x000d, 0x02cc, 0x001f},
-	{0x000e, 0x02ee, 0x001f},
-	{0x000e, 0x030e, 0x0020},
-	{0x000e, 0x0330, 0x0021},
-	{0x000f, 0x0352, 0x0021},
-	{0x000f, 0x0376, 0x0022},
-	{0x000f, 0x0398, 0x0023},
-	{0x0010, 0x03be, 0x0023},
-	{0x0010, 0x03e2, 0x0024},
-	{0x0010, 0x0408, 0x0025},
-	{0x0010, 0x042e, 0x0026},
-	{0x0011, 0x0454, 0x0026},
-	{0x0011, 0x047c, 0x0027},
-	{0x0011, 0x04a6, 0x0028},
-	{0x0012, 0x04d0, 0x0028},
-	{0x0012, 0x04f8, 0x0029},
-	{0x0012, 0x0522, 0x002a},
-	{0x0013, 0x054c, 0x002a}
+
+static const uint32 lscheat[] = {
+	0x00000001, 0x00020101,
+	0x00060102, 0x00080103,
+	0x000e0203, 0x00120204,
+	0x00180205, 0x001e0305,
+	0x00260306, 0x002c0307,
+	0x00360407, 0x003e0408,
+	0x00480409, 0x0052040a,
+	0x005c050a, 0x0068050b,
+	0x0076050c, 0x0084060c,
+	0x0090060d, 0x009e060e,
+	0x00ac070e, 0x00bc070f,
+	0x00ce0710, 0x00e00711,
+	0x00f20811, 0x01060812,
+	0x01180813, 0x012e0913,
+	0x01420914, 0x01580915,
+	0x016e0a15, 0x01860a16,
+	0x019c0a17, 0x01b60a18,
+	0x01d00b18, 0x01e80b19,
+	0x02020b1a, 0x021c0c1a,
+	0x02380c1b, 0x02560c1c,
+	0x02740d1c, 0x02900d1d,
+	0x02ae0d1e, 0x02cc0d1f,
+	0x02ee0e1f, 0x030e0e20,
+	0x03300e21, 0x03520f21,
+	0x03760f22, 0x03980f23,
+	0x03be1023, 0x03e21024,
+	0x04081025, 0x042e1026,
+	0x04541126, 0x047c1127,
+	0x04a61128, 0x04d01228,
+	0x04f81229, 0x0522122a,
+	0x054c132a
 };
 
 static const uint8 lscheatdigits[] = {
@@ -301,16 +280,17 @@ static const uint8 lscheatdigits[] = {
 static int32
 getdigitsdelta(struct TDecimal* decimal, uintxx amount)
 {
-	int32 delta;
 	uint32 j;
+	int32 count;
+	int32 delta;
 	const uint8* ldgts;
-	const struct TLShiftCheat* l;
 
-	l = lscheat + amount;
-	ldgts = lscheatdigits + l->offset;
-	delta = l->delta;
+	j = lscheat[amount];
+	count = (j >> 0x00) & 0xff;
+	delta = (j >> 0x08) & 0xff;
+	ldgts = lscheatdigits + (j >> 0x10);
 
-	for (j = 0; j < l->n; j++) {
+	for (j = 0; j < count; j++) {
 		if (j >= decimal->n) {
 			delta--;
 			break;
@@ -340,7 +320,7 @@ decimallshift(struct TDecimal* decimal, uintxx amount)
 	n = 0;
 	while (r >= 0) {
 		n += ((uint64) decimal->digits[r--]) << amount;
-		remainder = n - ((quotient = (n / 10)) * 10);
+		remainder = n - ((quotient = (n * 429496730) >> 32) * 10);
 		w--;
 		if (w < (int32) sizeof(decimal->digits)) {
 			decimal->digits[w] = (uint8) remainder;
@@ -354,7 +334,7 @@ decimallshift(struct TDecimal* decimal, uintxx amount)
 	}
 
 	while (n > 0) {
-		remainder = n - ((quotient = (n / 10)) * 10);
+		remainder = n - ((quotient = (n * 429496730) >> 32) * 10);
 		w--;
 		if (w < (int32) sizeof(decimal->digits)) {
 			decimal->digits[w] = (uint8) remainder;
@@ -378,24 +358,21 @@ decimallshift(struct TDecimal* decimal, uintxx amount)
 static void
 decimalshift(struct TDecimal* decimal, intxx amount)
 {
-	if (amount == 0) {
-		return;
-	}
-
 	if (amount > 0) {
-		while (amount > +DECIMALMAXSHIFT) {
-			decimallshift(decimal, DECIMALMAXSHIFT);
-			amount -= DECIMALMAXSHIFT;
+		while (amount > +DECIMALMAXLSHIFT) {
+			decimallshift(decimal, DECIMALMAXLSHIFT);
+			amount -= DECIMALMAXLSHIFT;
 		}
 		if (amount) {
 			decimallshift(decimal, +amount);
 		}
 		return;
 	}
+
 	if (amount < 0) {
-		while (amount < -DECIMALMAXSHIFT) {
-			decimalrshift(decimal, DECIMALMAXSHIFT);
-			amount += DECIMALMAXSHIFT;
+		while (amount < -DECIMALMAXRSHIFT) {
+			decimalrshift(decimal, DECIMALMAXRSHIFT);
+			amount += DECIMALMAXRSHIFT;
 		}
 		if (amount) {
 			decimalrshift(decimal, -amount);
@@ -429,7 +406,7 @@ decimalroundinteger(struct TDecimal* decimal)
 	uint64 n;
 
 	if (decimal->decimalpoint > 20) {
-		return 0xffffffffffffffff;
+		return 0xffffffffffffffffull;
 	}
 
 	n = 0;
@@ -476,49 +453,48 @@ parsedecimal(const uint8* s, uint32 total, int32 e10, struct TDecimal* r)
 	decimaltrim(r);
 }
 
-static uint64
-decimaltobinary(struct TDecimal* decimal, uint32 mode)
+
+static struct TFltResult
+decimaltobinary(struct TDecimal* decimal, const struct TFLTType* f)
 {
 	int32 n;
 	int32 additionallshift;
 	int32  exp;
-	uint64 man;
+	uint64 snd;
 	uint64 m;
 	uint64 e;
-	const struct TFLTTypeParameters* f;
+	struct TFltResult r;
 
-	f = flttype + mode;
-
-	/* zero */
-	if (decimal->n == 0 || (decimal->n == 1 && decimal->digits[0] == 0)) {
-		return 0;
-	}
-
-	/* underflow */
-	if (decimal->decimalpoint < -324) {
-		return 0;
-	}
-
-	/* overflow */
-	if (decimal->decimalpoint > +311) {
-		return FLTINF(f->mbits, f->ebits);
-	}
-
-	/* decimal powers of 10 to binary powers of 2 */
+	/* Decimal powers of 10 to powers of 2 */
 	const int32 pow10to2[] = {
 		0, 3, 6, 9, 13, 16, 19, 23, 26, 29, 33, 36, 39, 43, 46, 49, 53, 56, 59
 	};
 
-	/* scale by powers of two until in range [0.1, 10.0) */
+	/* Zero */
+	if (decimal->n == 0 || (decimal->n == 1 && decimal->digits[0] == 0)) {
+		return (struct TFltResult) {0, 0};
+	}
+
+	/* Underflow */
+	if (decimal->decimalpoint < -324) {
+		return (struct TFltResult) {0, 0};
+	}
+
+	/* Overflow */
+	if (decimal->decimalpoint > +311) {
+		return (struct TFltResult) {0, f->emask};
+	}
+
+	/* Scale by powers of 2 until it's in range [0.1, 10.0) */
 	exp = 0;
 	while (decimal->decimalpoint > 1) {
 		n = 60;
 
 		if (+decimal->decimalpoint < 19)
 			n = pow10to2[+decimal->decimalpoint];
-		decimalrshift(decimal, n);
+		decimalshift(decimal, -n);
 		if (decimal->decimalpoint < -2047) {
-			return 0;
+			return (struct TFltResult) {0, 0};
 		}
 		exp += n;
 	}
@@ -528,14 +504,14 @@ decimaltobinary(struct TDecimal* decimal, uint32 mode)
 
 		if (-decimal->decimalpoint < 19)
 			n = pow10to2[-decimal->decimalpoint] + 1;
-		decimallshift(decimal, n);
+		decimalshift(decimal, +n);
 		if (decimal->decimalpoint > +2047) {
-			return FLTINF(f->mbits, f->ebits);
+			return (struct TFltResult) {0, f->emask};
 		}
 		exp -= n;
 	}
 
-	/* the mantissa in the range [0.1, 10) we need to scale in to the
+	/* The mantissa in the range [0.1, 10) we need to scale in to the
 	 * range [2, 1) */
 	n = 100 * decimal->digits[0];
 	if (decimal->n >= 3) {
@@ -552,7 +528,7 @@ decimaltobinary(struct TDecimal* decimal, uint32 mode)
 
 	additionallshift = 0;
 	if (decimal->decimalpoint == 0) {
-		/* the mantissa is in the range [.1 .. 1) we need to scale it up */
+		/* The mantissa is in the range [.1 .. 1) we need to scale it up */
 		if (n < 125) {
 			additionallshift = 4;
 		}
@@ -571,7 +547,7 @@ decimaltobinary(struct TDecimal* decimal, uint32 mode)
 		}
 	}
 	else {
-		/* the mantissa is in the range [1 .. 10) we need to scale it down */
+		/* The mantissa is in the range [1 .. 10) we need to scale it down */
 		if (n < 200) {
 			additionallshift = 0;
 		}
@@ -591,10 +567,10 @@ decimaltobinary(struct TDecimal* decimal, uint32 mode)
 	}
 
 	exp -= additionallshift;
-	additionallshift += f->mbits;
+	additionallshift += f->sbits;
 
-	/* minimum representable exponent is bias + 1
-	 * if the exponent is smaller, move it up and adjust the mantissa
+	/* Minimum representable exponent is bias + 1
+	 * If the exponent is smaller, move it up and adjust the mantissa
 	 * accordingly */
 	if (exp < f->ebias + 1) {
 		n = f->ebias + 1 - exp;
@@ -602,34 +578,33 @@ decimaltobinary(struct TDecimal* decimal, uint32 mode)
 		exp += n;
 	}
 
-	/* check overflow */
-	if (exp - f->ebias >= (1l << f->ebits) - 1) {
-		return FLTINF(f->mbits, f->ebits);
+	/* Check for overflow */
+	if (exp - f->ebias >= f->emask) {
+		return (struct TFltResult) {0, f->emask};
 	}
 
-	/* extract 53 bits for the mantissa (in base-2) */
+	/* Extract 53 bits for the mantissa (in base-2) */
 	decimalshift(decimal, additionallshift);
-	man = decimalroundinteger(decimal);
+	snd = decimalroundinteger(decimal);
 
-	/* rounding might have added a bit */
-	if ((man >> (f->mbits + 1)) != 0) {
-		man = man >> 1;
+	/* Rounding might have added a bit */
+	if ((snd >> (f->sbits + 1)) != 0) {
+		snd = snd >> 1;
 		exp++;
-		if (exp - f->ebias >= (1l << f->ebits) - 1) {
-			return FLTINF(f->mbits, f->ebits);
+		if (exp - f->ebias >= f->emask) {
+			return (struct TFltResult) {0, f->emask};
 		}
 	}
 
-	/* subnormal number */
-	if ((man >> f->mbits) == 0) {
+	/* Subnormal number */
+	if ((snd >> f->sbits) == 0) {
 		exp = f->ebias;
 	}
 
-	m = (man)            & ((1ull << f->mbits) - 1);
-	e = (exp - f->ebias) & ((1ull << f->ebits) - 1);
-	return m | (e << f->mbits);
+	r.significand = (snd)            & ((1ull << f->sbits) - 1);
+	r.exponent    = (exp - f->ebias) & (f->emask);
+	return r;
 }
-
 
 /* ****************************************************************************
  * Eisel-Lemire algorithm, "Number Parsing at a Gigabyte per Second" by
@@ -640,16 +615,16 @@ decimaltobinary(struct TDecimal* decimal, uint32 mode)
  *************************************************************************** */
 
 /*  */
-struct TValue128 {
+struct TVal128 {
 	uint64 lo;
 	uint64 hi;
 };
 
 
-static struct TValue128
+static struct TVal128
 mul64to128(uint64 lhs, uint64 rhs)
 {
-	struct TValue128 r;
+	struct TVal128 r;
 
 #if defined(__GNUC__) && defined(__SIZEOF_INT128__)
 	__uint128_t product;
@@ -773,18 +748,18 @@ countleadingzeros(uint64 n)
 #define MINPOWEROF5 -342
 #define MAXPOWEROF5 +308
 
-CTB_INLINE struct TValue128
+CTB_INLINE struct TVal128
 computeapproximation(uint64 w, int64 q, uint64 precisionmask)
 {
-	struct TValue128 fstproduct;
-	struct TValue128 sndproduct;
+	struct TVal128 fstproduct;
+	struct TVal128 sndproduct;
 	int32 index;
 
 	index = (int32) (q - MINPOWEROF5);
 
 	fstproduct = mul64to128(w, powersoffive128[index][0]);
 	if ((fstproduct.hi & precisionmask) == precisionmask) {
-		/* wider approximation */
+		/* Wider approximation */
 		sndproduct = mul64to128(w, powersoffive128[index][1]);
 
 		fstproduct.lo += sndproduct.hi;
@@ -798,115 +773,102 @@ computeapproximation(uint64 w, int64 q, uint64 precisionmask)
 
 #define POWER(Q) ((((152170 + 65536) * (Q)) >> 16) + 63)
 
-
-/*
- * This is almost a literal copy of compute_float function in the original
- * implementation. I tried to keep some comments */
-bool
-eisellemire(uint64 w, int64 q, int32 mode, uint64* result)
+static struct TFltResult
+eisellemire(uint64 w, int32 q, const struct TFLTType* f)
 {
-	int64  lz;
-	int64  exp;
-	uint64 man;
-	uint64 upperbit;
-	struct TValue128 z;
-	const struct TFLTTypeParameters* f;
-
-	f = flttype + mode;
+	uint64 u;
+	uint64 m;
+	int64 p;
+	int64 l;  /* The number of leading zeros of w */
+	struct TVal128 z;
 
 	if (q < MINPOWEROF5 || w == 0) {
-		result[0] = 0;
-		return 1;
+		return (struct TFltResult) {0, 0};
 	}
 
 	if (q > MAXPOWEROF5) {
-		result[0] = FLTINF(f->mbits, f->ebits);
-		return 1;
+		return (struct TFltResult) {0, f->emask};
 	}
 
-	/* normalize the decimal significand */
-	w = w << (lz = countleadingzeros(w));
+	/* Normalize the decimal significand */
+	w = w << (l = countleadingzeros(w));
 
-	z = computeapproximation(w, q, 0xffffffffffffffff >> (f->mbits + 3));
-	if (z.lo == 0xffffffffffffffff) {
-		return 0;
+	z = computeapproximation(w, q, 0xffffffffffffffffull >> (f->sbits + 3));
+	if (z.lo == 0xffffffffffffffffull) {
+		return (struct TFltResult) {-1ll, 0};
 	}
 
-	upperbit = z.hi >> 63;
-	man = z.hi >> (upperbit + 64 - f->mbits - 3);
-	lz += (1 ^ upperbit);
+	/* (upperbit) Value of the most significant bit of z */
+	u = z.hi >> 63;
 
-	exp = POWER(q) - lz - f->ebias + 1;
+	/* The most significant 54 bits (64-bit) or 25 bits (32-bit) of the
+	 * product z */
+	m = z.hi >> (u + 64 - f->sbits - 3);
 
-	/* subnormal number */
-	if (exp <= 0) {
-		if (-exp + 1 >= 64) {
-			/* if we have more than 64 bits below the minimum exponent, you
+	/* Expected binary exponent */
+	p = POWER(q) - (l + (1 ^ u)) - f->ebias + 1;
+
+	/* Subnormal number */
+	if (p <= 0) {
+		if (-p + 1 >= 64) {
+			/* If we have more than 64 bits below the minimum exponent, you
 			 * have a zero for sure */
-			result[0] = 0;
-			return 1;
+			return (struct TFltResult) {0, 0};
 		}
-		man = man >> (-exp + 1);
-		man = (man + (man & 1)) >> 1;  /* round up */
+		m >>= -p + 1;
+		m = m + (m & 1);  /* Round up */
+		m = m >> 1;
 
-		/* we need to check if rounding up has converted the subnormal
+		/* We need to check if rounding up has converted the subnormal
 		 * into a normal number */
-		if (man < 1ull << f->mbits) {
-			exp = 0;
+		if (m < 1ull << f->sbits) {
+			p = 0;
 		}
 		else {
-			exp = 1;
+			p = 1;
 		}
 		goto L_DONE;
 	}
 
-	/* check if we are between two floats */
+	/* Check if we are between two floats */
 	if (z.lo <= 1) {
 		if (q >= f->minexponentroundtoeven && q <= f->maxexponentroundtoeven) {
-			if ((man & 3) == 1) {
-				if ((man << (upperbit + 64 - f->mbits - 3)) == z.hi) {
-					/* if we fall right in between and and we have an
+			if ((m & 3) == 1) {
+				if ((m << (u + 64 - f->sbits - 3)) == z.hi) {
+					/* If we fall right in between and and we have an
 					 * even basis, we need to round down */
-					man &= ~1;  /* flip the last bit so we don't round up */
+					m &= ~1;  /* Flip the last bit so we don't round up */
 				}
 			}
 		}
 	}
 
-	man = (man + (man & 1)) >> 1;  /* round up */
-	if (man >= 2ull << f->mbits) {
-		man = 1ull << f->mbits;
-		exp++;
+	m = (m + (m & 1)) >> 1;  /* Round up */
+	if (m >= 2ull << f->sbits) {
+		m = 1ull << f->sbits;
+		p++;
 	}
 
-	man = man & ~(1ull << f->mbits);
-	if (exp >= (1l << f->ebits) - 1) {
-		/* infinity */
-		exp = (1l << f->ebits) - 1;
-		man = 0;
+	m = m & ~(1ull << f->sbits);
+	if (p >= f->emask) {
+		/* Infinity */
+		return (struct TFltResult) {0, f->emask};
 	}
 
 L_DONE:
-	result[0] = man | (exp << f->mbits);
-	return 1;
+	return (struct TFltResult) {m, p};
 }
-
-#undef POWER
-
 
 /* ****************************************************************************
  * Float parsing
  *************************************************************************** */
 
 static int32
-parsenan(const uint8* s, int32 mode, uint64* result)
+parsenan(const uint8* s, const struct TFLTType* f, uint64* r)
 {
-	const struct TFLTTypeParameters* f;
-
 	if ((s[0] | 0x20) == 'i' && (s[1] | 0x20) == 'n' && (s[2] | 0x20) == 'f') {
-		f = flttype + mode;
+		r[0] = FLTINF(f->sbits, f->ebits);
 
-		result[0] = FLTINF(f->mbits, f->ebits);
 		if ((s[3] | 0x20) == 'i' &&
 			(s[4] | 0x20) == 'n' &&
 			(s[5] | 0x20) == 'i' &&
@@ -917,9 +879,7 @@ parsenan(const uint8* s, int32 mode, uint64* result)
 		return 3;
 	}
 	if ((s[0] | 0x20) == 'n' && (s[1] | 0x20) == 'a' && (s[2] | 0x20) == 'n') {
-		f = flttype + mode;
-
-		result[0] = FLTNAN(f->mbits, f->ebits);
+		r[0] = FLTNAN(f->sbits, f->ebits);
 		return 3;
 	}
 	return 0;
@@ -969,10 +929,10 @@ parseexponent(const uint8* s, int32* exponent)
 }
 
 
-static uint64 tobinary(const uint8*, int32, uint64, int32, int32);
+static uint64 tobinary(const uint8*, int32, uint64, int32, uintxx);
 
 static eintxx
-parsefloat(const uint8* src, const uint8** end, int32 mode, uint64* result)
+parsefloat(const uint8* src, const uint8** end, uintxx mode, uint64* result)
 {
 	int32 start;
 	int32 total;
@@ -983,26 +943,27 @@ parsefloat(const uint8* src, const uint8** end, int32 mode, uint64* result)
 	int32 e10;
 	int32 zcountf;
 	int32 zcounti;
-	uint64 man;
+	uint64 significand;
 	eintxx r;
 	const uint8* s;
+	const struct TFLTType* f;
 
 	s = src;
 
-	/* consume the white space */
+	/* Consume the white space */
 	while (ctb_isspace(s[0])) {
 		s++;
 	}
 
-	man = 0;  /* mantissa */
-	e10 = 0;  /* exponent */
+	significand = 0;
+	e10 = 0;  /* Exponent */
 	decimalpoint = -1;
 
-	/* number of zeros after the decimal point if the integral part is zero */
+	/* Number of zeros after the decimal point if the integral part is zero */
 	zcountf = 0;
-	zcounti = 0;  /* number of zeros before the decimal point */
+	zcounti = 0;  /* Number of zeros before the decimal point */
 
-	/* check the sign */
+	/* Check the sign */
 	isnegative = 0;
 	if (s[0] == 0x2d) {
 		isnegative = 1;
@@ -1014,6 +975,7 @@ parsefloat(const uint8* src, const uint8** end, int32 mode, uint64* result)
 		}
 	}
 
+	f = flttype + mode;
 	if (ctb_isdigit(s[0]) == 0) {
 		if (s[0] == 0x2e) {
 			decimalpoint = 0;
@@ -1022,7 +984,7 @@ parsefloat(const uint8* src, const uint8** end, int32 mode, uint64* result)
 			goto L1;
 		}
 
-		i = parsenan(s, mode, result);
+		i = parsenan(s, f, result);
 		if (i) {
 			if (end)
 				end[0] = s + i;
@@ -1032,7 +994,7 @@ parsefloat(const uint8* src, const uint8** end, int32 mode, uint64* result)
 		if (end)
 			end[0] = src;
 
-		result[0] = FLTNAN(flttype[mode].mbits, flttype[mode].ebits);
+		result[0] = FLTNAN(f->sbits, f->ebits);
 		return STR2FLT_ENAN;
 	}
 
@@ -1056,7 +1018,7 @@ L1:
 
 	start = (int32) (s - (uint8*) src);
 
-	/* parse the first 19 digits */
+	/* Parse the first 19 digits */
 	for (total = 0; total < 19; s++) {
 		c = s[0];
 
@@ -1071,7 +1033,7 @@ L1:
 			}
 			break;
 		}
-		man = man * 10 + (c - 0x30);
+		significand = significand * 10 + (c - 0x30);
 		total++;
 	}
 
@@ -1105,7 +1067,7 @@ L1:
 		if (zcountf || zcounti) {
 			result[0] = 0;
 
-			/* parse the exponent (if any) */
+			/* Parse the exponent (if any) */
 			if (s[0] == 0x45 || s[0] == 0x65) {
 				int32 e[1];
 
@@ -1123,7 +1085,7 @@ L1:
 		if (end)
 			end[0] = src;
 
-		result[0] = FLTNAN(flttype[mode].mbits, flttype[mode].ebits);
+		result[0] = FLTNAN(f->sbits, f->ebits);
 		return STR2FLT_ENAN;
 	}
 
@@ -1131,7 +1093,7 @@ L1:
 		decimalpoint = total;
 	}
 
-	/* we have an exponent */
+	/* We have an exponent */
 	if (s[0] == 0x45 || s[0] == 0x65) {
 		int32 e[1];
 
@@ -1142,10 +1104,10 @@ L1:
 		e10 = e[0];
 	}
 
-	/* normalize the exponent */
+	/* Normalize the exponent */
 	e10 = e10 - (total - decimalpoint) - zcountf;
 
-	result[0] = tobinary(src + start, total, man, e10, mode);
+	result[0] = tobinary(src + start, total, significand, e10, mode);
 	r = 0;
 	switch (mode) {
 		case FLT32MODE:
@@ -1153,7 +1115,7 @@ L1:
 				r = STR2FLT_ERANGE;
 			}
 			if (isnegative)
-				result[0] |= 1ull << 31;
+				result[0] |= 1ull << ((sizeof(uint32) << 3) - 1);
 			break;
 
 		case FLT64MODE:
@@ -1161,83 +1123,111 @@ L1:
 				r = STR2FLT_ERANGE;
 			}
 			if (isnegative)
-				result[0] |= 1ull << 63;
+				result[0] |= 1ull << ((sizeof(uint64) << 3) - 1);
 			break;
 	}
-
 	if (end)
 		end[0] = s;
 	return r;
 }
 
 static uint64
-tobinary(const uint8* start, int32 total, uint64 man, int32 e10, int32 mode)
+tobinary(const uint8* start, int32 total, uint64 snd, int32 e10, uintxx mode)
 {
-	struct TDecimal decimal;
-	uint64 r1[1];
-	uint64 r2[1];
+	struct TFltResult r1;
+	struct TFltResult r2;
+	const struct TFLTType* f;
 
-	if (total > 19) {
-		int32 m;
+	f = flttype + mode;
+	if (e10 == 0 && snd < (1ull << f->sbits)) {
+		switch (mode) {
+			case FLT32MODE: {
+				union {
+					flt32 f; uint32 u;
+				}
+				m;
+
+				m.f = (flt32) snd;
+				return (uint64) m.u;
+			}
+			break;
+
+			case FLT64MODE: {
+				union {
+					flt64 f; uint64 u;
+				}
+				m;
+
+				m.f = (flt64) snd;
+				return (uint64) m.u;
+			}
+			break;
+		}
+	}
+
+	if (total < 20) {
+		r1 = eisellemire(snd, e10, f);
+	}
+	else {
 		int32 ajustedexponent;
 
 		ajustedexponent = (total + e10) - 19;
-		m = 1;
-		if (m && eisellemire(man + 0, ajustedexponent, mode, r1) == 0)
-			m = 0;
-		if (m && eisellemire(man + 1, ajustedexponent, mode, r2) == 0)
-			m = 0;
+		r1 = eisellemire(snd + 0, ajustedexponent, f);
+		r2 = eisellemire(snd + 1, ajustedexponent, f);
 
-		if (m && r1[0] == r2[0]) {
-			return r1[0];
+		if (r1.significand != r2.significand || r1.exponent != r2.exponent) {
+			r1.significand = -1ll;
 		}
-	}
-	else {
-		if (eisellemire(man, e10, mode, r1) == 1) {
-			return r1[0];
+		else {
+			if (r2.significand == -1ll) {
+				r1.significand = -1ll;
+			}
 		}
 	}
 
-	parsedecimal(start, total, e10, &decimal);
-	return decimaltobinary(&decimal, mode);
+	if (r1.significand == -1ll) {
+		struct TDecimal decimal;
+
+		parsedecimal(start, total, e10, &decimal);
+		r1 = decimaltobinary(&decimal, f);
+	}
+	return r1.significand | (r1.exponent << f->sbits);
 }
 
 
-eintxx
-str2flt64(const uint8* src, const uint8** end, flt64* r)
+struct TToFltResult
+str2flt64(const uint8* src, const uint8** end)
 {
+	struct TToFltResult result;
+	uint64 u;
 	union {
 		flt64 f; uint64 u;
 	}
 	m;
-	uint64 u[1];
-	eintxx result;
 	CTB_ASSERT(src);
 
-	result = parsefloat(src, end, FLT64MODE, u);
-	if (r) {
-		m.u = (uint64) u[0];
-		r[0] = m.f;
-	}
+	result.error = parsefloat(src, end, FLT64MODE, &u);
+
+	m.u = u;
+	result.value.asf64 = m.f;
 	return result;
 }
 
-eintxx
-str2flt32(const uint8* src, const uint8** end, flt32* r)
+struct TToFltResult
+str2flt32(const uint8* src, const uint8** end)
 {
+	struct TToFltResult result;
+	uint64 u;
 	union {
 		flt32 f; uint32 u;
 	}
 	m;
-	uint64 u[1];
-	eintxx result;
 	CTB_ASSERT(src);
 
-	result = parsefloat(src, end, FLT32MODE, u);
-	if (r) {
-		m.u = (uint32) u[0];
-		r[0] = m.f;
-	}
+	result.error = parsefloat(src, end, FLT32MODE, &u);
+
+	m.u = u;
+	result.value.asf32 = m.f;
 	return result;
 }
 
