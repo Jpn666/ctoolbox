@@ -139,7 +139,7 @@ static uint8* formatD(struct TResult, uint8*, uintxx);
 /*
  * Float 64 */
 
-uint64 CTB_INLINE
+CTB_INLINE uint64
 roundtoodd64(struct TVal128 g, uint64 cp)
 {
 	struct TVal128 x;
@@ -223,8 +223,8 @@ todecimal64(int64 q, uint64 c)
 	}
 
 	/* See section 9.4 of [1]. */
-	uin = lower     <= 4 * s;
-	win = 4 * s + 4 <= upper;
+	uin = lower              <= (uint64) 4 * s;
+	win = (uint64) 4 * s + 4 <= upper;
 	if (uin != win) {
 		return (struct TResult) { s + win, k};
 	}
@@ -233,7 +233,7 @@ todecimal64(int64 q, uint64 c)
 	 * Both u and w lie in Rv: determine the one closest to v.
 	 * See section 9.4 of [1]. */
 	m = 4 * s + 2;
-	if (vb > m || (vb == m && (s & 1) != 0)) {
+	if ((uint64) vb > m || ((uint64) vb == m && (s & 1) != 0)) {
 		s++;
 	}
 	return (struct TResult) { s, k};
@@ -328,7 +328,7 @@ f64tostr(flt64 number, eFLTFormatMode m, uintxx precision, uint8 r[24])
 /*
  * Float 32 */
 
-uint32 CTB_INLINE
+CTB_INLINE uint32
 roundtoodd32(struct TVal128 g, uint64 cp)
 {
 	struct TVal128 m;
@@ -421,7 +421,7 @@ todecimal32(int64 q, uint64 c)
 	 * Both u and w lie in Rv: determine the one closest to v.
 	 * See section 9.4 of [1]. */
 	m = 4 * s + 2;
-	if (vb > m || (vb == m && (s & 1) != 0)) {
+	if ((uint64) vb > m || ((uint64) vb == m && (s & 1) != 0)) {
 		s++;
 	}
 	return (struct TResult) { s, k};

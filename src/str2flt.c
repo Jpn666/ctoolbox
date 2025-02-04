@@ -290,7 +290,7 @@ getdigitsdelta(struct TDecimal* decimal, uintxx amount)
 	delta = (j >> 0x08) & 0xff;
 	ldgts = lscheatdigits + (j >> 0x10);
 
-	for (j = 0; j < count; j++) {
+	for (j = 0; j < (uint32) count; j++) {
 		if (j >= decimal->n) {
 			delta--;
 			break;
@@ -461,8 +461,6 @@ decimaltobinary(struct TDecimal* decimal, const struct TFLTType* f)
 	int32 additionallshift;
 	int32  exp;
 	uint64 snd;
-	uint64 m;
-	uint64 e;
 	struct TFltResult r;
 
 	/* Decimal powers of 10 to powers of 2 */
