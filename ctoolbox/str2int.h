@@ -34,29 +34,44 @@ typedef enum {
 } eSTR2INTError;
 
 
+/* */
+struct TToIntResult {
+    eintxx error;
+
+    union TIntValue {
+        int32  asi32;
+        uint32 asu32;
+        int64  asi64;
+        uint64 asu64;
+    } value;
+};
+
+typedef struct TToIntResult TToIntResult;
+
+
 /*
  * Converts an string (base 2 to base 16) to 32bit or 64bit integer. */
-eintxx strtou32(const uint8* src, const uint8** end, intxx base, uint32* r);
-eintxx strtou64(const uint8* src, const uint8** end, intxx base, uint64* r);
+TToIntResult strtou32(const uint8* src, const uint8** end, intxx base);
+TToIntResult strtou64(const uint8* src, const uint8** end, intxx base);
 
-eintxx strtoi32(const uint8* src, const uint8** end, intxx base, int32* r);
-eintxx strtoi64(const uint8* src, const uint8** end, intxx base, int64* r);
+TToIntResult strtoi32(const uint8* src, const uint8** end, intxx base);
+TToIntResult strtoi64(const uint8* src, const uint8** end, intxx base);
 
 /*
  * Converts a decimal string (base 10) to 32bit or 64bit integer. */
-eintxx dcmltou32(const uint8* src, intxx total, const uint8** end, uint32* r);
-eintxx dcmltou64(const uint8* src, intxx total, const uint8** end, uint64* r);
+TToIntResult dcmltou32(const uint8* src, intxx total, const uint8** end);
+TToIntResult dcmltou64(const uint8* src, intxx total, const uint8** end);
 
-eintxx dcmltoi32(const uint8* src, intxx total, const uint8** end, int32* r);
-eintxx dcmltoi64(const uint8* src, intxx total, const uint8** end, int64* r);
+TToIntResult dcmltoi32(const uint8* src, intxx total, const uint8** end);
+TToIntResult dcmltoi64(const uint8* src, intxx total, const uint8** end);
 
 /*
  * Converts a hexadecimal string (base 16) to integer. */
-eintxx hexatou32(const uint8* src, intxx total, const uint8** end, uint32* r);
-eintxx hexatou64(const uint8* src, intxx total, const uint8** end, uint64* r);
+TToIntResult hexatou32(const uint8* src, intxx total, const uint8** end);
+TToIntResult hexatou64(const uint8* src, intxx total, const uint8** end);
 
-eintxx hexatoi32(const uint8* src, intxx total, const uint8** end, int32* r);
-eintxx hexatoi64(const uint8* src, intxx total, const uint8** end, int64* r);
+TToIntResult hexatoi32(const uint8* src, intxx total, const uint8** end);
+TToIntResult hexatoi64(const uint8* src, intxx total, const uint8** end);
 
 
 #if defined(CTB_ENV64)
@@ -76,6 +91,5 @@ eintxx hexatoi64(const uint8* src, intxx total, const uint8** end, int64* r);
 	#define strtouxx strtou32
 	#define strtoixx strtoi32
 #endif
-
 
 #endif

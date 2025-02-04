@@ -207,13 +207,15 @@ L1:
 	return STR2INT_ERANGE;
 }
 
-eintxx
-strtou32(const uint8* src, const uint8** end, intxx base, uint32* r)
+TToIntResult
+strtou32(const uint8* src, const uint8** end, intxx base)
 {
 	const uint8* s;
 	const uint8* e[1];
 	int32 isnegative;
-	CTB_ASSERT(src && r);
+	uint32 u;
+	struct TToIntResult result;
+	CTB_ASSERT(src);
 
 	s = src;
 	while (ctb_isspace(s[0]))
@@ -228,44 +230,51 @@ strtou32(const uint8* src, const uint8** end, intxx base, uint32* r)
 		break;
 	}
 
+	result.value.asu32 = 0;
 	base = getbase(&s, base);
 	if (base == 0) {
 		if (end)
 			end[0] = src;
-		r[0] = 0;
-		return STR2INT_EBASE;
+		result.error = STR2INT_EBASE;
+		return result;
 	}
 
-	if (parseu32(s, e, base, r) == STR2INT_ERANGE) {
+	if (parseu32(s, e, base, &u) == STR2INT_ERANGE) {
 		if (end)
 			end[0] = e[0];
 
-		r[0] = 0xffffffff;
-		return STR2INT_ERANGE;
+		result.value.asu32 = 0xffffffff;
+		result.error = STR2INT_ERANGE;
+		return result;
 	}
 	if (s == e[0]) {
 		if (end)
 			end[0] = src;
-		r[0] = 0;
-		return STR2INT_ENAN;
+		result.error = STR2INT_ENAN;
+		return result;
 	}
+
 
 	if (end)
 		end[0] = e[0];
 
 	if (isnegative)
-		r[0] = -((int32) r[0]);
-	return 0;
+		u = -((int32) u);
+
+	result.value.asu32 = u;
+	result.error = 0;
+	return result;
 }
 
-eintxx
-strtoi32(const uint8* src, const uint8** end, intxx base, int32* r)
+TToIntResult
+strtoi32(const uint8* src, const uint8** end, intxx base)
 {
 	const uint8* s;
 	const uint8* e[1];
 	int32 isnegative;
-	uint32 u[1];
-	CTB_ASSERT(src && r);
+	uint32 u;
+	struct TToIntResult result;
+	CTB_ASSERT(src);
 
 	s = src;
 	while (ctb_isspace(s[0]))
@@ -280,23 +289,24 @@ strtoi32(const uint8* src, const uint8** end, intxx base, int32* r)
 		break;
 	}
 
+	result.value.asi32 = 0;
 	base = getbase(&s, base);
 	if (base == 0) {
 		if (end)
 			end[0] = src;
-		r[0] = 0;
-		return STR2INT_EBASE;
+		result.error = STR2INT_EBASE;
+		return result;
 	}
 
-	if (parseu32(s, e, base, u) == STR2INT_ERANGE) {
-		u[0] = 0xffffffff;
+	if (parseu32(s, e, base, &u) == STR2INT_ERANGE) {
+		u = 0xffffffff;
 		goto L1;
 	}
 	if (s == e[0]) {
 		if (end)
 			end[0] = src;
-		r[0] = 0;
-		return STR2INT_ENAN;
+		result.error = STR2INT_ENAN;
+		return result;
 	}
 
 L1:
@@ -304,21 +314,24 @@ L1:
 		end[0] = e[0];
 
 	if (isnegative) {
-		if (u[0] > (uint32) INT32_MIN) {
-			r[0] = INT32_MIN;
-			return STR2INT_ERANGE;
+		if (u > (uint32) INT32_MIN) {
+			result.value.asi32 = INT32_MIN;
+			result.error = STR2INT_ERANGE;
+			return result;
 		}
-		r[0] = -((int32) u[0]);
+		result.value.asi32 = -((int32) u);
 	}
 	else {
-		if (u[0] > (uint32) INT32_MAX) {
-			r[0] = INT32_MAX;
-			return STR2INT_ERANGE;
+		if (u > (uint32) INT32_MAX) {
+			result.value.asi32 = INT32_MAX;
+			result.error = STR2INT_ERANGE;
+			return result;
 		}
-		r[0] = +u[0];
+		result.value.asi32 = u;
 	}
 
-	return 0;
+	result.error = 0;
+	return result;
 }
 
 
@@ -441,13 +454,15 @@ L1:
 }
 
 
-eintxx
-strtou64(const uint8* src, const uint8** end, intxx base, uint64* r)
+TToIntResult
+strtou64(const uint8* src, const uint8** end, intxx base)
 {
 	const uint8* s;
 	const uint8* e[1];
 	int32 isnegative;
-	CTB_ASSERT(src && r);
+	uint64 u;
+	struct TToIntResult result;
+	CTB_ASSERT(src);
 
 	s = src;
 	while (ctb_isspace(s[0]))
@@ -462,44 +477,49 @@ strtou64(const uint8* src, const uint8** end, intxx base, uint64* r)
 		break;
 	}
 
+	result.value.asu64 = 0;
 	base = getbase(&s, base);
 	if (base == 0) {
 		if (end)
 			end[0] = src;
-		r[0] = 0;
-		return STR2INT_EBASE;
+		result.error = STR2INT_EBASE;
+		return result;
 	}
 
-	if (parseu64(s, e, base, r) == STR2INT_ERANGE) {
+	if (parseu64(s, e, base, &u) == STR2INT_ERANGE) {
 		if (end)
 			end[0] = e[0];
 
-		r[0] = 0xffffffffffffffff;
-		return STR2INT_ERANGE;
+		result.value.asu64 = 0xffffffffffffffff;
+		result.error = STR2INT_ERANGE;
+		return result;
 	}
 	if (s == e[0]) {
 		if (end)
 			end[0] = src;
-		r[0] = 0;
-		return STR2INT_ENAN;
+		result.error = STR2INT_ENAN;
 	}
 
 	if (end)
 		end[0] = e[0];
 
 	if (isnegative)
-		r[0] = -((int64) r[0]);
-	return 0;
+		u = -((int64) u);
+
+	result.value.asu64 = u;
+	result.error = 0;
+	return result;
 }
 
-eintxx
-strtoi64(const uint8* src, const uint8** end, intxx base, int64* r)
+TToIntResult
+strtoi64(const uint8* src, const uint8** end, intxx base)
 {
 	const uint8* s;
 	const uint8* e[1];
 	int32 isnegative;
-	uint64 u[1];
-	CTB_ASSERT(src && r);
+	uint64 u;
+	struct TToIntResult result;
+	CTB_ASSERT(src);
 
 	s = src;
 	while (ctb_isspace(s[0]))
@@ -514,23 +534,24 @@ strtoi64(const uint8* src, const uint8** end, intxx base, int64* r)
 		break;
 	}
 
+	result.value.asi64 = 0;
 	base = getbase(&s, base);
 	if (base == 0) {
 		if (end)
 			end[0] = src;
-		r[0] = 0;
-		return STR2INT_EBASE;
+		result.error = STR2INT_EBASE;
+		return result;
 	}
 
-	if (parseu64(s, e, base, u) == STR2INT_ERANGE) {
-		u[0] = 0xffffffffffffffff;
+	if (parseu64(s, e, base, &u) == STR2INT_ERANGE) {
+		u = 0xffffffffffffffff;
 		goto L1;
 	}
 	if (s == e[0]) {
 		if (end)
 			end[0] = src;
-		r[0] = 0;
-		return STR2INT_ENAN;
+		result.error = STR2INT_ENAN;
+		return result;
 	}
 
 L1:
@@ -538,21 +559,24 @@ L1:
 		end[0] = e[0];
 
 	if (isnegative) {
-		if (u[0] > (uint64) INT64_MIN) {
-			r[0] = INT64_MIN;
-			return STR2INT_ERANGE;
+		if (u > (uint64) INT64_MIN) {
+			result.value.asi64 = INT64_MIN;
+			result.error = STR2INT_ERANGE;
+			return result;
 		}
-		r[0] = -((int64) u[0]);
+		result.value.asi64 = -((int64) u);
 	}
 	else {
-		if (u[0] > (uint64) INT64_MAX) {
-			r[0] = INT64_MAX;
-			return STR2INT_ERANGE;
+		if (u > (uint64) INT64_MAX) {
+			result.value.asi64 = INT64_MAX;
+			result.error = STR2INT_ERANGE;
+			return result;
 		}
-		r[0] = +u[0];
+		result.value.asi64 = u;
 	}
 
-	return 0;
+	result.error = 0;
+	return result;
 }
 
 
@@ -693,14 +717,15 @@ L2:
 	return STR2INT_ERANGE;
 }
 
-eintxx
-dcmltou32(const uint8* src, intxx total, const uint8** end, uint32* r)
+TToIntResult
+dcmltou32(const uint8* src, intxx total, const uint8** end)
 {
 	const uint8* s;
 	const uint8* e;
-	eintxx result;
 	uintxx isnegative;
-	CTB_ASSERT(src && r);
+	uint32 u;
+	struct TToIntResult result;
+	CTB_ASSERT(src);
 
 	isnegative = 0;
 	e = (s = src) + total;
@@ -711,29 +736,32 @@ dcmltou32(const uint8* src, intxx total, const uint8** end, uint32* r)
 		}
 	}
 
-	result = parsedecimal32(s, (uintxx) (e - s), end, r);
-	if (CTB_UNLIKELY(result != 0)) {
-		if (result == STR2INT_ENAN) {
+	result.error = parsedecimal32(s, (uintxx) (e - s), end, &u);
+	if (CTB_UNLIKELY(result.error != 0)) {
+		if (result.error == STR2INT_ENAN) {
 			if (end)
 				end[0] = src;
 		}
+		result.value.asu32 = u;
 		return result;
 	}
 
 	if (isnegative)
-		r[0] = -((int32) r[0]);
-	return 0;
+		u = -((int32) u);
+
+	result.value.asu32 = u;
+	return result;
 }
 
-eintxx
-dcmltoi32(const uint8* src, intxx total, const uint8** end, int32* r)
+TToIntResult
+dcmltoi32(const uint8* src, intxx total, const uint8** end)
 {
 	const uint8* s;
 	const uint8* e;
-	eintxx result;
 	uintxx isnegative;
-	uint32 u[1];
-	CTB_ASSERT(src && r);
+	uint32 u;
+	struct TToIntResult result;
+	CTB_ASSERT(src);
 
 	isnegative = 0;
 	e = (s = src) + total;
@@ -744,34 +772,37 @@ dcmltoi32(const uint8* src, intxx total, const uint8** end, int32* r)
 		}
 	}
 
-	result = parsedecimal32(s, (uintxx) (e - s), end, u);
-	if (CTB_UNLIKELY(result != 0)) {
-		if (result == STR2INT_ERANGE) {
+	result.error = parsedecimal32(s, (uintxx) (e - s), end, &u);
+	if (CTB_UNLIKELY(result.error != 0)) {
+		if (result.error == STR2INT_ERANGE) {
 			goto L1;
 		}
 
 		if (end)
 			end[0] = src;
-		r[0] = 0;
+		result.value.asi32 = 0;
 		return result;
 	}
 
 L1:
 	if (isnegative) {
-		if (u[0] > (uint32) INT32_MIN) {
-			r[0] = INT32_MIN;
-			return STR2INT_ERANGE;
+		if (u > (uint32) INT32_MIN) {
+			result.value.asi32 = INT32_MIN;
+			result.error = STR2INT_ERANGE;
+			return result;
 		}
-		r[0] = -((int32) u[0]);
+		result.value.asi32 = -((int32) u);
 	}
 	else {
-		if (u[0] > (uint32) INT32_MAX) {
-			r[0] = INT32_MAX;
-			return STR2INT_ERANGE;
+		if (u > (uint32) INT32_MAX) {
+			result.value.asi32 = INT32_MAX;
+			result.error = STR2INT_ERANGE;
+			return result;
 		}
-		r[0] = +((int32) u[0]);
+		result.value.asi32 = +((int32) u);
 	}
-	return 0;
+
+	return result;
 }
 
 static eintxx
@@ -946,14 +977,15 @@ L2:
 	return STR2INT_ERANGE;
 }
 
-eintxx
-dcmltou64(const uint8* src, intxx total, const uint8** end, uint64* r)
+TToIntResult
+dcmltou64(const uint8* src, intxx total, const uint8** end)
 {
 	const uint8* s;
 	const uint8* e;
-	eintxx result;
 	uintxx isnegative;
-	CTB_ASSERT(src && r);
+	uint64 u;
+	struct TToIntResult result;
+	CTB_ASSERT(src);
 
 	isnegative = 0;
 	e = (s = src) + total;
@@ -964,29 +996,32 @@ dcmltou64(const uint8* src, intxx total, const uint8** end, uint64* r)
 		}
 	}
 
-	result = parsedecimal64(s, (uintxx) (e - s), end, r);
-	if (CTB_UNLIKELY(result != 0)) {
-		if (result == STR2INT_ENAN) {
+	result.error = parsedecimal64(s, (uintxx) (e - s), end, &u);
+	if (CTB_UNLIKELY(result.error != 0)) {
+		if (result.error == STR2INT_ENAN) {
 			if (end)
 				end[0] = src;
 		}
+		result.value.asu64 = u;
 		return result;
 	}
 
 	if (isnegative)
-		r[0] = -((int64) r[0]);
-	return 0;
+		u = -((int64) u);
+
+	result.value.asu64 = u;
+	return result;
 }
 
-eintxx
-dcmltoi64(const uint8* src, intxx total, const uint8** end, int64* r)
+TToIntResult
+dcmltoi64(const uint8* src, intxx total, const uint8** end)
 {
 	const uint8* s;
 	const uint8* e;
-	eintxx result;
 	uintxx isnegative;
-	uint64 u[1];
-	CTB_ASSERT(src && r);
+	uint64 u;
+	struct TToIntResult result;
+	CTB_ASSERT(src);
 
 	isnegative = 0;
 	e = (s = src) + total;
@@ -997,34 +1032,37 @@ dcmltoi64(const uint8* src, intxx total, const uint8** end, int64* r)
 		}
 	}
 
-	result = parsedecimal64(s, (uintxx) (e - s), end, u);
-	if (CTB_UNLIKELY(result != 0)) {
-		if (result == STR2INT_ERANGE) {
+	result.error = parsedecimal64(s, (uintxx) (e - s), end, &u);
+	if (CTB_UNLIKELY(result.error != 0)) {
+		if (result.error == STR2INT_ERANGE) {
 			goto L1;
 		}
 
 		if (end)
 			end[0] = src;
-		r[0] = 0;
+		result.value.asi64 = 0;
 		return result;
 	}
 
 L1:
 	if (isnegative) {
-		if (u[0] > (uint64) INT64_MIN) {
-			r[0] = INT64_MIN;
-			return STR2INT_ERANGE;
+		if (u > (uint64) INT64_MIN) {
+			result.value.asi64 = INT64_MIN;
+			result.error = STR2INT_ERANGE;
+			return result;
 		}
-		r[0] = -((int64) u[0]);
+		result.value.asi64 = -((int64) u);
 	}
 	else {
-		if (u[0] > (uint64) INT64_MAX) {
-			r[0] = INT64_MAX;
-			return STR2INT_ERANGE;
+		if (u > (uint64) INT64_MAX) {
+			result.value.asi64 = INT64_MAX;
+			result.error = STR2INT_ERANGE;
+			return result;
 		}
-		r[0] = +((int64) u[0]);
+		result.value.asi64 = +((int64) u);
 	}
-	return 0;
+
+	return result;
 }
 
 
@@ -1114,14 +1152,15 @@ parsehexa32(const uint8* src, uintxx total, const uint8** end, uint32* r)
 }
 
 
-eintxx
-hexatou32(const uint8* src, intxx total, const uint8** end, uint32* r)
+TToIntResult
+hexatou32(const uint8* src, intxx total, const uint8** end)
 {
 	const uint8* s;
 	const uint8* e;
-	eintxx result;
 	uintxx isnegative;
-	CTB_ASSERT(src && r);
+	uint32 u;
+	struct TToIntResult result;
+	CTB_ASSERT(src);
 
 	isnegative = 0;
 	e = (s = src) + total;
@@ -1143,29 +1182,32 @@ hexatou32(const uint8* src, intxx total, const uint8** end, uint32* r)
 		}
 	}
 
-	result = parsehexa32(s, (uintxx) (e - s), end, r);
-	if (CTB_UNLIKELY(result != 0)) {
-		if (result == STR2INT_ENAN) {
+	result.error = parsehexa32(s, (uintxx) (e - s), end, &u);
+	if (CTB_UNLIKELY(result.error != 0)) {
+		if (result.error == STR2INT_ENAN) {
 			if (end)
 				end[0] = src;
 		}
+		result.value.asu32 = u;
 		return result;
 	}
 
 	if (isnegative)
-		r[0] = -((int32) r[0]);
-	return 0;
+		u = -((int32) u);
+
+	result.value.asu32 = u;
+	return result;
 }
 
-eintxx
-hexatoi32(const uint8* src, intxx total, const uint8** end, int32* r)
+struct TToIntResult
+hexatoi32(const uint8* src, intxx total, const uint8** end)
 {
 	const uint8* s;
 	const uint8* e;
-	eintxx result;
 	uintxx isnegative;
-	uint32 u[1];
-	CTB_ASSERT(src && r);
+	uint32 u;
+	struct TToIntResult result;
+	CTB_ASSERT(src);
 
 	isnegative = 0;
 	e = (s = src) + total;
@@ -1187,34 +1229,38 @@ hexatoi32(const uint8* src, intxx total, const uint8** end, int32* r)
 		}
 	}
 
-	result = parsehexa32(s, (uintxx) (e - s), end, u);
-	if (CTB_UNLIKELY(result != 0)) {
-		if (result == STR2INT_ERANGE) {
+	result.error = parsehexa32(s, (uintxx) (e - s), end, &u);
+	if (CTB_UNLIKELY(result.error != 0)) {
+		if (result.error == STR2INT_ERANGE) {
 			goto L1;
 		}
 
 		if (end)
 			end[0] = src;
-		r[0] = 0;
+		result.value.asi32 = 0;
 		return result;
 	}
 
 L1:
 	if (isnegative) {
-		if (u[0] > (uint32) INT32_MIN) {
-			r[0] = INT32_MIN;
-			return STR2INT_ERANGE;
+		if (u > (uint32) INT32_MIN) {
+			result.value.asi32 = INT32_MIN;
+			result.error = STR2INT_ERANGE;
+			return result;
 		}
-		r[0] = -((int32) u[0]);
+		result.value.asi32 = -((int32) u);
 	}
 	else {
-		if (u[0] > (uint32) INT32_MAX) {
-			r[0] = INT32_MAX;
-			return STR2INT_ERANGE;
+		if (u > (uint32) INT32_MAX) {
+			result.value.asi32 = INT32_MAX;
+			result.error = STR2INT_ERANGE;
+			return result;
 		}
-		r[0] = +((int32) u[0]);
+		result.value.asi32 = +((int32) u);
 	}
-	return 0;
+
+	result.error = 0;
+	return result;
 }
 
 
@@ -1337,14 +1383,15 @@ parsehexa64(const uint8* src, uintxx total, const uint8** end, uint64* r)
 	return STR2INT_ERANGE;
 }
 
-eintxx
-hexatou64(const uint8* src, intxx total, const uint8** end, uint64* r)
+TToIntResult
+hexatou64(const uint8* src, intxx total, const uint8** end)
 {
 	const uint8* s;
 	const uint8* e;
-	eintxx result;
 	uintxx isnegative;
-	CTB_ASSERT(src && r);
+	uint64 u;
+	struct TToIntResult result;
+	CTB_ASSERT(src);
 
 	isnegative = 0;
 	e = (s = src) + total;
@@ -1366,29 +1413,32 @@ hexatou64(const uint8* src, intxx total, const uint8** end, uint64* r)
 		}
 	}
 
-	result = parsehexa64(s, (uintxx) (e - s), end, r);
-	if (CTB_UNLIKELY(result != 0)) {
-		if (result == STR2INT_ENAN) {
+	result.error = parsehexa64(s, (uintxx) (e - s), end, &u);
+	if (CTB_UNLIKELY(result.error != 0)) {
+		if (result.error == STR2INT_ENAN) {
 			if (end)
 				end[0] = src;
 		}
+		result.value.asu64 = u;
 		return result;
 	}
 
 	if (isnegative)
-		r[0] = -((int64) r[0]);
-	return 0;
+		u = -((int64) u);
+
+	result.value.asu64 = u;
+	return result;
 }
 
-eintxx
-hexatoi64(const uint8* src, intxx total, const uint8** end, int64* r)
+TToIntResult
+hexatoi64(const uint8* src, intxx total, const uint8** end)
 {
 	const uint8* s;
 	const uint8* e;
-	eintxx result;
 	uintxx isnegative;
-	uint64 u[1];
-	CTB_ASSERT(src && r);
+	uint64 u;
+	struct TToIntResult result;
+	CTB_ASSERT(src);
 
 	isnegative = 0;
 	e = (s = src) + total;
@@ -1410,33 +1460,36 @@ hexatoi64(const uint8* src, intxx total, const uint8** end, int64* r)
 		}
 	}
 
-	result = parsehexa64(s, (uintxx) (e - s), end, u);
-	if (CTB_UNLIKELY(result != 0)) {
-		if (result == STR2INT_ERANGE) {
+	result.error = parsehexa64(s, (uintxx) (e - s), end, &u);
+	if (CTB_UNLIKELY(result.error != 0)) {
+		if (result.error == STR2INT_ERANGE) {
 			goto L1;
 		}
 
 		if (end)
 			end[0] = src;
-		r[0] = 0;
+		result.value.asi64 = 0;
 		return result;
 	}
 
 L1:
 	if (isnegative) {
-		if (u[0] > (uint64) INT64_MIN) {
-			r[0] = INT64_MIN;
-			return STR2INT_ERANGE;
+		if (u > (uint64) INT64_MIN) {
+			result.value.asi64 = INT64_MIN;
+			result.error = STR2INT_ERANGE;
+			return result;
 		}
-		r[0] = -((int64) u[0]);
+		result.value.asi64 = -((int64) u);
 	}
 	else {
-		if (u[0] > (uint64) INT64_MAX) {
-			r[0] = INT64_MAX;
-			return STR2INT_ERANGE;
+		if (u > (uint64) INT64_MAX) {
+			result.value.asi64 = INT64_MAX;
+			result.error = STR2INT_ERANGE;
+			return result;
 		}
-		r[0] = +((int64) u[0]);
+		result.value.asi64 = +((int64) u);
 	}
-	return 0;
-}
 
+	result.error = 0;
+	return result;
+}
