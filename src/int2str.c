@@ -41,46 +41,101 @@ static const uint8 radix100[] = {
 };
 
 static uint8*
-todigits(uint32 number, uint8* buffer, uint32 total[1])
+todigits(uint32 number, uint8* buffer)
 {
+	uint64 c;
 	uint32 r;
-	uint32 n;
+	uint64 n;
 	uint8* p;
 
-	p = buffer + 9;
-	while (number >= 100) {
+	p = buffer;
+	for (c = number; c >= 100; ) {
 		p -= 2;
-		r = (number - ((n = (number / 100)) * 100));
-		number = n;
+		r = c - ((n = ((42949673 * c) >> 32)) * 100);
+		c = n;
 		p[0] = radix100[(r << 1) + 0];
 		p[1] = radix100[(r << 1) + 1];
 	}
 
-	if (number >= 10) {
+	if (c >= 10) {
 		p -= 2;
-		p[0] = radix100[(number << 1) + 0];
-		p[1] = radix100[(number << 1) + 1];
+		p[0] = radix100[(c << 1) + 0];
+		p[1] = radix100[(c << 1) + 1];
 	}
 	else {
 		p -= 1;
-		p[0] = (uint8) (0x30 + number);
+		p[0] = (uint8) (0x30 + c);
 	}
 
-	total[0] = (uint32) (9 - (p - buffer));
 	return p;
+}
+
+
+/* */
+struct TVal128 {
+	uint64 hi;
+	uint64 lo;
+};
+
+CTB_INLINE struct TVal128
+mul64to128(uint64 lhs, uint64 rhs)
+{
+	struct TVal128 r;
+
+#if defined(__GNUC__) && defined(__SIZEOF_INT128__)
+	__uint128_t product;
+
+	product = ((__uint128_t) lhs) * ((__uint128_t) rhs);
+	r.lo = (uint64) (product >> 00);
+	r.hi = (uint64) (product >> 64);
+#else
+	/*
+	 * Taken from xxHash3
+	 * See also: https://stackoverflow.com/a/58381061 */
+	uint64 loxlo;
+	uint64 loxhi;
+	uint64 hixlo;
+	uint64 hixhi;
+	uint64 upper;
+	uint64 cross;
+
+	/* first calculate all of the cross products. */
+	loxlo = (lhs & 0xffffffff) * (rhs & 0xffffffff);
+	hixlo = (lhs >> 32)        * (rhs & 0xffffffff);
+	loxhi = (lhs & 0xffffffff) * (rhs >> 32);
+	hixhi = (lhs >> 32)        * (rhs >> 32);
+
+	/* now add the products together. These will never overflow. */
+	cross = (loxlo >> 32) + (hixlo & 0xffffffff) + loxhi;
+	upper = (hixlo >> 32) + (cross >> 32)        + hixhi;
+
+	r.hi = upper;
+	r.lo = (cross << 32) | (loxlo & 0xffffffff);
+#endif
+	return r;
+}
+
+CTB_INLINE uint64
+mul128hi(uint64 lhs, uint64 rhs)
+{
+	return mul64to128(lhs, rhs).hi;
 }
 
 /* */
 #if defined(CTB_ENV64)
-	union TZeroUnion {
-		uint64 asuint[ 5];
-		uint8  buffer[40];
-	};
+
+union TZeroUnion {
+	uint64 asuint[ 5];
+	uint8  buffer[40];
+};
+
 #else
-	union TZeroUnion {
-		uint32 asuint[10];
-		uint8  buffer[40];
-	};
+
+union TZeroUnion {
+	uint32 asuint[10];
+	uint8  buffer[40];
+};
+
 #endif
 
 
@@ -88,52 +143,58 @@ uintxx
 u32tostr(uint32 number, uint8 r[16])
 {
 	union TZeroUnion z;
-	uint8* s;
+	uint8* s1;
+	uint8* s2;
 #if !defined(CTB_FASTUNALIGNED)
 	uint8* m;
 #endif
-	uint32 total[1];
+	uint32 total;
 	CTB_ASSERT(r);
 
-	s = z.buffer + 1;
+#if defined(CTB_ENV64)
+	z.asuint[0] = 0x3030303030303030ull;
+	z.asuint[1] = 0x3030303030303030ull;
+#else
+	z.asuint[0] = 0x30303030;
+	z.asuint[1] = 0x30303030;
+	z.asuint[2] = 0x30303030;
+	z.asuint[3] = 0x30303030;
+#endif
+
+	s1 = z.buffer + 10;
 	if (number < 1000000000) {
-		s = todigits(number, s, total);
+		s2 = todigits(number, s1);
 	}
 	else {
 		uint64 a;
 		uint64 b;
 
-#if defined(CTB_ENV64)
-		z.asuint[1] = 0x3030303030303030;
-#else
-		z.asuint[2] = 0x30303030;
-		z.asuint[3] = 0x30303030;
-#endif
-		b = number - ((a = (number / 1000000000)) * 1000000000);
-		    todigits((uint32) b, s - 0, total);
-		s = todigits((uint32) a, s - 9, total);
+		a = mul128hi(19342813113834068ull, number) >> 20;
+		b = number - (a * 1000000000);
 
-		total[0] += 9;
+		     todigits((uint32) b, s1 - 0);
+		s2 = todigits((uint32) a, s1 - 9);
 	}
+	total = (uint32) (s1 - s2);
 
 #if defined(CTB_FASTUNALIGNED)
-	((uint32*) r)[0] = ((uint32*) s)[0];
-	((uint32*) r)[1] = ((uint32*) s)[1];
-	((uint32*) r)[2] = ((uint32*) s)[2];
+	((uint32*) r)[0] = ((uint32*) s2)[0];
+	((uint32*) r)[1] = ((uint32*) s2)[1];
+	((uint32*) r)[2] = ((uint32*) s2)[2];
 
-	r[total[0]] = 0x00;
-	return total[0];
+	r[total] = 0x00;
+	return total;
 #else
-	for (m = r; total[0] >= 4; total[0] -= 4) {
-		*r++ = *s++;
-		*r++ = *s++;
-		*r++ = *s++;
-		*r++ = *s++;
+	for (m = r; total >= 4; total -= 4) {
+		*r++ = *s2++;
+		*r++ = *s2++;
+		*r++ = *s2++;
+		*r++ = *s2++;
 	}
-	switch (total[0]) {
-		case  3: *r++ = *s++;  /* fallthrough */
-		case  2: *r++ = *s++;  /* fallthrough */
-		case  1: *r++ = *s++;  /* fallthrough */
+	switch (total) {
+		case  3: *r++ = *s2++;  /* fallthrough */
+		case  2: *r++ = *s2++;  /* fallthrough */
+		case  1: *r++ = *s2++;  /* fallthrough */
 		case  0:
 			break;
 	}
@@ -146,83 +207,88 @@ uintxx
 u64tostr(uint64 number, uint8 r[24])
 {
 	union TZeroUnion z;
-	uint8* s;
+	uint8* s1;
+	uint8* s2;
 #if !defined(CTB_FASTUNALIGNED)
 	uint8* m;
 #endif
-	uint32 total[1];
+	uint32 total;
 	CTB_ASSERT(r);
 
-	s = z.buffer + 11;
+#if defined(CTB_ENV64)
+	z.asuint[0] = 0x3030303030303030ull;
+	z.asuint[1] = 0x3030303030303030ull;
+	z.asuint[2] = 0x3030303030303030ull;
+	z.asuint[3] = 0x3030303030303030ull;
+#else
+	z.asuint[0] = 0x30303030;
+	z.asuint[1] = 0x30303030;
+	z.asuint[2] = 0x30303030;
+	z.asuint[3] = 0x30303030;
+	z.asuint[4] = 0x30303030;
+	z.asuint[5] = 0x30303030;
+	z.asuint[6] = 0x30303030;
+	z.asuint[7] = 0x30303030;
+#endif
+
+	s1 = z.buffer + 24;
 	if (number < 1000000000) {
-		s = todigits((uint32) number, s, total);
+		s2 = todigits((uint32) number, s1);
 	}
 	else {
 		uint64 a;
 		uint64 b;
 		uint64 c;
 
-#if defined(CTB_ENV64)
-		z.asuint[1] = 0x3030303030303030;
-		z.asuint[2] = 0x3030303030303030;
-#else
-		z.asuint[2] = 0x30303030;
-		z.asuint[3] = 0x30303030;
-		z.asuint[4] = 0x30303030;
-		z.asuint[5] = 0x30303030;
-#endif
-		b = number - ((a = (number / 1000000000)) * 1000000000);
+		a = mul128hi(19342813113834067ull, number >> 9) >> 11;
+		b = number - (a * 1000000000);
 		if (a > 1000000000) {
 			number = a;
 			c = b;
-			b = number - ((a = (number / 1000000000)) * 1000000000);
-		}
-		else {
-			c = 0;
-		}
 
-		if (c) {
-			    todigits((uint32) c, s - 0, total);
-			s = todigits((uint32) b, s - 9, total);
-			s = todigits((uint32) a, s - 9, total);
-			total[0] += 9 + 9;
+			a = mul128hi(19342813113834067ull, number >> 9) >> 11;
+			b = number - (a * 1000000000);
+
+			     todigits((uint32) c, s1 - 9 * 0);
+			     todigits((uint32) b, s1 - 9 * 1);
+			s2 = todigits((uint32) a, s1 - 9 * 2);
 		}
 		else {
-			    todigits((uint32) b, s - 0, total);
-			s = todigits((uint32) a, s - 9, total);
-			total[0] += 9;
+			     todigits((uint32) b, s1 - 0);
+			s2 = todigits((uint32) a, s1 - 9);
 		}
 	}
+	total = (uint32) (s1 - s2);
 
 #if defined(CTB_FASTUNALIGNED)
-	((uint32*) r)[0] = ((uint32*) s)[0];
-	((uint32*) r)[1] = ((uint32*) s)[1];
-	((uint32*) r)[2] = ((uint32*) s)[2];
-	((uint32*) r)[3] = ((uint32*) s)[3];
-	((uint32*) r)[4] = ((uint32*) s)[4];
+	((uint32*) r)[0] = ((uint32*) s2)[0];
+	((uint32*) r)[1] = ((uint32*) s2)[1];
+	((uint32*) r)[2] = ((uint32*) s2)[2];
+	((uint32*) r)[3] = ((uint32*) s2)[3];
+	((uint32*) r)[4] = ((uint32*) s2)[4];
 
-	r[total[0]] = 0x00;
-	return total[0];
+	r[total] = 0x00;
+	return total;
 #else
 	m = r;
-	for (; total[0] >= 8; total[0] -= 8) {
-		*r++ = *s++;
-		*r++ = *s++;
-		*r++ = *s++;
-		*r++ = *s++;
-		*r++ = *s++;
-		*r++ = *s++;
-		*r++ = *s++;
-		*r++ = *s++;
+	for (; total >= 8; total -= 8) {
+		*r++ = *s2++;
+		*r++ = *s2++;
+		*r++ = *s2++;
+		*r++ = *s2++;
+		*r++ = *s2++;
+		*r++ = *s2++;
+		*r++ = *s2++;
+		*r++ = *s2++;
 	}
-	switch (total[0]) {
-		case  7: *r++ = *s++;  /* fallthrough */
-		case  6: *r++ = *s++;  /* fallthrough */
-		case  5: *r++ = *s++;  /* fallthrough */
-		case  4: *r++ = *s++;  /* fallthrough */
-		case  3: *r++ = *s++;  /* fallthrough */
-		case  2: *r++ = *s++;  /* fallthrough */
-		case  1: *r++ = *s++;  /* fallthrough */
+	switch (total) {
+		case  7: *r++ = *s2++;  /* fallthrough */
+		case  6: *r++ = *s2++;  /* fallthrough */
+		case  5: *r++ = *s2++;  /* fallthrough */
+		case  4: *r++ = *s2++;  /* fallthrough */
+		case  3: *r++ = *s2++;  /* fallthrough */
+		case  2: *r++ = *s2++;  /* fallthrough */
+		case  1: *r++ = *s2++;  /* fallthrough */
 		case  0:
 			break;
 	}
@@ -230,14 +296,6 @@ u64tostr(uint64 number, uint8 r[24])
 	return (uintxx) (r - m);
 #endif
 }
-
-
-#if defined(__GNUC__)
-	#pragma GCC diagnostic push
-	#if !defined(__clang__)
-		#pragma GCC diagnostic ignored "-Wstringop-overflow"
-	#endif
-#endif
 
 uintxx
 i32tostr(int32 number, uint8 r[16])
@@ -270,10 +328,6 @@ i64tostr(int64 number, uint8 r[24])
 
 	return (uintxx) (s - r);
 }
-
-#if defined(__GNUC__)
-	#pragma GCC diagnostic pop
-#endif
 
 
 uintxx
