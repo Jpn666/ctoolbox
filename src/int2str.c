@@ -297,6 +297,14 @@ u64tostr(uint64 number, uint8 r[24])
 #endif
 }
 
+
+#if defined(__GNUC__)
+	#pragma GCC diagnostic push
+	#if !defined(__clang__)
+		#pragma GCC diagnostic ignored "-Wstringop-overflow"
+	#endif
+#endif
+
 uintxx
 i32tostr(int32 number, uint8 r[16])
 {
@@ -328,6 +336,10 @@ i64tostr(int64 number, uint8 r[24])
 
 	return (uintxx) (s - r);
 }
+
+#if defined(__GNUC__)
+	#pragma GCC diagnostic pop
+#endif
 
 
 uintxx
