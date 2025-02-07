@@ -122,6 +122,7 @@
  */
 
 #include "ctoolbox.h"
+#include "memory.h"
 
 
 #define ECNFG_MINBFFRSZ 0x1000UL
@@ -205,14 +206,12 @@ struct TECnfg {
 	uint8* bufferbgn;
 	uint8* bufferend;
 
-	uint8* buffermem;
-	uintxx buffersz;
-
 	uint8* input;
 	uint8* inputend;
 
-	/* input buffer */
-	uint8* inputbgn;
+	/* buffers */
+	uint8 buffermem[0x2000];
+	uint8  inputmem[0x1000];
 };
 
 typedef struct TECnfg TECnfg;
@@ -252,11 +251,11 @@ eECNFGType ecnfg_nextrvaltype(TECnfg*);
 
 /*
  * Returns a const pointer to the identifier string. */
-const char* ecnfg_getlval(TECnfg*);
+const uint8* ecnfg_getlval(TECnfg*);
 
 /*
  * Returns a const pointer to the rvalue as string. */
-const char* ecnfg_getrval(TECnfg*);
+const uint8* ecnfg_getrval(TECnfg*);
 
 
 /*

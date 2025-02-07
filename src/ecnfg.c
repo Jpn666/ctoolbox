@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-#include <ctoolbox/ctype.h>
 #include <ctoolbox/ecnfg.h>
-#include <ctoolbox/memory.h>
+#include <ctoolbox/ctype.h>
 
-
-#define ECNFG_INPUTBFFRSZ 0x1000UL
 
 #if !defined(EOF)
 	#define EOF (-1)
@@ -27,70 +24,43 @@
 
 
 CTB_INLINE void*
-_reserve(struct TECnfg* p, uintxx amount)
+request_(struct TECnfg* cfg, uintxx size)
 {
-	if (p->allctr) {
-		return p->allctr->reserve(p->allctr->user, amount);
-	}
-	return CTB_RESERVE(amount);
-}
+	struct TAllocator* a;
 
-CTB_INLINE void*
-_realloc(struct TECnfg* p, void* memory, uintxx amount)
-{
-	if (p->allctr) {
-		return p->allctr->realloc(p->allctr->user, memory, amount);
-	}
-	return CTB_REALLOC(memory, amount);
+	a = cfg->allctr;
+	return a->request(size, a->user);
 }
 
 CTB_INLINE void
-_release(struct TECnfg* p, void* memory)
+dispose_(struct TECnfg* cfg, void* memory, uintxx size)
 {
-	if (p->allctr) {
-		p->allctr->release(p->allctr->user, memory);
-		return;
-	}
-	CTB_RELEASE(memory);
+	struct TAllocator* a;
+
+	a = cfg->allctr;
+	a->dispose(memory, size, a->user);
 }
 
-
-#define ECFGTOTALSIZE (sizeof(struct TECnfg) + ECNFG_INPUTBFFRSZ)
 
 TECnfg*
 ecnfg_create(TAllocator* allctr)
 {
 	struct TECnfg* cfg;
-	uint8* buffer;
 
-	if (allctr) {
-		cfg = allctr->reserve(allctr->user, ECFGTOTALSIZE);
+	if (allctr == NULL) {
+		allctr = (void*) ctb_defaultallocator(NULL);
 	}
-	else {
-		cfg = CTB_RESERVE(ECFGTOTALSIZE);
-	}
+
+	cfg = allctr->request(sizeof(struct TECnfg), allctr->user);
 	if (cfg == NULL) {
 		return NULL;
 	}
-
 	cfg->allctr = allctr;
-	buffer = _reserve(cfg, ECNFG_MINBFFRSZ);
-	if (buffer == NULL) {
-		_release(cfg, cfg);
-		return NULL;
-	}
-	cfg->buffersz  = ECNFG_MINBFFRSZ;
 
-	cfg->inputbgn  = (void*) (cfg + 1);
-	cfg->buffermem = buffer;
-	cfg->bufferend = buffer + ECNFG_MINBFFRSZ;
 	ecnfg_reset(cfg);
-
+	cfg->bufferend = cfg->buffermem + sizeof(cfg->buffermem);
 	return cfg;
 }
-
-#undef ECFGTOTALSIZE
-
 
 void
 ecnfg_reset(TECnfg* cfg)
@@ -104,8 +74,8 @@ ecnfg_reset(TECnfg* cfg)
 
 	cfg->inputfn  = NULL;
 	cfg->payload  = NULL;
-	cfg->input    = cfg->inputbgn;
-	cfg->inputend = cfg->inputbgn;
+	cfg->input    = cfg->inputmem;
+	cfg->inputend = cfg->inputmem;
 
 	/* lexer stuff */
 	cfg->lastchr = 0x20;  /* space */
@@ -123,9 +93,7 @@ ecnfg_destroy(TECnfg* cfg)
 	if (cfg == NULL) {
 		return;
 	}
-
-	_release(cfg, cfg->buffermem);
-	_release(cfg, cfg);
+	dispose_(cfg, cfg, sizeof(struct TECnfg));
 }
 
 
@@ -144,14 +112,14 @@ ecnfg_fetchchr(struct TECnfg* cfg)
 		SETERROR(ECNFG_EINPUT);
 		return (uintxx) EOF;
 	}
-	r = cfg->inputfn(cfg->inputbgn, ECNFG_INPUTBFFRSZ, cfg->payload);
+	r = cfg->inputfn(cfg->inputmem, sizeof(cfg->inputmem), cfg->payload);
 	if (r) {
-		if ((uintxx) r > ECNFG_INPUTBFFRSZ) {
+		if (0 > r || r > (intxx) sizeof(cfg->inputmem)) {
 			SETERROR(ECNFG_EINPUT);
 			return (uintxx) EOF;
 		}
-		cfg->input    = cfg->inputbgn;
-		cfg->inputend = cfg->inputbgn + r;
+		cfg->input    = cfg->inputmem;
+		cfg->inputend = cfg->inputmem + r;
 
 		return *cfg->input++;
 	}
@@ -169,7 +137,6 @@ ecnfg_appendchr(struct TECnfg* cfg, uintxx c)
 		0xf0
 	};
 	uint8* buffer;
-	uintxx nsize;
 	uintxx j;
 
 	if (cfg->error) {
@@ -193,27 +160,8 @@ ecnfg_appendchr(struct TECnfg* cfg, uintxx c)
 	}
 
 	if (cfg->buffer + j >= cfg->bufferend) {
-		nsize = cfg->buffersz << 1;
-		if (nsize > ECNFG_MAXBFFRSZ)
-			nsize = ECNFG_MAXBFFRSZ;
-
-		if (cfg->buffersz == nsize) {
-			SETERROR(ECNFG_EBUFFERLIMIT);
-			return;
-		}
-		/* resize */
-		buffer = _realloc(cfg, cfg->buffermem, nsize);
-		if (buffer == NULL) {
-			SETERROR(ECNFG_EOOM);
-			return;
-		}
-		cfg->buffersz = nsize;
-
-		cfg->buffer    = buffer + (cfg->buffer    - cfg->buffermem);
-		cfg->bufferbgn = buffer + (cfg->bufferbgn - cfg->buffermem);
-		cfg->bufferend = buffer + nsize;
-
-		cfg->buffermem = buffer;
+		SETERROR(ECNFG_EBUFFERLIMIT);
+		return;
 	}
 
 	buffer = (cfg->buffer = cfg->buffer + j);
@@ -257,7 +205,7 @@ ecnfg_fetchunicode(struct TECnfg* cfg)
 				return INVALIDCHR;
 			return c;
 		}
-		else
+		else  /* fixme: style */
 		if ((c & 0xf0) == 0xe0) {
 			c1 = ecnfg_fetchchr(cfg);
 			c2 = ecnfg_fetchchr(cfg);
@@ -884,7 +832,7 @@ L_ERROR:
 #undef SETERROR
 
 
-const char*
+const uint8*
 ecnfg_getlval(TECnfg* cfg)
 {
 	CTB_ASSERT(cfg);
@@ -896,12 +844,12 @@ ecnfg_getlval(TECnfg* cfg)
 		case ECNFG_EVNTDIRECTIVE:
 		case ECNFG_EVNTSECTIONBGN:
 		case ECNFG_EVNTENTRY:
-			return (const char*) cfg->buffermem;
+			return (const uint8*) cfg->buffermem;
 	}
 	return NULL;
 }
 
-const char*
+const uint8*
 ecnfg_getrval(TECnfg* cfg)
 {
 	CTB_ASSERT(cfg);
@@ -912,7 +860,7 @@ ecnfg_getrval(TECnfg* cfg)
 	switch (cfg->event) {
 		case ECNFG_EVNTDIRECTIVE:
 		case ECNFG_EVNTENTRY:
-			return (const char*) cfg->bufferbgn;
+			return (const uint8*) cfg->bufferbgn;
 	}
 	return NULL;
 }

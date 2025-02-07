@@ -137,33 +137,6 @@ typedef void (*TFreeFn)(void*);
 typedef void (*TUnaryFn)(void*);
 
 
-/*
- * Custom allocator */
-
-/* allocator function */
-typedef void* (*TReserveFn)(void* user, uintxx amount);
-
-/* ... */
-typedef void* (*TReallocFn)(void* user, void* memory, uintxx amount);
-
-/* deallocator function */
-typedef void (*TReleaseFn)(void* user, void* memory);
-
-
-/* ... */
-struct TAllocator {
-	/* */
-	TReserveFn reserve;
-	TReallocFn realloc;
-	TReleaseFn release;
-
-	/* user data */
-	void* user;
-};
-
-typedef struct TAllocator TAllocator;
-
-
 /* signed limits */
 #ifndef INT8_MIN
 	#define  INT8_MIN 0x00000080L

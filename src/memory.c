@@ -17,6 +17,64 @@
 #include <ctoolbox/memory.h>
 
 
+#if defined(CTB_CFG_NOSTDLIB)
+
+/*
+ * Dummy functions */
+
+static void*
+request_(uintxx size, void* user)
+{
+	(void) size; (void) user;
+	return NULL;
+}
+
+static void
+dispose_(void* memory, uintxx size, void* user)
+{
+	(void) memory; (void) size; (void) user;
+}
+
+#else
+
+#include <stdlib.h>
+
+static void*
+request_(uintxx size, void* user)
+{
+	(void) user;
+	return malloc(size);
+}
+
+static void
+dispose_(void* memory, uintxx size, void* user)
+{
+	(void) size; (void) user;
+	free(memory);
+}
+
+#endif
+
+/*
+ * Fallback Allocator */
+
+static struct TAllocator allocator = {
+	(TRequestFn) request_, (TDisposeFn) dispose_, NULL
+};
+
+static struct TAllocator* defaultallocator = &allocator;
+
+
+const TAllocator*
+ctb_defaultallocator(TAllocator* allctr)
+{
+	if (allctr) {
+		defaultallocator = allctr;
+	}
+	return (void*) defaultallocator;
+}
+
+
 void
 ctb_memcpy(void* destination, const void* source, uintxx size)
 {
@@ -236,6 +294,3 @@ static_memzero(void* destination, uintxx size)
 }
 
 void (*volatile ctb_memzero)(void*, uintxx) = static_memzero;
-
-
-
