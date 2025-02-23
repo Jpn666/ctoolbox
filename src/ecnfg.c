@@ -176,7 +176,7 @@ ecnfg_appendchr(struct TECnfg* cfg, uintxx c)
 }
 
 
-#define ISCONTINUATIONBYTE(N) (((N) & 0xc0) == 0x80)
+#define ISSEQUENCE(N) (((N) & 0xc0) == 0x80)
 
 #define INVALIDCHR 0UL
 
@@ -197,50 +197,54 @@ ecnfg_fetchunicode(struct TECnfg* cfg)
 		if ((c & 0xe0) == 0xc0) {
 			c1 = ecnfg_fetchchr(cfg);
 
-			if (!ISCONTINUATIONBYTE(c1))
+			if (!ISSEQUENCE(c1)) {
 				return INVALIDCHR;
+			}
 			c = c << 6; c += c1;
 			c = c - 0x00003080UL;
-			if (c < 0x00000080)
+			if (c < 0x00000080) {
 				return INVALIDCHR;
+			}
 			return c;
 		}
-		else  /* fixme: style */
 		if ((c & 0xf0) == 0xe0) {
 			c1 = ecnfg_fetchchr(cfg);
 			c2 = ecnfg_fetchchr(cfg);
 
-			if (!ISCONTINUATIONBYTE(c1) ||
-			    !ISCONTINUATIONBYTE(c2))
+			if (!ISSEQUENCE(c1) || !ISSEQUENCE(c2)) {
 				return INVALIDCHR;
+			}
 			c = c << 6; c += c1;
 			c = c << 6; c += c2;
 			c = c - 0x000E2080UL;
-			if (c < 0x00000800 || (c >= 0xd800 && c <= 0xdfff))
+			if (c < 0x00000800 || (c >= 0xd800 && c <= 0xdfff)) {
 				return INVALIDCHR;
+			}
 			return c;
 		}
-		else
 		if ((c & 0xf8) == 0xf0) {
 			c1 = ecnfg_fetchchr(cfg);
 			c2 = ecnfg_fetchchr(cfg);
 			c3 = ecnfg_fetchchr(cfg);
 
-			if (!ISCONTINUATIONBYTE(c1) ||
-			    !ISCONTINUATIONBYTE(c2) ||
-			    !ISCONTINUATIONBYTE(c3))
+			if (!ISSEQUENCE(c1) || !ISSEQUENCE(c2) || !ISSEQUENCE(c3)) {
 				return INVALIDCHR;
+			}
 			c = c << 6; c += c1;
 			c = c << 6; c += c2;
 			c = c << 6; c += c3;
 			c = c - 0x03C82080UL;
-			if (c < 0x00010000 || c > 0x10ffffUL)
+			if (c < 0x00010000 || c > 0x10ffffUL) {
 				return INVALIDCHR;
+			}
 			return c;
 		}
 	}
 	return INVALIDCHR;
 }
+
+#undef ISSEQUENCE
+
 
 CTB_INLINE uintxx
 ecnfg_readhex(struct TECnfg* cfg)
@@ -405,10 +409,12 @@ ecnfg_guesttype(struct TECnfg* cfg)
 
 	for (e = 0; lchr; lchr = ecnfg_fetchchr(cfg)) {
 		if (ctb_isdigit(lchr)) {
-			if (exponent)
+			if (exponent) {
 				e++;
-			else
+			}
+			else {
 				n++;
+			}
 		}
 		else {
 			if (ishex) {
@@ -430,15 +436,18 @@ ecnfg_guesttype(struct TECnfg* cfg)
 				break;
 			}
 			if (lchr == 0x2e) {
-				if (isint == 0)
+				if (isint == 0) {
 					break;
+				}
 				isint = 0;
 			}
 			else {
-				if ((lchr | 0x20) == 0x65)
+				if ((lchr | 0x20) == 0x65) {
 					exponent = 1;
-				else
+				}
+				else {
 					break;
+				}
 			}
 		}
 		ecnfg_appendchr(cfg, lchr);
@@ -469,16 +478,18 @@ ecnfg_parsenumber(struct TECnfg* cfg)
 	uintxx lchr;
 
 	ntype = ecnfg_guesttype(cfg);
-	if (cfg->error)
+	if (cfg->error) {
 		return ECNFG_TKNINVALID;
+	}
 
 	if (ntype == ECNFG_TKNFLT || ntype == ECNFG_TKNINT) {
 		lchr = cfg->lastchr;
 		if (lchr == 0x7b ||
 		    lchr == 0x7d ||
 		    lchr == 0x2d ||
-		    lchr == 0x2b || lchr == (uintxx) EOF || ctb_isspace(lchr))
+		    lchr == 0x2b || lchr == (uintxx) EOF || ctb_isspace(lchr)) {
 			return ntype;
+		}
 	}
 
 	SETERROR(ECNFG_EINVALIDTKN);
@@ -545,7 +556,7 @@ L_LOOP:
 			return ECNFG_TKNEOF;
 	}
 
-	if (ctb_iscntrl(lchr) || !ctb_isascii(lchr)) {
+	if (ctb_iscntrl(lchr) || ctb_isascii(lchr) == 0) {
 		if (cfg->error == 0) {
 			SETERROR(ECNFG_EINVALIDCHR);
 		}
@@ -553,16 +564,16 @@ L_LOOP:
 	}
 
 	if (ctb_isalpha(lchr)) {
-		do {
+		for (;;) {
 			ecnfg_appendchr(cfg, lchr);
 
 			lchr = ecnfg_fetchchr(cfg);
 			if (lchr == 0x2d ||
-			    lchr == 0x2b || ctb_isalnum(lchr)) {
+				lchr == 0x2b || ctb_isalnum(lchr)) {
 				continue;
 			}
 			break;
-		} while (1);
+		}
 
 		if (cfg->error) {
 			return ECNFG_TKNINVALID;
@@ -574,8 +585,8 @@ L_LOOP:
 	}
 
 	if (lchr == 0x2e ||
-	    lchr == 0x2d ||
-	    lchr == 0x2b || ctb_isdigit(lchr)) {
+		lchr == 0x2d ||
+		lchr == 0x2b || ctb_isdigit(lchr)) {
 		cfg->lastchr = lchr;
 		return ecnfg_parsenumber(cfg);
 	}
@@ -586,8 +597,9 @@ L_LOOP:
 		return r;
 	}
 
-	while (!ctb_isspace(lchr))
+	while (ctb_isspace(lchr) == 0) {
 		lchr = ecnfg_fetchchr(cfg);
+	}
 	SETERROR(ECNFG_EINVALIDTKN);
 	return ECNFG_TKNINVALID;
 }
@@ -602,8 +614,9 @@ ecnfg_readnextstr(struct TECnfg* cfg)
 	uintxx r;
 	uintxx lchr;
 
-	if (cfg->buffer - cfg->bufferbgn)
+	if (cfg->buffer - cfg->bufferbgn) {
 		cfg->buffer--;
+	}
 
 	lchr = cfg->lastchr;
 
@@ -619,8 +632,10 @@ L_LOOP:
 
 	switch (lchr) {
 		case 0x23:
-			while ((lchr = ecnfg_fetchchr(cfg)) != 0x0a)
-				;
+			do {
+				lchr = ecnfg_fetchchr(cfg);
+			} while (lchr != 0x0a);
+
 			lchr = ecnfg_fetchchr(cfg);
 			cfg->line++;
 			goto L_LOOP;
@@ -789,16 +804,18 @@ L_HASIDENT:
 			if (colon) {
 				while (ecnfg_readnextstr(cfg))
 					;
-				if (cfg->error)
+				if (cfg->error) {
 					goto L_ERROR;
+				}
 				DISPATCH(ECNFG_EVNTENTRY);
 			}
 
 		/* fallthrough */
 		case ECNFG_TKNINT:
 		case ECNFG_TKNFLT:
-			if (colon)
+			if (colon) {
 				DISPATCH(ECNFG_EVNTENTRY);
+			}
 
 		/* fallthrough */
 		case ECNFG_TKNRBRACE:

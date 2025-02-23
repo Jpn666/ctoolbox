@@ -36,14 +36,14 @@ typedef enum {
 
 /* */
 struct TToIntResult {
-    eintxx error;
+	eintxx error;
 
-    union TIntValue {
-        int32  asi32;
-        uint32 asu32;
-        int64  asi64;
-        uint64 asu64;
-    } value;
+	union TIntValue {
+		int32  asi32;
+		uint32 asu32;
+		int64  asi64;
+		uint64 asu64;
+	} value;
 };
 
 typedef struct TToIntResult TToIntResult;

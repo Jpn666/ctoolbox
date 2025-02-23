@@ -92,7 +92,7 @@
 	#endif
 #else
 	#if defined(__GNUC__)
-		#define ctb_swap16(n) (__builtin_bswap16((n)))  /* fixme */
+		#define ctb_swap16(n) (__builtin_bswap16((n)))
 		#define ctb_swap32(n) (__builtin_bswap32((n)))
 		#define ctb_swap64(n) (__builtin_bswap64((n)))
 	#endif
@@ -107,27 +107,29 @@
 CTB_INLINE uint16
 ctb_swap16(uint16 n)
 {
-	return (n << 8) | (n >> 8);
+	return ((n & 0x00FF) << 010) | ((n & 0xFF00) >> 010);
 }
 
 CTB_INLINE uint32
 ctb_swap32(uint32 n)
 {
-	return ((n & 0x000000FFUL) << 24) |
-		   ((n & 0xFF000000UL) >> 24) |
-		   ((n & 0x00FF0000UL) >> 8 ) | ((n & 0x0000FF00UL) << 8 );
+	return ((n & 0x000000FFul) << 030) |
+	       ((n & 0x0000FF00ul) << 010) |
+	       ((n & 0x00FF0000ul) >> 010) |
+	       ((n & 0xFF000000ul) >> 030);
 }
 
 CTB_INLINE uint64
 ctb_swap64(uint64 n)
 {
-	return (n >> 56) |
-	   ((n << 40) & 0x00FF000000000000LL) |
-	   ((n << 24) & 0x0000FF0000000000LL) |
-	   ((n << 8 ) & 0x000000FF00000000LL) |
-	   ((n >> 8 ) & 0x00000000FF000000LL) |
-	   ((n >> 24) & 0x0000000000FF0000LL) |
-	   ((n >> 40) & 0x000000000000FF00LL) | (n << 56);
+	return ((n & 0x00000000000000FFull) << 070) |
+	       ((n & 0x000000000000FF00ull) << 050) |
+	       ((n & 0x0000000000FF0000ull) << 030) |
+	       ((n & 0x00000000FF000000ull) << 010) |
+	       ((n & 0x000000FF00000000ull) >> 010) |
+	       ((n & 0x0000FF0000000000ull) >> 030) |
+	       ((n & 0x00FF000000000000ull) >> 050) |
+	       ((n & 0xFF00000000000000ull) >> 070);
 }
 
 #endif

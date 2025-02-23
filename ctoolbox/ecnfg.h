@@ -76,7 +76,7 @@
  * while ((evnttype = ecnfg_nextevnttype(cfg))) {
  *     switch(evnttype) {
  *         case ECNFG_EVNTSECTIONBGN: {
- *             const char* identifier;
+ *             const uint8* identifier;
  *
  *             identifier = ecnfg_getlval(cfg);
  *             break;
@@ -84,11 +84,11 @@
  *         case ECNFG_EVNTSECTIONEND:
  *             break;
  *         case ECNFG_EVNTDIRECTIVE: {
- *             const char* identifier;
+ *             const uint8* identifier;
  *
  *             identifier = ecnfg_getlval(cfg);
  *             while ((rvaltype = ecnfg_nextrvaltype(cfg))) {
- *                 const char* parameter;
+ *                 const uint8* parameter;
  *
  *                 parameter = ecnfg_getrval(cfg);
  *                 switch (rvaltype) {
@@ -100,7 +100,7 @@
  *             break;
  *         }
  *         case ECNFG_EVNTENTRY: {
- *             const char* identifier;
+ *             const uint8* identifier;
  *
  *             identifier = ecnfg_getlval(cfg);
  *             switch ((rvaltype = ecnfg_nextrvaltype(cnfg))) {
@@ -108,7 +108,7 @@
  *                 case ECNFG_TYPEINT: break;
  *                 case ECNFG_TYPESTR: break;
  *             }
- *             const char* value = ecnfg_getrval(cfg);
+ *             const uint8* value = ecnfg_getrval(cfg);
  *             break;
  *         }
  *     }
