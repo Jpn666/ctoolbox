@@ -35,12 +35,12 @@ typedef enum {
 
 /* */
 struct TToFltResult {
-    eintxx error;
+	eintxx error;
 
-    union TFltValue {
-        flt32 asf32;
-        flt64 asf64;
-    } value;
+	union TFltValue {
+		flt32 asf32;
+		flt64 asf64;
+	} value;
 };
 
 typedef struct TToFltResult TToFltResult;
