@@ -29,19 +29,6 @@
 	#define __has_builtin(x) 0
 #endif
 
-#if defined(NDEBUG)
-	#define CTB_ASSERT(x) ((void) 0)
-#else
-	#if defined(CTB_CFG_NOSTDLIB)
-		#define CTB_ASSERT(x) ((void) 0)
-	#else
-		#include <assert.h>
-		#define CTB_ASSERT(x) assert(x)
-	#endif
-
-	#define CTB_DEBUG
-#endif
-
 
 /*
  * Inline and force inline */
@@ -64,32 +51,12 @@
 #endif
 
 
-#if defined(_MSC_VER)
-	#define CTB_FORCEINLINE static __forceinline
-#endif
-
-#if !defined(CTB_FORCEINLINE)
-	#if defined(__GNUC__)
-		#define CTB_FORCEINLINE __attribute__((always_inline)) CTB_INLINE
-	#else
-		#define CTB_FORCEINLINE CTB_INLINE
-	#endif
-#endif
-
-
-#if defined(__GNUC__)
-	#define   CTB_LIKELY(X) __builtin_expect((X), 1)
-	#define CTB_UNLIKELY(X) __builtin_expect((X), 0)
+#if defined(__GNUC__) || __has_builtin(__builtin_expect)
+	#define CTB_EXPECT1(X) __builtin_expect((X), 1)
+	#define CTB_EXPECT0(X) __builtin_expect((X), 0)
 #else
-	#if __has_builtin(__builtin_expect)
-		#define   CTB_LIKELY(X) __builtin_expect((X), 1)
-		#define CTB_UNLIKELY(X) __builtin_expect((X), 0)
-	#endif
-#endif
-
-#if !defined(CTB_LIKELY)
-	#define   CTB_LIKELY(X) (X)
-	#define CTB_UNLIKELY(X) (X)
+	#define CTB_EXPECT1(X) (X)
+	#define CTB_EXPECT0(X) (X)
 #endif
 
 
@@ -102,6 +69,64 @@
 	#include "private/types.h"
 	#include "private/endianness.h"
 #undef CTB_INTERNAL_INCLUDE_GUARD
+
+
+/*
+ * Assert */
+
+#if defined(_DEBUG)
+	#undef NDEBUG
+#endif
+
+
+#define CTB_ASSERT(C) { if (!(C)) { ctb_testfailed(#C, __FILE__, __LINE__); } }
+
+#if defined(NDEBUG)
+	#undef  CTB_ASSERT
+	#define CTB_ASSERT(C) (void) (C)
+#endif
+
+
+/* */
+struct TAssertInfo {
+	const uint8* filename;
+	const uint8* cndtn;
+	uintxx line;
+};
+
+typedef struct TAssertInfo TAssertInfo;
+
+
+/*
+ * Set the assert function to be called when an assertion fails. If no
+ * function is set, the default behavior is to loop infinitely. */
+void ctb_setassertfn(void (*)(TAssertInfo));
+
+
+extern void (*ctb_assertfn)(TAssertInfo);
+
+CTB_INLINE void
+ctb_testfailed(const char* cndtn, const char* filename, int line)
+{
+	if (ctb_assertfn) {
+		struct TAssertInfo assertinfo;
+
+		assertinfo = (struct TAssertInfo){
+			.cndtn = (void*) cndtn, .filename = (void*) filename, .line = line
+		};
+		ctb_assertfn(assertinfo);
+	}
+
+	/*
+	 * If no assert function is set, we just loop infinitely, this is useful
+	 * for embedded systems where we can't print to a console or where we
+	 * don't want to halt the system. In this case, the user should set a
+	 * custom assert function to handle the assertion failure appropriately.
+	 * */
+	do {
+		/* not my problem... */
+	} while(1);
+}
 
 
 /* Error values */

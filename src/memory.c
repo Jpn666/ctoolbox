@@ -23,14 +23,14 @@
  * Dummy functions */
 
 static void*
-request_(uintxx size, void* user)
+localrequest(uintxx size, void* user)
 {
 	(void) size; (void) user;
 	return NULL;
 }
 
 static void
-dispose_(void* memory, uintxx size, void* user)
+localdispose(void* memory, uintxx size, void* user)
 {
 	(void) memory; (void) size; (void) user;
 }
@@ -40,14 +40,14 @@ dispose_(void* memory, uintxx size, void* user)
 #include <stdlib.h>
 
 static void*
-request_(uintxx size, void* user)
+localrequest(uintxx size, void* user)
 {
 	(void) user;
 	return malloc(size);
 }
 
 static void
-dispose_(void* memory, uintxx size, void* user)
+localdispose(void* memory, uintxx size, void* user)
 {
 	(void) size; (void) user;
 	free(memory);
@@ -58,20 +58,27 @@ dispose_(void* memory, uintxx size, void* user)
 /*
  * Fallback Allocator */
 
-static struct TAllocator allocator = {
-	(TRequestFn) request_, (TDisposeFn) dispose_, NULL
+static struct TAllocator localallocator = {
+	(TRequestFn) localrequest, (TDisposeFn) localdispose, NULL
 };
 
-static struct TAllocator* defaultallocator = &allocator;
+static struct TAllocator* defaultallocator = &localallocator;
 
 
 const TAllocator*
-ctb_defaultallocator(TAllocator* allctr)
+ctb_getdefaultallocator(void)
 {
-	if (allctr) {
-		defaultallocator = allctr;
-	}
 	return (void*) defaultallocator;
+}
+
+void
+ctb_setdefaultallocator(TAllocator* allocator)
+{
+	if (allocator) {
+		defaultallocator = allocator;
+		return;
+	}
+	defaultallocator = &localallocator;
 }
 
 

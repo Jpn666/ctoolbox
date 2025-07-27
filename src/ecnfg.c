@@ -48,7 +48,7 @@ ecnfg_create(TAllocator* allctr)
 	struct TECnfg* cfg;
 
 	if (allctr == NULL) {
-		allctr = (void*) ctb_defaultallocator(NULL);
+		allctr = (void*) ctb_getdefaultallocator();
 	}
 
 	cfg = allctr->request(sizeof(struct TECnfg), allctr->user);

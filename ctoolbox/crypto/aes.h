@@ -78,5 +78,4 @@ aes_init(TAESctx* context)
 	}
 }
 
-
 #endif

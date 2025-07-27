@@ -47,11 +47,11 @@ typedef struct TToFltResult TToFltResult;
 
 
 /*
- * */
+ * Convert a string to a float. The string must be in decimal format. */
 TToFltResult str2flt64(const uint8* src, const uint8** end);
 
 /*
- * */
+ * Convert a string to a float. The string must be in decimal format. */
 TToFltResult str2flt32(const uint8* src, const uint8** end);
 
 

@@ -128,14 +128,14 @@ parseu32(const uint8* src, const uint8** end, intxx base, uint32* r)
 		}
 	}
 
-	if (CTB_UNLIKELY(s == src)) {
+	if (CTB_EXPECT0(s == src)) {
 		if (end)
 			end[0] = src;
 		r[0] = 0x00;
 		return STR2INT_ENAN;
 	}
 
-	if (CTB_UNLIKELY(src[0] == 0x30)) {
+	if (CTB_EXPECT0(src[0] == 0x30)) {
 		while (src[0] == 0x30) {
 			src++;
 		}
@@ -153,14 +153,14 @@ parseu32(const uint8* src, const uint8** end, intxx base, uint32* r)
 	}
 
 	limit = maxdigits32[b];
-	if (CTB_LIKELY(total <= limit)) {
+	if (CTB_EXPECT1(total <= limit)) {
 		if (b <= 10) {
 			n = 0;
 			for (j = 0, total--; j < total; j++) {
 				n = n * b + (*src++ - 0x30);
 			}
 			total++;
-			if (CTB_UNLIKELY(total == limit)) {
+			if (CTB_EXPECT0(total == limit)) {
 				if (ckdu32_mul(n, b, v))
 					goto L1;
 				n = v[0];
@@ -180,7 +180,7 @@ parseu32(const uint8* src, const uint8** end, intxx base, uint32* r)
 				n = n * b + hexamap[*src++ - 0x30];
 			}
 			total++;
-			if (CTB_UNLIKELY(total == limit)) {
+			if (CTB_EXPECT0(total == limit)) {
 				if (ckdu32_mul(n, b, v))
 					goto L1;
 				n = v[0];
@@ -371,14 +371,14 @@ parseu64(const uint8* src, const uint8** end, intxx base, uint64* r)
 		}
 	}
 
-	if (CTB_UNLIKELY(s == src)) {
+	if (CTB_EXPECT0(s == src)) {
 		if (end)
 			end[0] = src;
 		r[0] = 0x00;
 		return STR2INT_ENAN;
 	}
 
-	if (CTB_UNLIKELY(src[0] == 0x30)) {
+	if (CTB_EXPECT0(src[0] == 0x30)) {
 		while (src[0] == 0x30) {
 			src++;
 		}
@@ -399,14 +399,14 @@ parseu64(const uint8* src, const uint8** end, intxx base, uint64* r)
 	}
 
 	limit = maxdigits64[b];
-	if (CTB_LIKELY(total <= limit)) {
+	if (CTB_EXPECT1(total <= limit)) {
 		if (b <= 10) {
 			n = 0;
 			for (j = 0, total--; j < total; j++) {
 				n = n * b + (*src++ - 0x30);
 			}
 			total++;
-			if (CTB_UNLIKELY(total == limit)) {
+			if (CTB_EXPECT0(total == limit)) {
 				if (ckdu64_mul(n, b, v))
 					goto L1;
 				n = v[0];
@@ -426,7 +426,7 @@ parseu64(const uint8* src, const uint8** end, intxx base, uint64* r)
 				n = n * b + hexamap[*src++ - 0x30];
 			}
 			total++;
-			if (CTB_UNLIKELY(total == limit)) {
+			if (CTB_EXPECT0(total == limit)) {
 				if (ckdu64_mul(n, b, v))
 					goto L1;
 				n = v[0];
@@ -620,14 +620,14 @@ parsedecimal32(const uint8* src, uintxx total, const uint8** end, uint32* r)
 #if defined(CTB_FASTUNALIGNED)
 L1:
 #endif
-	if (CTB_UNLIKELY(s == src)) {
+	if (CTB_EXPECT0(s == src)) {
 		if (end)
 			end[0] = src;
 		r[0] = 0x00;
 		return STR2INT_ENAN;
 	}
 
-	if (CTB_UNLIKELY(src[0] == 0x30)) {
+	if (CTB_EXPECT0(src[0] == 0x30)) {
 		while (src[0] == 0x30) {
 			src++;
 		}
@@ -644,7 +644,7 @@ L1:
 		total = (uintxx) (s - src);
 	}
 
-	if (CTB_LIKELY(total <= 10)) {
+	if (CTB_EXPECT1(total <= 10)) {
 		uint32 a;
 		uint32 b;
 		uint32 c;
@@ -737,7 +737,7 @@ dcmltou32(const uint8* src, intxx total, const uint8** end)
 	}
 
 	result.error = parsedecimal32(s, (uintxx) (e - s), end, &u);
-	if (CTB_UNLIKELY(result.error != 0)) {
+	if (CTB_EXPECT0(result.error != 0)) {
 		if (result.error == STR2INT_ENAN) {
 			if (end)
 				end[0] = src;
@@ -773,7 +773,7 @@ dcmltoi32(const uint8* src, intxx total, const uint8** end)
 	}
 
 	result.error = parsedecimal32(s, (uintxx) (e - s), end, &u);
-	if (CTB_UNLIKELY(result.error != 0)) {
+	if (CTB_EXPECT0(result.error != 0)) {
 		if (result.error == STR2INT_ERANGE) {
 			goto L1;
 		}
@@ -845,14 +845,14 @@ parsedecimal64(const uint8* src, uintxx total, const uint8** end, uint64* r)
 #if defined(CTB_FASTUNALIGNED)
 L1:
 #endif
-	if (CTB_UNLIKELY(s == src)) {
+	if (CTB_EXPECT0(s == src)) {
 		if (end)
 			end[0] = src;
 		r[0] = 0x00;
 		return STR2INT_ENAN;
 	}
 
-	if (CTB_UNLIKELY(src[0] == 0x30)) {
+	if (CTB_EXPECT0(src[0] == 0x30)) {
 		while (src[0] == 0x30) {
 			src++;
 		}
@@ -869,7 +869,7 @@ L1:
 		total = (uintxx) (s - src);
 	}
 
-	if (CTB_LIKELY(total <= 20)) {
+	if (CTB_EXPECT1(total <= 20)) {
 		uint32 a;
 		uint32 b;
 		uint32 c;
@@ -997,7 +997,7 @@ dcmltou64(const uint8* src, intxx total, const uint8** end)
 	}
 
 	result.error = parsedecimal64(s, (uintxx) (e - s), end, &u);
-	if (CTB_UNLIKELY(result.error != 0)) {
+	if (CTB_EXPECT0(result.error != 0)) {
 		if (result.error == STR2INT_ENAN) {
 			if (end)
 				end[0] = src;
@@ -1033,7 +1033,7 @@ dcmltoi64(const uint8* src, intxx total, const uint8** end)
 	}
 
 	result.error = parsedecimal64(s, (uintxx) (e - s), end, &u);
-	if (CTB_UNLIKELY(result.error != 0)) {
+	if (CTB_EXPECT0(result.error != 0)) {
 		if (result.error == STR2INT_ERANGE) {
 			goto L1;
 		}
@@ -1083,14 +1083,14 @@ parsehexa32(const uint8* src, uintxx total, const uint8** end, uint32* r)
 		}
 	}
 
-	if (CTB_UNLIKELY(s == src)) {
+	if (CTB_EXPECT0(s == src)) {
 		if (end)
 			end[0] = src;
 		r[0] = 0x00;
 		return STR2INT_ENAN;
 	}
 
-	if (CTB_UNLIKELY(src[0] == 0x30)) {
+	if (CTB_EXPECT0(src[0] == 0x30)) {
 		while (src[0] == 0x30) {
 			src++;
 		}
@@ -1107,7 +1107,7 @@ parsehexa32(const uint8* src, uintxx total, const uint8** end, uint32* r)
 		total = (uintxx) (s - src);
 	}
 
-	if (CTB_LIKELY(total <= 8)) {
+	if (CTB_EXPECT1(total <= 8)) {
 		uint32 a;
 		uint32 b;
 		uint32 c;
@@ -1183,7 +1183,7 @@ hexatou32(const uint8* src, intxx total, const uint8** end)
 	}
 
 	result.error = parsehexa32(s, (uintxx) (e - s), end, &u);
-	if (CTB_UNLIKELY(result.error != 0)) {
+	if (CTB_EXPECT0(result.error != 0)) {
 		if (result.error == STR2INT_ENAN) {
 			if (end)
 				end[0] = src;
@@ -1230,7 +1230,7 @@ hexatoi32(const uint8* src, intxx total, const uint8** end)
 	}
 
 	result.error = parsehexa32(s, (uintxx) (e - s), end, &u);
-	if (CTB_UNLIKELY(result.error != 0)) {
+	if (CTB_EXPECT0(result.error != 0)) {
 		if (result.error == STR2INT_ERANGE) {
 			goto L1;
 		}
@@ -1281,14 +1281,14 @@ parsehexa64(const uint8* src, uintxx total, const uint8** end, uint64* r)
 		}
 	}
 
-	if (CTB_UNLIKELY(s == src)) {
+	if (CTB_EXPECT0(s == src)) {
 		if (end)
 			end[0] = src;
 		r[0] = 0x00;
 		return STR2INT_ENAN;
 	}
 
-	if (CTB_UNLIKELY(src[0] == 0x30)) {
+	if (CTB_EXPECT0(src[0] == 0x30)) {
 		while (src[0] == 0x30) {
 			src++;
 		}
@@ -1305,7 +1305,7 @@ parsehexa64(const uint8* src, uintxx total, const uint8** end, uint64* r)
 		total = (uintxx) (s - src);
 	}
 
-	if (CTB_LIKELY(total <= 16)) {
+	if (CTB_EXPECT1(total <= 16)) {
 		uint32 a;
 		uint32 b;
 		uint32 c;
@@ -1414,7 +1414,7 @@ hexatou64(const uint8* src, intxx total, const uint8** end)
 	}
 
 	result.error = parsehexa64(s, (uintxx) (e - s), end, &u);
-	if (CTB_UNLIKELY(result.error != 0)) {
+	if (CTB_EXPECT0(result.error != 0)) {
 		if (result.error == STR2INT_ENAN) {
 			if (end)
 				end[0] = src;
@@ -1461,7 +1461,7 @@ hexatoi64(const uint8* src, intxx total, const uint8** end)
 	}
 
 	result.error = parsehexa64(s, (uintxx) (e - s), end, &u);
-	if (CTB_UNLIKELY(result.error != 0)) {
+	if (CTB_EXPECT0(result.error != 0)) {
 		if (result.error == STR2INT_ERANGE) {
 			goto L1;
 		}

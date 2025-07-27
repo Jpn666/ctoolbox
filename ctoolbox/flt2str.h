@@ -34,7 +34,8 @@ typedef enum {
 
 
 /*
- * */
+ * Convert a float to a string. The precision is the number of digits after
+ * the decimal point. */
 uintxx f64tostr(flt64 number, eFLTFormatMode m, uintxx precision, uint8 r[24]);
 
 /*

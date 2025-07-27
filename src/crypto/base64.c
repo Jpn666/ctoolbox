@@ -51,7 +51,7 @@ b64strm_encode(TBase64Strm* strm, uintxx final)
 	uint8* tend;
 	CTB_ASSERT(strm);
 
-	if (CTB_UNLIKELY(strm->mode ^ B64STRM_MODEENC)) {
+	if (CTB_EXPECT0(strm->mode ^ B64STRM_MODEENC)) {
 		if (strm->mode == 0) {
 			strm->mode = B64STRM_MODEENC;
 		}
@@ -62,7 +62,7 @@ b64strm_encode(TBase64Strm* strm, uintxx final)
 		}
 	}
 
-	if (CTB_UNLIKELY(strm->state == B64STRM_SRCEXHSTD)) {
+	if (CTB_EXPECT0(strm->state == B64STRM_SRCEXHSTD)) {
 		if (strm->rcount == 3) {
 			goto L1;
 		}
@@ -100,7 +100,7 @@ b64strm_encode(TBase64Strm* strm, uintxx final)
 		}
 	}
 	else {
-		if (CTB_UNLIKELY(strm->state == B64STRM_TGTEXHSTD)) {
+		if (CTB_EXPECT0(strm->state == B64STRM_TGTEXHSTD)) {
 			if (strm->rcount ^ 4) {
 				while (strm->tend > strm->target) {
 					*strm->target++ = (uint8) strm->r;
@@ -172,7 +172,7 @@ L1:
 		b = b64enctable[(w >> 20) & 0x3f];
 		c = b64enctable[(w >> 14) & 0x3f];
 		d = b64enctable[(w >>  8) & 0x3f];
-		if (CTB_LIKELY(ttotal >= 4)) {
+		if (CTB_EXPECT1(ttotal >= 4)) {
 			t[0] = (uint8) a;
 			t[1] = (uint8) b;
 			t[2] = (uint8) c;
@@ -307,7 +307,7 @@ b64strm_decode(TBase64Strm* strm, uintxx final)
 	uint8* tend;
 	CTB_ASSERT(strm);
 
-	if (CTB_UNLIKELY(strm->mode ^ B64STRM_MODEDEC)) {
+	if (CTB_EXPECT0(strm->mode ^ B64STRM_MODEDEC)) {
 		if (strm->mode == 0) {
 			strm->mode = B64STRM_MODEDEC;
 		}
@@ -318,7 +318,7 @@ b64strm_decode(TBase64Strm* strm, uintxx final)
 		}
 	}
 
-	if (CTB_UNLIKELY(strm->state == B64STRM_SRCEXHSTD)) {
+	if (CTB_EXPECT0(strm->state == B64STRM_SRCEXHSTD)) {
 		if (strm->rcount == 4) {
 			goto L1;
 		}
@@ -359,7 +359,7 @@ b64strm_decode(TBase64Strm* strm, uintxx final)
 		}
 	}
 	else {
-		if (CTB_UNLIKELY(strm->state == B64STRM_TGTEXHSTD)) {
+		if (CTB_EXPECT0(strm->state == B64STRM_TGTEXHSTD)) {
 			if (strm->rcount ^ 3) {
 				while (strm->tend > strm->target) {
 					*strm->target++ = (uint8) (strm->r >>= 8);
@@ -393,7 +393,7 @@ L1:
 		uint32 f1;
 		uint32 f2;
 
-		if (CTB_LIKELY(send - s >= 4)) {
+		if (CTB_EXPECT1(send - s >= 4)) {
 			a = b64dectable[s[0]];
 			b = b64dectable[s[1]];
 			c = b64dectable[s[2]];
@@ -405,7 +405,7 @@ L1:
 
 		f1 = a | b;
 		f2 = c | d;
-		if (CTB_UNLIKELY(f1 >= 64 || f2 >= 64)) {
+		if (CTB_EXPECT0(f1 >= 64 || f2 >= 64)) {
 			w = 0;
 			for (r = 0; r < 4; r++) {
 				while ((n = b64dectable[*s++]) >= 64) {
@@ -416,7 +416,7 @@ L1:
 						strm->mode = strm->state = B64STRM_ERROR;
 						return strm->state;
 					}
-					if (CTB_UNLIKELY(s == send)) {
+					if (CTB_EXPECT0(s == send)) {
 						strm->source = s;
 						strm->target = t;
 
@@ -452,7 +452,7 @@ L1:
 	strm->r = 0;
 	for (r = 0; send > s; ) {
 		n = b64dectable[*s++];
-		if (CTB_UNLIKELY(n >= 64)) {
+		if (CTB_EXPECT0(n >= 64)) {
 			if (n == 0xff) {
 				strm->source = s;
 				strm->target = t;
@@ -465,7 +465,7 @@ L1:
 		strm->r = (strm->r << 6) | (uint8) n;
 		if (++r == 4) {
 			w = ctb_swap32(strm->r);
-			if (CTB_LIKELY(tend - t >= 3)) {
+			if (CTB_EXPECT1(tend - t >= 3)) {
 				t[0] = (uint8) (w >> BYTEOFFSET1);
 				t[1] = (uint8) (w >> BYTEOFFSET2);
 				t[2] = (uint8) (w >> BYTEOFFSET3);

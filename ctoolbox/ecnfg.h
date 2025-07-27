@@ -175,6 +175,7 @@ typedef enum {
 
 /*
  * IO function prototype.
+ *
  * The return value must be the number of bytes read to the buffer (zero if
  * there is no more input or a negative value to indicate an error). */
 typedef intxx (*TECInputFn)(uint8* buffer, uintxx size, void* payload);
@@ -218,39 +219,43 @@ typedef struct TECnfg TECnfg;
 
 
 /*
- * Creates a new TECnfg struct. */
+ * Create a new configuration parser.
+ *
+ * If the allocator is NULL, the default allocator will be used.
+ * The returned pointer must be freed with ecnfg_destroy(). */
 TECnfg* ecnfg_create(TAllocator* allctr);
 
 /*
- * ... */
+ * Destroy the configuration parser. */
 void ecnfg_destroy(TECnfg*);
 
 /*
-* ... */
+ * Reset the configuration parser to its initial state. */ 
 void ecnfg_reset(TECnfg*);
 
 /*
- * */
+ * Set the input function and payload. */
 CTB_INLINE void ecnfg_setinputfn(TECnfg*, TECInputFn inputfn, void* payload);
 
 /*
- * Get the current state */
+ * Get the current state of the parser. If error is not NULL, it will be set
+ * to the current error code. */
 CTB_INLINE eECNFGState ecnfg_getstate(TECnfg*, uintxx* error, uintxx* lline);
 
 /*
- * Aborts the parsing. */
+ * Abort the parsing process. */
 CTB_INLINE void ecnfg_abort(TECnfg*);
 
 /*
- * Get the next event. */
+ * Get the next event type. */
 eECNFGEvent ecnfg_nextevnttype(TECnfg*);
 
 /*
- * Get the rvalue type. */
+ * Get the next rvalue type. */
 eECNFGType ecnfg_nextrvaltype(TECnfg*);
 
 /*
- * Returns a const pointer to the identifier string. */
+ * Returns a const pointer to the lvalue. */
 const uint8* ecnfg_getlval(TECnfg*);
 
 /*

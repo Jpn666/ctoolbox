@@ -49,8 +49,13 @@ typedef struct TAllocator TAllocator;
 
 
 /*
- * Set or gets the default (fallback) allocator. */
-const TAllocator* ctb_defaultallocator(TAllocator* allctr);
+ * Get the default allocator. */
+const TAllocator* ctb_getdefaultallocator(void);
+
+/*
+ * Set the default allocator. If the allocator is NULL, the default
+ * allocator will be used. */
+void ctb_setdefaultallocator(TAllocator* allctr);
 
 
 /*
