@@ -484,7 +484,6 @@ aes_encrypt(TAESctx* context, uint8 ptxt[16], uint8 ctxt[16])
 {
 	uintxx i;
 	uintxx j;
-
 	CTB_ASSERT(context && ptxt && ctxt);
 
 	j = 0;

@@ -295,9 +295,9 @@ ctb_memset(void* destination, uintxx value, uintxx size)
 
 
 static void
-static_memzero(void* destination, uintxx size)
+localmemzero(void* destination, uintxx size)
 {
 	ctb_memset(destination, 0, size);
 }
 
-void (*volatile ctb_memzero)(void*, uintxx) = static_memzero;
+void (*volatile ctb_memzerofn)(void*, uintxx) = localmemzero;

@@ -24,7 +24,14 @@
 
 #include <ctoolboxconfig.h>
 
+#if !defined(CTB_CFG_NOSTDLIB)
+	#include <assert.h>
+#endif
 
+
+#if !defined(__MSVC__) && defined(_MSC_VER)
+	#define __MSVC__
+#endif
 #if !defined(__has_builtin)
 	#define __has_builtin(x) 0
 #endif
@@ -47,6 +54,18 @@
 		#else
 			#define CTB_INLINE static
 		#endif
+	#endif
+#endif
+
+#if defined(__MSVC__)
+	#define CTB_FORCEINLINE static __forceinline
+#endif
+
+#if !defined(CTB_FORCEINLINE)
+	#if defined(__GNUC__)
+		#define CTB_FORCEINLINE __attribute__((always_inline)) CTB_INLINE
+	#else
+		#define CTB_FORCEINLINE CTB_INLINE
 	#endif
 #endif
 
@@ -84,6 +103,10 @@
 #if defined(NDEBUG)
 	#undef  CTB_ASSERT
 	#define CTB_ASSERT(C) (void) (C)
+#else
+	#if !defined(CTB_CFG_NOSTDLIB)
+		#define CTB_ASSERT(A) assert(A)
+	#endif
 #endif
 
 

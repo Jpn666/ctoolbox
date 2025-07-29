@@ -73,6 +73,12 @@ void ctb_memset(void* destination, uintxx value, uintxx size);
 /*
  * A safe memset to zero */
 
-extern void (*volatile ctb_memzero)(void*, uintxx);
+extern void (*volatile ctb_memzerofn)(void*, uintxx);
+
+CTB_INLINE void
+ctb_memzero(void* destination, uintxx size)
+{
+	ctb_memzerofn(destination, size);
+}
 
 #endif
