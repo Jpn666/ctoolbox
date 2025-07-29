@@ -105,6 +105,7 @@
 	#define CTB_ASSERT(C) (void) (C)
 #else
 	#if !defined(CTB_CFG_NOSTDLIB)
+		#undef  CTB_ASSERT
 		#define CTB_ASSERT(A) assert(A)
 	#endif
 #endif
