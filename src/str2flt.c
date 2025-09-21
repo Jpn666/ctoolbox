@@ -1224,7 +1224,7 @@ str2flt32(const uint8* src, const uint8** end)
 
 	result.error = parsefloat(src, end, FLT32MODE, &u);
 
-	m.u = u;
+	m.u = (uint32) u;
 	result.value.asf32 = m.f;
 	return result;
 }

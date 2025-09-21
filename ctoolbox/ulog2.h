@@ -53,11 +53,11 @@ ctb_u32log2(uint32 v)
 	uintxx i;
 
 	i = 0;
-	if (v >= (((uintxx) 1) << 0x10)) { i += 0x10; v >>= 0x10; }
-	if (v >= (((uintxx) 1) << 0x08)) { i += 0x08; v >>= 0x08; }
-	if (v >= (((uintxx) 1) << 0x04)) { i += 0x04; v >>= 0x04; }
-	if (v >= (((uintxx) 1) << 0x02)) { i += 0x02; v >>= 0x02; }
-	if (v >= (((uintxx) 1) << 0x01)) { i += 0x01; v >>= 0x01; }
+	if (v >= (((uint32) 1) << 0x10)) { i += 0x10; v >>= 0x10; }
+	if (v >= (((uint32) 1) << 0x08)) { i += 0x08; v >>= 0x08; }
+	if (v >= (((uint32) 1) << 0x04)) { i += 0x04; v >>= 0x04; }
+	if (v >= (((uint32) 1) << 0x02)) { i += 0x02; v >>= 0x02; }
+	if (v >= (((uint32) 1) << 0x01)) { i += 0x01; v >>= 0x01; }
 	return i;
 #endif
 }
@@ -72,12 +72,12 @@ ctb_u64log2(uint64 v)
 	uintxx i;
 
 	i = 0;
-	if (v >= (((uintxx) 1) << 0x20)) { i += 0x20; v >>= 0x20; }
-	if (v >= (((uintxx) 1) << 0x10)) { i += 0x10; v >>= 0x10; }
-	if (v >= (((uintxx) 1) << 0x08)) { i += 0x08; v >>= 0x08; }
-	if (v >= (((uintxx) 1) << 0x04)) { i += 0x04; v >>= 0x04; }
-	if (v >= (((uintxx) 1) << 0x02)) { i += 0x02; v >>= 0x02; }
-	if (v >= (((uintxx) 1) << 0x01)) { i += 0x01; v >>= 0x01; }
+	if (v >= (((uint64) 1) << 0x20)) { i += 0x20; v >>= 0x20; }
+	if (v >= (((uint64) 1) << 0x10)) { i += 0x10; v >>= 0x10; }
+	if (v >= (((uint64) 1) << 0x08)) { i += 0x08; v >>= 0x08; }
+	if (v >= (((uint64) 1) << 0x04)) { i += 0x04; v >>= 0x04; }
+	if (v >= (((uint64) 1) << 0x02)) { i += 0x02; v >>= 0x02; }
+	if (v >= (((uint64) 1) << 0x01)) { i += 0x01; v >>= 0x01; }
 	return i;
 #endif
 }

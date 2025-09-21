@@ -69,7 +69,7 @@ ADD_TYPEDEF(  signed char,  int8);
 ADD_TYPEDEF(unsigned char, uint8);
 
 
-#if defined(_MSC_VER)
+#if defined(__MSVC__)
 	typedef   signed __int64  int64;
 	typedef unsigned __int64 uint64;
 #else
