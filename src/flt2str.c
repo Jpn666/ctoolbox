@@ -77,7 +77,7 @@ CTB_INLINE struct TVal128
 getgs(int32 k)
 {
 	int32 index = (k - (-292));
-	return g[index];
+	return gtable[index];
 }
 
 CTB_INLINE int32
@@ -159,9 +159,9 @@ roundtoodd64(struct TVal128 g, uint64 cp)
 }
 
 static struct TResult
-todecimal64(int64 q, uint64 c)
+todecimal64(int32 q, uint64 c)
 {
-	int64 k;
+	int32 k;
 	int64 h;
 	int64 cb, cbr, cbl;
 	int64 vb, vbr, vbl;
@@ -240,7 +240,7 @@ todecimal64(int64 q, uint64 c)
 }
 
 static struct TResult
-schubfach64(uint64 mantissa, int64 exponent)
+schubfach64(uint64 mantissa, int32 exponent)
 {
 	if (exponent != 0) {
 		mantissa = mantissa | (1ull << 52);
@@ -297,7 +297,7 @@ f64tostr(flt64 number, eFLTFormatMode m, uintxx precision, uint8 r[24])
 		}
 	}
 
-	result = schubfach64(mantissa, exponent);
+	result = schubfach64(mantissa, (uint32) exponent);
 
 	/* Ajust the precision parameter */
 	if (precision > FLT64_MAXDIGITS)
@@ -346,9 +346,9 @@ roundtoodd32(struct TVal128 g, uint64 cp)
 }
 
 static struct TResult
-todecimal32(int64 q, uint64 c)
+todecimal32(int32 q, uint64 c)
 {
-	int64 k;
+	int32 k;
 	int64 h;
 	int64 cb, cbr, cbl;
 	int64 vb, vbr, vbl;
@@ -394,7 +394,7 @@ todecimal32(int64 q, uint64 c)
 		upper -= 1;
 	}
 
-	s = vb >> 2;
+	s = (uint32) (vb >> 2);
 	if (s >= 10) {
 		uint64 sp;
 		bool upin;
@@ -428,7 +428,7 @@ todecimal32(int64 q, uint64 c)
 }
 
 static struct TResult
-schubfach32(uint64 mantissa, int64 exponent)
+schubfach32(uint64 mantissa, int32 exponent)
 {
 	if (exponent != 0) {
 		mantissa = mantissa | (1ull << 23);
@@ -457,15 +457,15 @@ f32tostr(flt32 number, eFLTFormatMode m, uintxx precision, uint8 r[24])
 		flt32 f;
 	}
 	f;
-	int64 mantissa;
-	int64 exponent;
+	int32 mantissa;
+	int32 exponent;
 	uint8* s;
 	struct TResult result;
 
 	CTB_ASSERT(r);
 	f.f = number;
-	exponent = ((uint32) f.i >> 23) & 0x00000000000000ffull;
-	mantissa = ((uint32) f.i >> 00) & 0x00000000007fffffull;
+	exponent = ((uint32) f.i >> 23) & 0x000000ffull;
+	mantissa = ((uint32) f.i >> 00) & 0x007fffffull;
 
 	s = r;
 	if (exponent == 255) {
@@ -660,7 +660,7 @@ todigits(uint32 number, uint8* buffer)
 	p = buffer;
 	for (c = number; c >= 100; ) {
 		p -= 2;
-		r = c - ((n = ((42949673 * c) >> 32)) * 100);
+		r = (uint32) (c - ((n = ((42949673 * c) >> 32)) * 100));
 		c = n;
 		p[0] = radix100[(r << 1) + 0];
 		p[1] = radix100[(r << 1) + 1];
@@ -952,7 +952,7 @@ struct TVal128 {
 * The first entry must be for an exponent of K_MIN or less.
 * The last entry must be for an exponent of K_MAX or more. */
 
-static const struct TVal128 g[] = {
+static const struct TVal128 gtable[] = {
 	{0xFF77B1FCBEBCDC4Full, 0x25E8E89C13BB0F7Bull}, /* -292 */
 	{0x9FAACF3DF73609B1ull, 0x77B191618C54E9ADull}, /* -291 */
 	{0xC795830D75038C1Dull, 0xD59DF5B9EF6A2418ull}, /* -290 */

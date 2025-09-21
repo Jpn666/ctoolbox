@@ -51,7 +51,7 @@ todigits(uint32 number, uint8* buffer)
 	p = buffer;
 	for (c = number; c >= 100; ) {
 		p -= 2;
-		r = c - ((n = ((42949673 * c) >> 32)) * 100);
+		r = (uint32) (c - ((n = ((42949673 * c) >> 32)) * 100));
 		c = n;
 		p[0] = radix100[(r << 1) + 0];
 		p[1] = radix100[(r << 1) + 1];
