@@ -113,9 +113,9 @@
 
 /* */
 struct TAssertInfo {
-	const uint8* filename;
-	const uint8* cndtn;
-	uintxx line;
+	const char* filename;
+	const char* cndtn;
+	int line;
 };
 
 typedef struct TAssertInfo TAssertInfo;
@@ -132,11 +132,11 @@ extern void (*ctb_assertfn)(TAssertInfo);
 CTB_INLINE void
 ctb_testfailed(const char* cndtn, const char* filename, int line)
 {
-	if (ctb_assertfn) {
-		struct TAssertInfo assertinfo;
+	struct TAssertInfo assertinfo;
 
+	if (ctb_assertfn) {
 		assertinfo = (struct TAssertInfo){
-			.cndtn = (void*) cndtn, .filename = (void*) filename, .line = line
+			.cndtn = cndtn, .filename = filename, .line = line
 		};
 		ctb_assertfn(assertinfo);
 	}
@@ -148,7 +148,7 @@ ctb_testfailed(const char* cndtn, const char* filename, int line)
 	 * custom assert function to handle the assertion failure appropriately.
 	 * */
 	do {
-		/* not my problem... */
+		/* Not my problem... */
 	} while(1);
 }
 

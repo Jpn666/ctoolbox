@@ -17,16 +17,7 @@
 #include <ctoolbox/ctoolbox.h>
 
 
-static void
-localassert(TAssertInfo assertinfo)
-{
-	(void) assertinfo;
-	do {
-		/* */
-	} while(1);
-}
-
-void (*ctb_assertfn)(TAssertInfo) = &localassert;
+void (*ctb_assertfn)(TAssertInfo) = NULL;
 
 
 void
