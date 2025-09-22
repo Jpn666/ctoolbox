@@ -71,8 +71,8 @@
 
 
 #if defined(__GNUC__) || __has_builtin(__builtin_expect)
-	#define CTB_EXPECT1(X) __builtin_expect((X), 1)
-	#define CTB_EXPECT0(X) __builtin_expect((X), 0)
+	#define CTB_EXPECT1(X) __builtin_expect(!!(X), 1)
+	#define CTB_EXPECT0(X) __builtin_expect(!!(X), 0)
 #else
 	#define CTB_EXPECT1(X) (X)
 	#define CTB_EXPECT0(X) (X)
