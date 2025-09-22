@@ -40,7 +40,7 @@ conf.set('version_rpath', v2)
 if target_machine.endian() == 'little'
   conf.set('CTB_CFG_LITTLEENDIAN', true)
 else
-  if target_machine.endianess() == 'big'
+  if target_machine.endian() == 'big'
     conf.set('CTB_CFG_BIGENDIAN', true)
   else
     error()
