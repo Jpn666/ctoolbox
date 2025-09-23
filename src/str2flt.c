@@ -73,9 +73,9 @@ struct TFltResult {
 
 /* Mutiprecision decimal number */
 struct TDecimal {
-	int32  decimalpoint;
-	int32  overflow;
-	uint32 n;
+	int32 decimalpoint;
+	int32 overflow;
+	int32 n;
 
 	/* Big-enddian representation */
 	uint8 digits[800];
@@ -104,8 +104,8 @@ decimalrshift(struct TDecimal* decimal, uintxx amount)
 {
 	uint64 n;
 	uint64 m;
-	uint32 r;
-	uint32 w;
+	int32 r;
+	int32 w;
 
 	r = 0;
 	w = 0;
@@ -128,7 +128,7 @@ decimalrshift(struct TDecimal* decimal, uintxx amount)
 
 	m = (((uint64) 1) << amount) - 1;
 	while (r < decimal->n) {
-		int32 c;
+		uint32 c;
 
 		c = decimal->digits[r++];
 		decimal->digits[w++] = (uint8) (n >> amount);
@@ -136,7 +136,7 @@ decimalrshift(struct TDecimal* decimal, uintxx amount)
 	}
 
 	while (n) {
-		if (w < sizeof(decimal->digits)) {
+		if ((uint32) w < sizeof(decimal->digits)) {
 			decimal->digits[w++] = (uint8) (n >> amount);
 		}
 		else {
@@ -152,7 +152,7 @@ decimalrshift(struct TDecimal* decimal, uintxx amount)
 }
 
 
-static const uint32 lscheat[] = {
+static const int32 lscheat[] = {
 	0x00000001, 0x00020101,
 	0x00060102, 0x00080103,
 	0x000e0203, 0x00120204,
@@ -280,7 +280,7 @@ static const uint8 lscheatdigits[] = {
 static int32
 getdigitsdelta(struct TDecimal* decimal, uintxx amount)
 {
-	uint32 j;
+	int32 j;
 	int32 count;
 	int32 delta;
 	const uint8* ldgts;
@@ -290,7 +290,7 @@ getdigitsdelta(struct TDecimal* decimal, uintxx amount)
 	delta = (j >> 0x08) & 0xff;
 	ldgts = lscheatdigits + (j >> 0x10);
 
-	for (j = 0; j < (uint32) count; j++) {
+	for (j = 0; j < count; j++) {
 		if (j >= decimal->n) {
 			delta--;
 			break;
@@ -348,7 +348,7 @@ decimallshift(struct TDecimal* decimal, uintxx amount)
 	}
 
 	decimal->n += delta;
-	if (decimal->n >= sizeof(decimal->digits)) {
+	if ((uint32) decimal->n >= sizeof(decimal->digits)) {
 		decimal->n = sizeof(decimal->digits);
 	}
 	decimal->decimalpoint += delta;
@@ -364,7 +364,7 @@ decimalshift(struct TDecimal* decimal, intxx amount)
 			amount -= DECIMALMAXLSHIFT;
 		}
 		if (amount) {
-			decimallshift(decimal, +amount);
+			decimallshift(decimal, (uintxx) +amount);
 		}
 		return;
 	}
@@ -375,7 +375,7 @@ decimalshift(struct TDecimal* decimal, intxx amount)
 			amount += DECIMALMAXRSHIFT;
 		}
 		if (amount) {
-			decimalrshift(decimal, -amount);
+			decimalrshift(decimal, (uintxx) -amount);
 		}
 		return;
 	}
@@ -390,7 +390,7 @@ shouldroundup(struct TDecimal* decimal, int32 n)
 		return 0;
 	}
 	c = (uint32) n;
-	if (decimal->digits[c] == 5 && c + 1 == decimal->n) {
+	if (decimal->digits[c] == 5 && c + 1 == (uint32) decimal->n) {
 		if (decimal->overflow) {
 			return 0;
 		}
@@ -425,7 +425,7 @@ decimalroundinteger(struct TDecimal* decimal)
 }
 
 static void
-parsedecimal(const uint8* s, uint32 total, int32 e10, struct TDecimal* r)
+parsedecimal(const uint8* s, int32 total, int32 e10, struct TDecimal* r)
 {
 	int32 n;
 
@@ -434,11 +434,11 @@ parsedecimal(const uint8* s, uint32 total, int32 e10, struct TDecimal* r)
 
 	n = total;
 	for (n = total; n; s++) {
-		int32 c;
+		uint32 c;
 
 		c = s[0];
 		if (ctb_isdigit(c)) {
-			if (sizeof(r->digits) > r->n) {
+			if (sizeof(r->digits) > (uint32) r->n) {
 				r->digits[r->n++] = (uint8) (c - 0x30);
 			}
 			else {
@@ -599,8 +599,8 @@ decimaltobinary(struct TDecimal* decimal, const struct TFLTType* f)
 		exp = f->ebias;
 	}
 
-	r.significand = (snd)            & ((1ull << f->sbits) - 1);
-	r.exponent    = (exp - f->ebias) & (f->emask);
+	r.significand = (int64) ((snd)            & ((1ull << f->sbits) - 1));
+	r.exponent    = (int64) ((exp - f->ebias) & (f->emask));
 	return r;
 }
 
@@ -801,10 +801,10 @@ eisellemire(uint64 w, int32 q, const struct TFLTType* f)
 
 	/* The most significant 54 bits (64-bit) or 25 bits (32-bit) of the
 	 * product z */
-	m = z.hi >> (u + 64 - f->sbits - 3);
+	m = z.hi >> (u + 64 - (uint64) f->sbits - 3);
 
 	/* Expected binary exponent */
-	p = POWER(q) - (l + (1 ^ u)) - f->ebias + 1;
+	p = POWER(q) - (l + (1 ^ (int64) u)) - f->ebias + 1;
 
 	/* Subnormal number */
 	if (p <= 0) {
@@ -832,10 +832,10 @@ eisellemire(uint64 w, int32 q, const struct TFLTType* f)
 	if (z.lo <= 1) {
 		if (q >= f->minexponentroundtoeven && q <= f->maxexponentroundtoeven) {
 			if ((m & 3) == 1) {
-				if ((m << (u + 64 - f->sbits - 3)) == z.hi) {
+				if ((m << (u + 64 - (uint64) f->sbits - 3)) == z.hi) {
 					/* If we fall right in between and and we have an
 					 * even basis, we need to round down */
-					m &= ~1;  /* Flip the last bit so we don't round up */
+					m &= ~1ull;  /* Flip the last bit so we don't round up */
 				}
 			}
 		}
@@ -854,7 +854,7 @@ eisellemire(uint64 w, int32 q, const struct TFLTType* f)
 	}
 
 L_DONE:
-	return (struct TFltResult) {m, p};
+	return (struct TFltResult) { (int64) m, p};
 }
 
 /* ****************************************************************************
@@ -934,7 +934,7 @@ parsefloat(const uint8* src, const uint8** end, uintxx mode, uint64* result)
 {
 	int32 start;
 	int32 total;
-	int32 c;
+	uint32 c;
 	int32 i;
 	int32 isnegative;
 	int32 decimalpoint;
@@ -984,13 +984,15 @@ parsefloat(const uint8* src, const uint8** end, uintxx mode, uint64* result)
 
 		i = parsenan(s, f, result);
 		if (i) {
-			if (end)
+			if (end) {
 				end[0] = s + i;
+			}
 			return 0;
 		}
 
-		if (end)
+		if (end) {
 			end[0] = src;
+		}
 
 		result[0] = FLTNAN(f->sbits, f->ebits);
 		return STR2FLT_ENAN;
@@ -1014,7 +1016,7 @@ L1:
 		s++;
 	}
 
-	start = (int32) (s - (uint8*) src);
+	start = (int32) (s - (const uint8*) src);
 
 	/* Parse the first 19 digits */
 	for (total = 0; total < 19; s++) {
@@ -1189,7 +1191,7 @@ tobinary(const uint8* start, int32 total, uint64 snd, int32 e10, uintxx mode)
 		parsedecimal(start, total, e10, &decimal);
 		r1 = decimaltobinary(&decimal, f);
 	}
-	return r1.significand | (r1.exponent << f->sbits);
+	return (uint64) (r1.significand | (r1.exponent << f->sbits));
 }
 
 

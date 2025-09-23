@@ -139,7 +139,7 @@ static uint8* formatD(struct TResult, uint8*, uintxx);
 /*
  * Float 64 */
 
-CTB_INLINE uint64
+CTB_INLINE int64
 roundtoodd64(struct TVal128 g, uint64 cp)
 {
 	struct TVal128 x;
@@ -155,7 +155,7 @@ roundtoodd64(struct TVal128 g, uint64 cp)
 	if (y.lo < x.hi) {
 		y.hi++;
 	}
-	return y.hi | (y.lo > 1);
+	return (int64) (y.hi | (y.lo > 1));
 }
 
 static struct TResult
@@ -163,8 +163,8 @@ todecimal64(int32 q, uint64 c)
 {
 	int32 k;
 	int64 h;
-	int64 cb, cbr, cbl;
-	int64 vb, vbr, vbl;
+	uint64 cb, cbr, cbl;
+	int64  vb, vbr, vbl;
 	int64 s;
 	uint64 lower;
 	uint64 upper;
@@ -199,8 +199,8 @@ todecimal64(int32 q, uint64 c)
 	vb  = roundtoodd64(g, cb  << h);
 	vbr = roundtoodd64(g, cbr << h);
 
-	lower = vbl;
-	upper = vbr;
+	lower = (uint64) vbl;
+	upper = (uint64) vbr;
 	if (iseven == 0) {
 		lower += 1;
 		upper -= 1;
@@ -213,18 +213,18 @@ todecimal64(int32 q, uint64 c)
 		bool wpin;
 
 		/* See section 9.4 of [1]. */
-		sp = mul128hi(7378697629483820647ull, s) >> 2;  /* s div 10 */
+		sp = mul128hi(7378697629483820647ull, (uint64) s) >> 2;  /* s div 10 */
 
 		upin = lower          <= (40 * sp);
 		wpin = (40 * sp + 40) <= upper;
 		if (upin != wpin) {
-			return (struct TResult) { sp + wpin, k + 1};
+			return (struct TResult) { (int64) sp + wpin, k + 1};
 		}
 	}
 
 	/* See section 9.4 of [1]. */
-	uin = lower              <= (uint64) 4 * s;
-	win = (uint64) 4 * s + 4 <= upper;
+	uin = lower              <= 4 * (uint64) s;
+	win = 4 * (uint64) s + 4 <= upper;
 	if (uin != win) {
 		return (struct TResult) { s + win, k};
 	}
@@ -232,7 +232,7 @@ todecimal64(int32 q, uint64 c)
 	/*
 	 * Both u and w lie in Rv: determine the one closest to v.
 	 * See section 9.4 of [1]. */
-	m = 4 * s + 2;
+	m = 4 * (uint64) s + 2;
 	if ((uint64) vb > m || ((uint64) vb == m && (s & 1) != 0)) {
 		s++;
 	}
@@ -251,7 +251,7 @@ schubfach64(uint64 mantissa, int32 exponent)
 
 			f = mantissa >> -exponent;
 			if ((f << -exponent) == mantissa) {
-				return (struct TResult) {f, 0};
+				return (struct TResult) { (int64) f, 0};
 			}
 		}
 	}
@@ -283,7 +283,7 @@ f64tostr(flt64 number, eFLTFormatMode m, uintxx precision, uint8 r[24])
 	if (exponent == 2047) {
 		if (f.i >> 63)
 			*s++ = '-';
-		s = s + setnanorinf(s, mantissa);
+		s = s + setnanorinf(s, (uint64) mantissa);
 		return (uintxx) (s - r);
 	}
 	else {
@@ -297,7 +297,7 @@ f64tostr(flt64 number, eFLTFormatMode m, uintxx precision, uint8 r[24])
 		}
 	}
 
-	result = schubfach64(mantissa, (uint32) exponent);
+	result = schubfach64((uint64) mantissa, (int32) exponent);
 
 	/* Ajust the precision parameter */
 	if (precision > FLT64_MAXDIGITS)
@@ -328,7 +328,7 @@ f64tostr(flt64 number, eFLTFormatMode m, uintxx precision, uint8 r[24])
 /*
  * Float 32 */
 
-CTB_INLINE uint32
+CTB_INLINE int64
 roundtoodd32(struct TVal128 g, uint64 cp)
 {
 	struct TVal128 m;
@@ -340,9 +340,9 @@ roundtoodd32(struct TVal128 g, uint64 cp)
 	* See appendix and figure 8 of [1]. */
 	m = mul64to128(g.hi, cp);
 
-	y0 = (m.lo >> 32) & 0xffffffff;
-	y1 = (m.hi >> 00) & 0xffffffff;
-	return y1 | (y0 > 1);
+	y0 = (uint32) (m.lo >> 0x20);
+	y1 = (uint32) (m.hi >> 0x00);
+	return (int64) (y1 | (y0 > 1));
 }
 
 static struct TResult
@@ -350,8 +350,8 @@ todecimal32(int32 q, uint64 c)
 {
 	int32 k;
 	int64 h;
-	int64 cb, cbr, cbl;
-	int64 vb, vbr, vbl;
+	uint64 cb, cbr, cbl;
+	int64  vb, vbr, vbl;
 	uint32 s;
 	uint64 lower;
 	uint64 upper;
@@ -387,8 +387,8 @@ todecimal32(int32 q, uint64 c)
 	vb  = roundtoodd32(g, cb  << h);
 	vbr = roundtoodd32(g, cbr << h);
 
-	lower = vbl;
-	upper = vbr;
+	lower = (uint64) vbl;
+	upper = (uint64) vbr;
 	if (iseven == 0) {
 		lower += 1;
 		upper -= 1;
@@ -406,7 +406,7 @@ todecimal32(int32 q, uint64 c)
 		upin = lower          <= (40 * sp);
 		wpin = (40 * sp + 40) <= upper;
 		if (upin != wpin) {
-			return (struct TResult) { sp + wpin, k + 1};
+			return (struct TResult) { (int64) sp + wpin, k + 1};
 		}
 	}
 
@@ -438,7 +438,7 @@ schubfach32(uint64 mantissa, int32 exponent)
 
 			f = mantissa >> -exponent;
 			if ((f << -exponent) == mantissa) {
-				return (struct TResult) {f, 0};
+				return (struct TResult) { (int64) f, 0};
 			}
 		}
 	}
@@ -471,7 +471,7 @@ f32tostr(flt32 number, eFLTFormatMode m, uintxx precision, uint8 r[24])
 	if (exponent == 255) {
 		if (f.i >> 31)
 			*s++ = '-';
-		s = s + setnanorinf(r, mantissa);
+		s = s + setnanorinf(r, (uint64) mantissa);
 		return (uintxx) (s - r);
 	}
 	else {
@@ -485,7 +485,7 @@ f32tostr(flt32 number, eFLTFormatMode m, uintxx precision, uint8 r[24])
 		}
 	}
 
-	result = schubfach32(mantissa, exponent);
+	result = schubfach32((uint64) mantissa, exponent);
 
 	/* Ajust the precision parameter */
 	if (precision > FLT32_MAXDIGITS)
@@ -680,7 +680,7 @@ todigits(uint32 number, uint8* buffer)
 }
 
 static uint8*
-i64tostr(uint64 n, union TZeroUnion* z, uint32* magnitude)
+i64tostr(int64 n, union TZeroUnion* z, int32* magnitude)
 {
 	uint8* s1;
 	uint8* s2;
@@ -705,27 +705,27 @@ i64tostr(uint64 n, union TZeroUnion* z, uint32* magnitude)
 #endif
 
 	s1 = z[0].buffer + 20;
-	if (n < 1000000000) {
+	if (n < 1000000000u) {
 		s2 = todigits((uint32) n, s1);
 
-		magnitude[0] = (uint32) (s1 - s2);
+		magnitude[0] = (int32) (s1 - s2);
 		return s2;
 	}
 
-	a = mul128hi(19342813113834068ull, n) >> 20;
-	b = n - (a * 1000000000);
+	a = mul128hi(19342813113834068ull, (uint64) n) >> 20;
+	b = (uint64) n - (a * 1000000000u);
 
 	     todigits((uint32) b, s1 - 0);
 	s2 = todigits((uint32) a, s1 - 9);
 
-	magnitude[0] = (uint32) (s1 - s2);
+	magnitude[0] = (int32) (s1 - s2);
 	return s2;
 }
 
 static uint8*
 formatD(struct TResult result, uint8* s, uintxx mode)
 {
-	uint32 magnitude;
+	int32 magnitude;
 	uint8* pb1;
 	union TZeroUnion z;
 #if !defined(CTB_FASTUNALIGNED)
@@ -783,7 +783,7 @@ formatE(struct TResult result, uintxx precision, uint8* s, uintxx mode)
 	uint8* pb1;
 	uint8* pb2;
 	uint8* end;
-	uint32 magnitude;
+	int32 magnitude;
 	union TZeroUnion z;
 
 	switch (mode) {
@@ -841,7 +841,7 @@ formatG(struct TResult result, uintxx precision, uint8* s)
 	uint8* pb1;
 	uint8* pb2;
 	uint8* end;
-	uint32 magnitude;
+	int32 magnitude;
 	union TZeroUnion z;
 
 	if (precision == 0)

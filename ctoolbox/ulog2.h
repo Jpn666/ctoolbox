@@ -48,7 +48,7 @@ CTB_INLINE uintxx
 ctb_u32log2(uint32 v)
 {
 #if defined(__GNUC__)
-	return __builtin_clz(v) ^ 31;
+	return (uintxx) (__builtin_clz(v) ^ 31);
 #else
 	uintxx i;
 
@@ -67,7 +67,7 @@ CTB_INLINE uintxx
 ctb_u64log2(uint64 v)
 {
 #if defined(__GNUC__)
-	return __builtin_clzll(v) ^ 63;
+	return (uintxx) (__builtin_clzll(v) ^ 63);
 #else
 	uintxx i;
 
