@@ -18,6 +18,8 @@
 #include <ctoolbox/memory.h>
 
 
+#define MD5_BLOCKSIZE 64
+
 #define ROTL(X, N) (((X) << (N)) | ((X) >> (32 - (N))))
 
 /* F, G, H and I are basic MD5 functions. */
@@ -86,76 +88,76 @@ md5_compress(uint32 state[4], const uint8 data[64])
 	d = state[3];
 
 	/* round 1 */
-	FF(a, b, c, d, v[ 0], S11, 0xd76aa478UL);  /*  1 */
-	FF(d, a, b, c, v[ 1], S12, 0xe8c7b756UL);  /*  2 */
-	FF(c, d, a, b, v[ 2], S13, 0x242070dbUL);  /*  3 */
-	FF(b, c, d, a, v[ 3], S14, 0xc1bdceeeUL);  /*  4 */
-	FF(a, b, c, d, v[ 4], S11, 0xf57c0fafUL);  /*  5 */
-	FF(d, a, b, c, v[ 5], S12, 0x4787c62aUL);  /*  6 */
-	FF(c, d, a, b, v[ 6], S13, 0xa8304613UL);  /*  7 */
-	FF(b, c, d, a, v[ 7], S14, 0xfd469501UL);  /*  8 */
-	FF(a, b, c, d, v[ 8], S11, 0x698098d8UL);  /*  9 */
-	FF(d, a, b, c, v[ 9], S12, 0x8b44f7afUL);  /* 10 */
-	FF(c, d, a, b, v[10], S13, 0xffff5bb1UL);  /* 11 */
-	FF(b, c, d, a, v[11], S14, 0x895cd7beUL);  /* 12 */
-	FF(a, b, c, d, v[12], S11, 0x6b901122UL);  /* 13 */
-	FF(d, a, b, c, v[13], S12, 0xfd987193UL);  /* 14 */
-	FF(c, d, a, b, v[14], S13, 0xa679438eUL);  /* 15 */
-	FF(b, c, d, a, v[15], S14, 0x49b40821UL);  /* 16 */
+	FF(a, b, c, d, v[ 0], S11, 0xd76aa478U);  /*  1 */
+	FF(d, a, b, c, v[ 1], S12, 0xe8c7b756U);  /*  2 */
+	FF(c, d, a, b, v[ 2], S13, 0x242070dbU);  /*  3 */
+	FF(b, c, d, a, v[ 3], S14, 0xc1bdceeeU);  /*  4 */
+	FF(a, b, c, d, v[ 4], S11, 0xf57c0fafU);  /*  5 */
+	FF(d, a, b, c, v[ 5], S12, 0x4787c62aU);  /*  6 */
+	FF(c, d, a, b, v[ 6], S13, 0xa8304613U);  /*  7 */
+	FF(b, c, d, a, v[ 7], S14, 0xfd469501U);  /*  8 */
+	FF(a, b, c, d, v[ 8], S11, 0x698098d8U);  /*  9 */
+	FF(d, a, b, c, v[ 9], S12, 0x8b44f7afU);  /* 10 */
+	FF(c, d, a, b, v[10], S13, 0xffff5bb1U);  /* 11 */
+	FF(b, c, d, a, v[11], S14, 0x895cd7beU);  /* 12 */
+	FF(a, b, c, d, v[12], S11, 0x6b901122U);  /* 13 */
+	FF(d, a, b, c, v[13], S12, 0xfd987193U);  /* 14 */
+	FF(c, d, a, b, v[14], S13, 0xa679438eU);  /* 15 */
+	FF(b, c, d, a, v[15], S14, 0x49b40821U);  /* 16 */
 
 	/* round 2 */
-	GG(a, b, c, d, v[ 1], S21, 0xf61e2562UL);  /* 17 */
-	GG(d, a, b, c, v[ 6], S22, 0xc040b340UL);  /* 18 */
-	GG(c, d, a, b, v[11], S23, 0x265e5a51UL);  /* 19 */
-	GG(b, c, d, a, v[ 0], S24, 0xe9b6c7aaUL);  /* 20 */
-	GG(a, b, c, d, v[ 5], S21, 0xd62f105dUL);  /* 21 */
-	GG(d, a, b, c, v[10], S22, 0x02441453UL);  /* 22 */
-	GG(c, d, a, b, v[15], S23, 0xd8a1e681UL);  /* 23 */
-	GG(b, c, d, a, v[ 4], S24, 0xe7d3fbc8UL);  /* 24 */
-	GG(a, b, c, d, v[ 9], S21, 0x21e1cde6UL);  /* 25 */
-	GG(d, a, b, c, v[14], S22, 0xc33707d6UL);  /* 26 */
-	GG(c, d, a, b, v[ 3], S23, 0xf4d50d87UL);  /* 27 */
-	GG(b, c, d, a, v[ 8], S24, 0x455a14edUL);  /* 28 */
-	GG(a, b, c, d, v[13], S21, 0xa9e3e905UL);  /* 29 */
-	GG(d, a, b, c, v[ 2], S22, 0xfcefa3f8UL);  /* 30 */
-	GG(c, d, a, b, v[ 7], S23, 0x676f02d9UL);  /* 31 */
-	GG(b, c, d, a, v[12], S24, 0x8d2a4c8aUL);  /* 32 */
+	GG(a, b, c, d, v[ 1], S21, 0xf61e2562U);  /* 17 */
+	GG(d, a, b, c, v[ 6], S22, 0xc040b340U);  /* 18 */
+	GG(c, d, a, b, v[11], S23, 0x265e5a51U);  /* 19 */
+	GG(b, c, d, a, v[ 0], S24, 0xe9b6c7aaU);  /* 20 */
+	GG(a, b, c, d, v[ 5], S21, 0xd62f105dU);  /* 21 */
+	GG(d, a, b, c, v[10], S22, 0x02441453U);  /* 22 */
+	GG(c, d, a, b, v[15], S23, 0xd8a1e681U);  /* 23 */
+	GG(b, c, d, a, v[ 4], S24, 0xe7d3fbc8U);  /* 24 */
+	GG(a, b, c, d, v[ 9], S21, 0x21e1cde6U);  /* 25 */
+	GG(d, a, b, c, v[14], S22, 0xc33707d6U);  /* 26 */
+	GG(c, d, a, b, v[ 3], S23, 0xf4d50d87U);  /* 27 */
+	GG(b, c, d, a, v[ 8], S24, 0x455a14edU);  /* 28 */
+	GG(a, b, c, d, v[13], S21, 0xa9e3e905U);  /* 29 */
+	GG(d, a, b, c, v[ 2], S22, 0xfcefa3f8U);  /* 30 */
+	GG(c, d, a, b, v[ 7], S23, 0x676f02d9U);  /* 31 */
+	GG(b, c, d, a, v[12], S24, 0x8d2a4c8aU);  /* 32 */
 
 	/* round 3 */
-	HH(a, b, c, d, v[ 5], S31, 0xfffa3942UL);  /* 33 */
-	HH(d, a, b, c, v[ 8], S32, 0x8771f681UL);  /* 34 */
-	HH(c, d, a, b, v[11], S33, 0x6d9d6122UL);  /* 35 */
-	HH(b, c, d, a, v[14], S34, 0xfde5380cUL);  /* 36 */
-	HH(a, b, c, d, v[ 1], S31, 0xa4beea44UL);  /* 37 */
-	HH(d, a, b, c, v[ 4], S32, 0x4bdecfa9UL);  /* 38 */
-	HH(c, d, a, b, v[ 7], S33, 0xf6bb4b60UL);  /* 39 */
-	HH(b, c, d, a, v[10], S34, 0xbebfbc70UL);  /* 40 */
-	HH(a, b, c, d, v[13], S31, 0x289b7ec6UL);  /* 41 */
-	HH(d, a, b, c, v[ 0], S32, 0xeaa127faUL);  /* 42 */
-	HH(c, d, a, b, v[ 3], S33, 0xd4ef3085UL);  /* 43 */
-	HH(b, c, d, a, v[ 6], S34, 0x04881d05UL);  /* 44 */
-	HH(a, b, c, d, v[ 9], S31, 0xd9d4d039UL);  /* 45 */
-	HH(d, a, b, c, v[12], S32, 0xe6db99e5UL);  /* 46 */
-	HH(c, d, a, b, v[15], S33, 0x1fa27cf8UL);  /* 47 */
-	HH(b, c, d, a, v[ 2], S34, 0xc4ac5665UL);  /* 48 */
+	HH(a, b, c, d, v[ 5], S31, 0xfffa3942U);  /* 33 */
+	HH(d, a, b, c, v[ 8], S32, 0x8771f681U);  /* 34 */
+	HH(c, d, a, b, v[11], S33, 0x6d9d6122U);  /* 35 */
+	HH(b, c, d, a, v[14], S34, 0xfde5380cU);  /* 36 */
+	HH(a, b, c, d, v[ 1], S31, 0xa4beea44U);  /* 37 */
+	HH(d, a, b, c, v[ 4], S32, 0x4bdecfa9U);  /* 38 */
+	HH(c, d, a, b, v[ 7], S33, 0xf6bb4b60U);  /* 39 */
+	HH(b, c, d, a, v[10], S34, 0xbebfbc70U);  /* 40 */
+	HH(a, b, c, d, v[13], S31, 0x289b7ec6U);  /* 41 */
+	HH(d, a, b, c, v[ 0], S32, 0xeaa127faU);  /* 42 */
+	HH(c, d, a, b, v[ 3], S33, 0xd4ef3085U);  /* 43 */
+	HH(b, c, d, a, v[ 6], S34, 0x04881d05U);  /* 44 */
+	HH(a, b, c, d, v[ 9], S31, 0xd9d4d039U);  /* 45 */
+	HH(d, a, b, c, v[12], S32, 0xe6db99e5U);  /* 46 */
+	HH(c, d, a, b, v[15], S33, 0x1fa27cf8U);  /* 47 */
+	HH(b, c, d, a, v[ 2], S34, 0xc4ac5665U);  /* 48 */
 
 	/* round 4 */
-	II(a, b, c, d, v[ 0], S41, 0xf4292244UL);  /* 49 */
-	II(d, a, b, c, v[ 7], S42, 0x432aff97UL);  /* 50 */
-	II(c, d, a, b, v[14], S43, 0xab9423a7UL);  /* 51 */
-	II(b, c, d, a, v[ 5], S44, 0xfc93a039UL);  /* 52 */
-	II(a, b, c, d, v[12], S41, 0x655b59c3UL);  /* 53 */
-	II(d, a, b, c, v[ 3], S42, 0x8f0ccc92UL);  /* 54 */
-	II(c, d, a, b, v[10], S43, 0xffeff47dUL);  /* 55 */
-	II(b, c, d, a, v[ 1], S44, 0x85845dd1UL);  /* 56 */
-	II(a, b, c, d, v[ 8], S41, 0x6fa87e4fUL);  /* 57 */
-	II(d, a, b, c, v[15], S42, 0xfe2ce6e0UL);  /* 58 */
-	II(c, d, a, b, v[ 6], S43, 0xa3014314UL);  /* 59 */
-	II(b, c, d, a, v[13], S44, 0x4e0811a1UL);  /* 60 */
-	II(a, b, c, d, v[ 4], S41, 0xf7537e82UL);  /* 61 */
-	II(d, a, b, c, v[11], S42, 0xbd3af235UL);  /* 62 */
-	II(c, d, a, b, v[ 2], S43, 0x2ad7d2bbUL);  /* 63 */
-	II(b, c, d, a, v[ 9], S44, 0xeb86d391UL);  /* 64 */
+	II(a, b, c, d, v[ 0], S41, 0xf4292244U);  /* 49 */
+	II(d, a, b, c, v[ 7], S42, 0x432aff97U);  /* 50 */
+	II(c, d, a, b, v[14], S43, 0xab9423a7U);  /* 51 */
+	II(b, c, d, a, v[ 5], S44, 0xfc93a039U);  /* 52 */
+	II(a, b, c, d, v[12], S41, 0x655b59c3U);  /* 53 */
+	II(d, a, b, c, v[ 3], S42, 0x8f0ccc92U);  /* 54 */
+	II(c, d, a, b, v[10], S43, 0xffeff47dU);  /* 55 */
+	II(b, c, d, a, v[ 1], S44, 0x85845dd1U);  /* 56 */
+	II(a, b, c, d, v[ 8], S41, 0x6fa87e4fU);  /* 57 */
+	II(d, a, b, c, v[15], S42, 0xfe2ce6e0U);  /* 58 */
+	II(c, d, a, b, v[ 6], S43, 0xa3014314U);  /* 59 */
+	II(b, c, d, a, v[13], S44, 0x4e0811a1U);  /* 60 */
+	II(a, b, c, d, v[ 4], S41, 0xf7537e82U);  /* 61 */
+	II(d, a, b, c, v[11], S42, 0xbd3af235U);  /* 62 */
+	II(c, d, a, b, v[ 2], S43, 0x2ad7d2bbU);  /* 63 */
+	II(b, c, d, a, v[ 9], S44, 0xeb86d391U);  /* 64 */
 
 	state[0] += a;
 	state[1] += b;
@@ -172,7 +174,7 @@ md5_update(TMD5ctx* context, const uint8* data, uintxx size)
 	CTB_ASSERT(context && data);
 
 	if (context->rmnng) {
-		rmnng = MD5_BLOCKSZ - context->rmnng;
+		rmnng = MD5_BLOCKSIZE - context->rmnng;
 		if (rmnng > size)
 			rmnng = size;
 
@@ -181,7 +183,7 @@ md5_update(TMD5ctx* context, const uint8* data, uintxx size)
 		}
 		size -= i;
 
-		if (context->rmnng == MD5_BLOCKSZ) {
+		if (context->rmnng == MD5_BLOCKSIZE) {
 			md5_compress(context->state, context->rdata);
 
 			context->rmnng = 0;
@@ -192,11 +194,11 @@ md5_update(TMD5ctx* context, const uint8* data, uintxx size)
 		}
 	}
 
-	while (size >= MD5_BLOCKSZ) {
+	while (size >= MD5_BLOCKSIZE) {
 		md5_compress(context->state, data);
 
-		size -= MD5_BLOCKSZ;
-		data += MD5_BLOCKSZ;
+		size -= MD5_BLOCKSIZE;
+		data += MD5_BLOCKSIZE;
 		context->blcks++;  /* we 'll scale it later */
 	}
 
@@ -219,16 +221,18 @@ md5_final(TMD5ctx* context, uint32 digest[4])
 	context->rdata[length = context->rmnng] = 0x80;
 	length++;
 
-	if (length > MD5_BLOCKSZ - 8) {
-		while (length < MD5_BLOCKSZ)
+	if (length > MD5_BLOCKSIZE - 8) {
+		while (length < MD5_BLOCKSIZE) {
 			context->rdata[length++] = 0;
+		}
 
 		md5_compress(context->state, context->rdata);
 		length = 0;
 	}
 
-	while (length < (MD5_BLOCKSZ - 8))  /* pad with zeros */
+	while (length < (MD5_BLOCKSIZE - 8)) {  /* pad with zeros */
 		context->rdata[length++] = 0;
+	}
 
 	/* scales the numbers of bits */
 	nhi = context->blcks >> (32 - 9);
@@ -236,8 +240,9 @@ md5_final(TMD5ctx* context, uint32 digest[4])
 
 	/* add the remainings bits */
 	tmp = nlo;
-	if ((nlo += ((uint32) context->rmnng << 3)) < tmp)
+	if ((nlo += ((uint32) context->rmnng << 3)) < tmp) {
 		nhi++;
+	}
 
 	context->rdata[56] = (uint8) (nlo);
 	context->rdata[57] = (uint8) (nlo >> 0x08);

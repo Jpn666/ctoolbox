@@ -25,8 +25,7 @@
 #include "../ctoolbox.h"
 
 
-#define MD5_BLOCKSZ  64
-#define MD5_DIGESTSZ 16
+#define MD5_DIGESTSIZE 16
 
 
 /* */

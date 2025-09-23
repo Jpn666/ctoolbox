@@ -25,9 +25,7 @@
 #include "../ctoolbox.h"
 
 
-#define SHA256_BLOCKSZ  64
-#define SHA256_DIGESTSZ 32
-
+#define SHA256_DIGESTSIZE 32
 
 /* */
 struct TSHA256ctx {

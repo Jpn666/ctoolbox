@@ -25,9 +25,7 @@
 #include "../ctoolbox.h"
 
 
-#define SHA1_BLOCKSZ  64
-#define SHA1_DIGESTSZ 20
-
+#define SHA1_DIGESTSIZE 20
 
 /* */
 struct TSHA1ctx {

@@ -18,8 +18,9 @@
 #include <ctoolbox/memory.h>
 
 
-#define ROTR(X, N) (((X) >> (N)) | ((X) << (64 - (N))))
+#define SHA512_BLOCKSIZE 128
 
+#define ROTR(X, N) (((X) >> (N)) | ((X) << (64 - (N))))
 
 /* SHA-384 and SHA-512 each use six logical functions, where each function
  * operates on 64-bit words, which are represented as x, y, and z. The result
@@ -136,7 +137,7 @@ sha512_compress(uint64 state[8], const uint8 data[128])
 			0x4cc5d4becb3e42b6LL, 0x597f299cfc657e2aLL,
 			0x5fcb6fab3ad6faecLL, 0x6c44198c4a475817LL, 9 << 3);
 
-	/* adds the results into digest the state */
+	/* add the results into the state */
 	state[0] += s[0];
 	state[1] += s[1];
 	state[2] += s[2];
@@ -163,7 +164,7 @@ sha512_update(TSHA512ctx* context, const uint8* data, uintxx size)
 	CTB_ASSERT(context && data);
 
 	if (context->rmnng) {
-		rmnng = SHA512_BLOCKSZ - context->rmnng;
+		rmnng = SHA512_BLOCKSIZE - context->rmnng;
 		if (rmnng > size)
 			rmnng = size;
 
@@ -172,7 +173,7 @@ sha512_update(TSHA512ctx* context, const uint8* data, uintxx size)
 		}
 		size -= i;
 
-		if (context->rmnng == SHA512_BLOCKSZ) {
+		if (context->rmnng == SHA512_BLOCKSIZE) {
 			sha512_compress(context->state, context->rdata);
 
 			context->rmnng = 0;
@@ -183,11 +184,11 @@ sha512_update(TSHA512ctx* context, const uint8* data, uintxx size)
 		}
 	}
 
-	while (size >= SHA512_BLOCKSZ) {
+	while (size >= SHA512_BLOCKSIZE) {
 		sha512_compress(context->state, data);
 
-		size -= SHA512_BLOCKSZ;
-		data += SHA512_BLOCKSZ;
+		size -= SHA512_BLOCKSIZE;
+		data += SHA512_BLOCKSIZE;
 		context->blcks++;  /* we 'll scale it later */
 	}
 
@@ -210,16 +211,18 @@ sha512_final(TSHA512ctx* context, uint64 digest[8])
 	context->rdata[length = context->rmnng] = 0x80;
 	length++;
 
-	if (length > SHA512_BLOCKSZ - 16) {
-		while (length < SHA512_BLOCKSZ)
+	if (length > SHA512_BLOCKSIZE - 16) {
+		while (length < SHA512_BLOCKSIZE) {
 			context->rdata[length++] = 0;
+		}
 
 		sha512_compress(context->state, context->rdata);
 		length = 0;
 	}
 
-	while (length < (SHA512_BLOCKSZ - 16))  /* pad with zeros */
+	while (length < (SHA512_BLOCKSIZE - 16)) {  /* pad with zeros */
 		context->rdata[length++] = 0;
+	}
 
 	/* scales the numbers of bits */
 	nhi = context->blcks >> (64 - 10);
@@ -227,8 +230,9 @@ sha512_final(TSHA512ctx* context, uint64 digest[8])
 
 	/* add the remainings bits */
 	tmp = nlo;
-	if ((nlo += (context->rmnng << 3)) < tmp)
+	if ((nlo += (context->rmnng << 3)) < tmp) {
 		nhi++;
+	}
 
 	context->rdata[112] = (uint8) (nhi >> 0x38);
 	context->rdata[113] = (uint8) (nhi >> 0x30);

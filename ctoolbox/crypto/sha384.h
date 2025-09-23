@@ -25,8 +25,7 @@
 #include "sha512.h"
 
 
-#define SHA384_BLOCKSZ  SHA512_BLOCKSZ
-#define SHA384_DIGESTSZ 48
+#define SHA384_DIGESTSIZE 48
 
 
 typedef struct TSHA512ctx TSHA384ctx;

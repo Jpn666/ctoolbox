@@ -86,7 +86,7 @@ crc32_sliceby4(uint32 crc, const uint8* data, uintxx size)
 		}
 		crc = (crc >> 8) ^ crc32_table[0][(crc & 0xFF) ^ *data++];
 	}
-	ptr32 = (void*) data;
+	ptr32 = (const void*) data;
 	for (; size >= 16; size -= 16) {
 		CRC32_SLICEBY4
 		CRC32_SLICEBY4
@@ -97,7 +97,7 @@ crc32_sliceby4(uint32 crc, const uint8* data, uintxx size)
 		CRC32_SLICEBY4
 	}
 	if (size) {
-		data = (void*) ptr32;
+		data = (const void*) ptr32;
 		while (size--) {
 			crc = (crc >> 8) ^ crc32_table[0][(crc & 0xFF) ^ *data++];
 		}
@@ -132,7 +132,7 @@ crc32_sliceby8(uint32 crc, const uint8* data, uintxx size)
 		}
 		crc = (crc >> 8) ^ crc32_table[0][(crc & 0xFF) ^ *data++];
 	}
-	ptr32 = (void*) data;
+	ptr32 = (const void*) data;
 	for (; size >= 64; size -= 64) {
 		CRC32SLICEBY8
 		CRC32SLICEBY8
@@ -147,7 +147,7 @@ crc32_sliceby8(uint32 crc, const uint8* data, uintxx size)
 		CRC32SLICEBY8
 	}
 	if (size) {
-		data = (void*) ptr32;
+		data = (const void*) ptr32;
 		while (size--) {
 			crc = (crc >> 8) ^ crc32_table[0][(crc & 0xFF) ^ *data++];
 		}
@@ -181,7 +181,7 @@ crc32_createtable(uint32 table[8][256])
 		table[0][i] = crc32_reflect(i, 8) << 24;
 		for (j = 0; 8 > j; j++) {
 			x = table[0][i];
-			if (x & (1 << 31)) {
+			if (x & (1u << 31)) {
 				table[0][i] = (x << 1) ^ CRC32_POLYNOMIAL;
 				continue;
 			}

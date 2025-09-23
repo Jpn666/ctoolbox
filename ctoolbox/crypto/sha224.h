@@ -25,8 +25,7 @@
 #include "sha256.h"
 
 
-#define SHA224_BLOCKSZ  SHA256_BLOCKSZ
-#define SHA224_DIGESTSZ 28
+#define SHA224_DIGESTSIZE 28
 
 
 typedef struct TSHA256ctx TSHA224ctx;

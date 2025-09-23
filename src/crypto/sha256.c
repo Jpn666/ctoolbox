@@ -18,8 +18,9 @@
 #include <ctoolbox/memory.h>
 
 
-#define ROTR(X, N) (((X) >> (N)) | ((X) << (32 - (N))))
+#define SHA256_BLOCKSIZE 64
 
+#define ROTR(X, N) (((X) >> (N)) | ((X) << (32 - (N))))
 
 /* SHA-256 uses six logical functions, where each function operates on 32-bit
  * words, which are represented as x, y, and z. The result of each function is
@@ -83,47 +84,47 @@ sha256_compress(uint32 state[8], const uint8 data[64])
 	s[7] = state[7];
 
 	/* iterate */
-	ROUNDx8(0x428a2f98UL, 0x71374491UL,
-			0xb5c0fbcfUL, 0xe9b5dba5UL,
-			0x3956c25bUL, 0x59f111f1UL,
-			0x923f82a4UL, 0xab1c5ed5UL, 0 << 3);
+	ROUNDx8(0x428a2f98U, 0x71374491U,
+			0xb5c0fbcfU, 0xe9b5dba5U,
+			0x3956c25bU, 0x59f111f1U,
+			0x923f82a4U, 0xab1c5ed5U, 0 << 3);
 
-	ROUNDx8(0xd807aa98UL, 0x12835b01UL,
-			0x243185beUL, 0x550c7dc3UL,
-			0x72be5d74UL, 0x80deb1feUL,
-			0x9bdc06a7UL, 0xc19bf174UL, 1 << 3);
+	ROUNDx8(0xd807aa98U, 0x12835b01U,
+			0x243185beU, 0x550c7dc3U,
+			0x72be5d74U, 0x80deb1feU,
+			0x9bdc06a7U, 0xc19bf174U, 1 << 3);
 
-	ROUNDx8(0xe49b69c1UL, 0xefbe4786UL,
-			0x0fc19dc6UL, 0x240ca1ccUL,
-			0x2de92c6fUL, 0x4a7484aaUL,
-			0x5cb0a9dcUL, 0x76f988daUL, 2 << 3);
+	ROUNDx8(0xe49b69c1U, 0xefbe4786U,
+			0x0fc19dc6U, 0x240ca1ccU,
+			0x2de92c6fU, 0x4a7484aaU,
+			0x5cb0a9dcU, 0x76f988daU, 2 << 3);
 
-	ROUNDx8(0x983e5152UL, 0xa831c66dUL,
-			0xb00327c8UL, 0xbf597fc7UL,
-			0xc6e00bf3UL, 0xd5a79147UL,
-			0x06ca6351UL, 0x14292967UL, 3 << 3);
+	ROUNDx8(0x983e5152U, 0xa831c66dU,
+			0xb00327c8U, 0xbf597fc7U,
+			0xc6e00bf3U, 0xd5a79147U,
+			0x06ca6351U, 0x14292967U, 3 << 3);
 
-	ROUNDx8(0x27b70a85UL, 0x2e1b2138UL,
-			0x4d2c6dfcUL, 0x53380d13UL,
-			0x650a7354UL, 0x766a0abbUL,
-			0x81c2c92eUL, 0x92722c85UL, 4 << 3);
+	ROUNDx8(0x27b70a85U, 0x2e1b2138U,
+			0x4d2c6dfcU, 0x53380d13U,
+			0x650a7354U, 0x766a0abbU,
+			0x81c2c92eU, 0x92722c85U, 4 << 3);
 
-	ROUNDx8(0xa2bfe8a1UL, 0xa81a664bUL,
-			0xc24b8b70UL, 0xc76c51a3UL,
-			0xd192e819UL, 0xd6990624UL,
-			0xf40e3585UL, 0x106aa070UL, 5 << 3);
+	ROUNDx8(0xa2bfe8a1U, 0xa81a664bU,
+			0xc24b8b70U, 0xc76c51a3U,
+			0xd192e819U, 0xd6990624U,
+			0xf40e3585U, 0x106aa070U, 5 << 3);
 
-	ROUNDx8(0x19a4c116UL, 0x1e376c08UL,
-			0x2748774cUL, 0x34b0bcb5UL,
-			0x391c0cb3UL, 0x4ed8aa4aUL,
-			0x5b9cca4fUL, 0x682e6ff3UL, 6 << 3);
+	ROUNDx8(0x19a4c116U, 0x1e376c08U,
+			0x2748774cU, 0x34b0bcb5U,
+			0x391c0cb3U, 0x4ed8aa4aU,
+			0x5b9cca4fU, 0x682e6ff3U, 6 << 3);
 
-	ROUNDx8(0x748f82eeUL, 0x78a5636fUL,
-			0x84c87814UL, 0x8cc70208UL,
-			0x90befffaUL, 0xa4506cebUL,
-			0xbef9a3f7UL, 0xc67178f2UL, 7 << 3);
+	ROUNDx8(0x748f82eeU, 0x78a5636fU,
+			0x84c87814U, 0x8cc70208U,
+			0x90befffaU, 0xa4506cebU,
+			0xbef9a3f7U, 0xc67178f2U, 7 << 3);
 
-	/* adds the results into the digest state */
+	/* add the results into the state */
 	state[0] += s[0];
 	state[1] += s[1];
 	state[2] += s[2];
@@ -149,7 +150,7 @@ sha256_update(TSHA256ctx* context, const uint8* data, uintxx size)
 	CTB_ASSERT(context && data);
 
 	if (context->rmnng) {
-		rmnng = SHA256_BLOCKSZ - context->rmnng;
+		rmnng = SHA256_BLOCKSIZE - context->rmnng;
 		if (rmnng > size)
 			rmnng = size;
 
@@ -158,7 +159,7 @@ sha256_update(TSHA256ctx* context, const uint8* data, uintxx size)
 		}
 		size -= i;
 
-		if (context->rmnng == SHA256_BLOCKSZ) {
+		if (context->rmnng == SHA256_BLOCKSIZE) {
 			sha256_compress(context->state, context->rdata);
 
 			context->rmnng = 0;
@@ -169,11 +170,11 @@ sha256_update(TSHA256ctx* context, const uint8* data, uintxx size)
 		}
 	}
 
-	while (size >= SHA256_BLOCKSZ) {
+	while (size >= SHA256_BLOCKSIZE) {
 		sha256_compress(context->state, data);
 
-		size -= SHA256_BLOCKSZ;
-		data += SHA256_BLOCKSZ;
+		size -= SHA256_BLOCKSIZE;
+		data += SHA256_BLOCKSIZE;
 		context->blcks++;  /* we 'll scale it later */
 	}
 
@@ -207,17 +208,19 @@ sha256_final(TSHA256ctx* context, uint32 digest[8])
 	context->rdata[length = context->rmnng] = 0x80;
 	length++;
 
-	if (length > SHA256_BLOCKSZ - 8) {
+	if (length > SHA256_BLOCKSIZE - 8) {
 
-		while (length < SHA256_BLOCKSZ)
+		while (length < SHA256_BLOCKSIZE) {
 			context->rdata[length++] = 0;
+		}
 
 		sha256_compress(context->state, context->rdata);
 		length = 0;
 	}
 
-	while (length < (SHA256_BLOCKSZ - 8))  /* pad with zeros */
+	while (length < (SHA256_BLOCKSIZE - 8)) {  /* pad with zeros */
 		context->rdata[length++] = 0;
+	}
 
 	/* scales the numbers of bits */
 	nhi = context->blcks >> (32 - 9);
@@ -225,8 +228,9 @@ sha256_final(TSHA256ctx* context, uint32 digest[8])
 
 	/* add the remainings bits */
 	tmp = nlo;
-	if ((nlo += ((uint32) context->rmnng << 3)) < tmp)
+	if ((nlo += ((uint32) context->rmnng << 3)) < tmp) {
 		nhi++;
+	}
 
 	context->rdata[56] = (uint8) (nhi >> 0x18);
 	context->rdata[57] = (uint8) (nhi >> 0x10);

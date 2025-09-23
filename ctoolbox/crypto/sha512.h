@@ -25,8 +25,7 @@
 #include "../ctoolbox.h"
 
 
-#define SHA512_BLOCKSZ  128
-#define SHA512_DIGESTSZ 64
+#define SHA512_DIGESTSIZE 64
 
 
 /* */

@@ -20,7 +20,7 @@
 
 #if defined(AUTOINCLUDE_1)
 
-#define TTABLE ((uint64*) tiger_table)
+#define TTABLE ((const uint64*) tiger_table)
 
 #define TT1(TT) ((TT))
 #define TT2(TT) ((TT) + 256)
@@ -131,7 +131,7 @@
 
 
 static void
-tiger_compress(uint64 state[3], uint64 block[8])
+tiger_compress(uint64 state[3], const uint64 block[8])
 {
 	uint64 a;
 	uint64 b;
@@ -157,11 +157,12 @@ tiger_getdigest(uint64 digest[3], const uint8* data, uintxx size)
 
 	for (i = size; i >= 64; i -= 64) {
 #if CTB_IS_BIGENDIAN
-		for(j = 0; j < 64; j++)
+		for(j = 0; j < 64; j++) {
 			tmp[j ^ 7] = ((uint8*) data)[j];
-		tiger_compress(digest, (void*) tmp);
+		}
+		tiger_compress(digest, (const void*) tmp);
 #else
-		tiger_compress(digest, (void*) data);
+		tiger_compress(digest, (const void*) data);
 #endif
 		data += 64;
 	}
@@ -216,12 +217,15 @@ tiger_generate_table(uint64 table[1024], uint32 src[16], intxx passes)
 	statech = (uint8(*)[8]) state;
 	tablech = (uint8(*)[8]) table;
 
-	for(j = 0; j < 64; j++)
+	for(j = 0; j < 64; j++) {
 		((uint8 *) tmp)[j] = ((uint8 *) src)[j];
+	}
 
-	for(i = 0; i < 1024; i++)
-		for(m = 0; m < 8; m++)
-			tablech[i][m] = i & 0xff;
+	for(i = 0; i < 1024; i++) {
+		for(m = 0; m < 8; m++) {
+			tablech[i][m] = (uint8) i;
+		}
+	}
 
 	abc = 2;
 	for (cnt = 0; cnt < passes; cnt++) {
