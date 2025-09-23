@@ -258,8 +258,9 @@ strtou32(const uint8* src, const uint8** end, intxx base)
 	if (end)
 		end[0] = e[0];
 
-	if (isnegative)
-		u = -((int32) u);
+	if (isnegative) {
+		u = (uint32) -((int32) u);
+	}
 
 	result.value.asu32 = u;
 	result.error = 0;
@@ -327,7 +328,7 @@ L1:
 			result.error = STR2INT_ERANGE;
 			return result;
 		}
-		result.value.asi32 = u;
+		result.value.asi32 = (int32) u;
 	}
 
 	result.error = 0;
@@ -503,8 +504,9 @@ strtou64(const uint8* src, const uint8** end, intxx base)
 	if (end)
 		end[0] = e[0];
 
-	if (isnegative)
-		u = -((int64) u);
+	if (isnegative) {
+		u = (uint64) -((int64) u);
+	}
 
 	result.value.asu64 = u;
 	result.error = 0;
@@ -572,7 +574,7 @@ L1:
 			result.error = STR2INT_ERANGE;
 			return result;
 		}
-		result.value.asi64 = u;
+		result.value.asi64 = (int64) u;
 	}
 
 	result.error = 0;
@@ -592,7 +594,7 @@ parsedecimal32(const uint8* src, uintxx total, const uint8** end, uint32* r)
 	for (; p - s >= 4; s += 4) {
 		uint32 v;
 
-		v = ((uint32*) s)[0];
+		v = ((const uint32*) s)[0];
 		if (((v & (v + 0x06060606u) & 0xf0f0f0f0u) == 0x30303030u) == 0) {
 			if (s[0] < 0x30 || s[0] > 0x39) {
 				goto L1;
@@ -653,17 +655,17 @@ L1:
 
 		n = 0;
 		if (total >= 4) {
-			a = (src[0] - 0x30) * 1000;
-			b = (src[1] - 0x30) * 100;
-			c = (src[2] - 0x30) * 10;
+			a = (src[0] - 0x30) * 1000u;
+			b = (src[1] - 0x30) * 100u;
+			c = (src[2] - 0x30) * 10u;
 			d = (src[3] - 0x30);
 			n = (n * 10000) + (a + b + c + d);
 			src += 4;
 
 			if (total >= 8) {
-				a = (src[0] - 0x30) * 1000;
-				b = (src[1] - 0x30) * 100;
-				c = (src[2] - 0x30) * 10;
+				a = (src[0] - 0x30) * 1000u;
+				b = (src[1] - 0x30) * 100u;
+				c = (src[2] - 0x30) * 10u;
 				d = (src[3] - 0x30);
 				n = (n * 10000) + (a + b + c + d);
 				src += 4;
@@ -746,8 +748,9 @@ dcmltou32(const uint8* src, intxx total, const uint8** end)
 		return result;
 	}
 
-	if (isnegative)
-		u = -((int32) u);
+	if (isnegative) {
+		u = (uint32) -((int32) u);
+	}
 
 	result.value.asu32 = u;
 	return result;
@@ -817,7 +820,7 @@ parsedecimal64(const uint8* src, uintxx total, const uint8** end, uint64* r)
 	for (; p - s >= 4; s += 4) {
 		uint32 v;
 
-		v = ((uint32*) s)[0];
+		v = ((const uint32*) s)[0];
 		if (((v & (v + 0x06060606u) & 0xf0f0f0f0u) == 0x30303030u) == 0) {
 			if (s[0] < 0x30 || s[0] > 0x39) {
 				goto L1;
@@ -878,31 +881,31 @@ L1:
 
 		n = 0;
 		if (total >= 8) {
-			a = (src[0] - 0x30) * 1000;
-			b = (src[1] - 0x30) * 100;
-			c = (src[2] - 0x30) * 10;
+			a = (src[0] - 0x30) * 1000u;
+			b = (src[1] - 0x30) * 100u;
+			c = (src[2] - 0x30) * 10u;
 			d = (src[3] - 0x30);
 			n = (n * 10000) + (a + b + c + d);
 			src += 4;
 
-			a = (src[0] - 0x30) * 1000;
-			b = (src[1] - 0x30) * 100;
-			c = (src[2] - 0x30) * 10;
+			a = (src[0] - 0x30) * 1000u;
+			b = (src[1] - 0x30) * 100u;
+			c = (src[2] - 0x30) * 10u;
 			d = (src[3] - 0x30);
 			n = (n * 10000) + (a + b + c + d);
 			src += 4;
 
 			if (total >= 16) {
-				a = (src[0] - 0x30) * 1000;
-				b = (src[1] - 0x30) * 100;
-				c = (src[2] - 0x30) * 10;
+				a = (src[0] - 0x30) * 1000u;
+				b = (src[1] - 0x30) * 100u;
+				c = (src[2] - 0x30) * 10u;
 				d = (src[3] - 0x30);
 				n = (n * 10000) + (a + b + c + d);
 				src += 4;
 
-				a = (src[0] - 0x30) * 1000;
-				b = (src[1] - 0x30) * 100;
-				c = (src[2] - 0x30) * 10;
+				a = (src[0] - 0x30) * 1000u;
+				b = (src[1] - 0x30) * 100u;
+				c = (src[2] - 0x30) * 10u;
 				d = (src[3] - 0x30);
 				n = (n * 10000) + (a + b + c + d);
 				src += 4;
@@ -931,9 +934,9 @@ L1:
 			}
 			else {
 				if (total >= 12) {
-					a = (src[0] - 0x30) * 1000;
-					b = (src[1] - 0x30) * 100;
-					c = (src[2] - 0x30) * 10;
+					a = (src[0] - 0x30) * 1000u;
+					b = (src[1] - 0x30) * 100u;
+					c = (src[2] - 0x30) * 10u;
 					d = (src[3] - 0x30);
 					n = (n * 10000) + (a + b + c + d);
 					src += 4;
@@ -948,9 +951,9 @@ L1:
 		}
 		else {
 			if (total >= 4) {
-				a = (src[0] - 0x30) * 1000;
-				b = (src[1] - 0x30) * 100;
-				c = (src[2] - 0x30) * 10;
+				a = (src[0] - 0x30) * 1000u;
+				b = (src[1] - 0x30) * 100u;
+				c = (src[2] - 0x30) * 10u;
 				d = (src[3] - 0x30);
 				n = (n * 10000) + (a + b + c + d);
 				src += 4;
@@ -1006,8 +1009,9 @@ dcmltou64(const uint8* src, intxx total, const uint8** end)
 		return result;
 	}
 
-	if (isnegative)
-		u = -((int64) u);
+	if (isnegative) {
+		u = (uint64) -((int64) u);
+	}
 
 	result.value.asu64 = u;
 	return result;
@@ -1192,8 +1196,9 @@ hexatou32(const uint8* src, intxx total, const uint8** end)
 		return result;
 	}
 
-	if (isnegative)
-		u = -((int32) u);
+	if (isnegative) {
+		u = (uint32) -((int32) u);
+	}
 
 	result.value.asu32 = u;
 	return result;
@@ -1423,8 +1428,9 @@ hexatou64(const uint8* src, intxx total, const uint8** end)
 		return result;
 	}
 
-	if (isnegative)
-		u = -((int64) u);
+	if (isnegative) {
+		u = (uint64) -((int64) u);
+	}
 
 	result.value.asu64 = u;
 	return result;

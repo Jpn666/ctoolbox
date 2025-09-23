@@ -363,8 +363,9 @@ u32tohexa(uint32 number, intxx uppercase, uint8 r[16])
 	}
 
 	mode = d1;
-	if (uppercase)
+	if (uppercase) {
 		mode = d2;
+	}
 	s = r;
 
 	b1 = (number >> 0x18) & 0xff;
@@ -373,8 +374,9 @@ u32tohexa(uint32 number, intxx uppercase, uint8 r[16])
 	b4 = (number >> 0x00) & 0xff;
 	if (b1) {
 		n = (b1 >> 4);
-		if (n)
+		if (n) {
 			*s++ = mode[n];
+		}
 		*s++ = mode[(b1 >> 0) & 0x0f];
 
 		*s++ = mode[(b2 >> 4) & 0x0f];
@@ -387,8 +389,9 @@ u32tohexa(uint32 number, intxx uppercase, uint8 r[16])
 	else {
 		if (b2) {
 			n = (b2 >> 4);
-			if (n)
+			if (n) {
 				*s++ = mode[n];
+			}
 			*s++ = mode[(b2 >> 0) & 0x0f];
 
 			*s++ = mode[(b3 >> 4) & 0x0f];
@@ -399,8 +402,9 @@ u32tohexa(uint32 number, intxx uppercase, uint8 r[16])
 		else {
 			if (b3) {
 				n = (b3 >> 4);
-				if (n)
+				if (n) {
 					*s++ = mode[n];
+				}
 				*s++ = mode[(b3 >> 0) & 0x0f];
 
 				*s++ = mode[(b4 >> 4) & 0x0f];
@@ -409,8 +413,9 @@ u32tohexa(uint32 number, intxx uppercase, uint8 r[16])
 			else {
 				if (b4) {
 					n = (b4 >> 4);
-					if (n)
+					if (n) {
 						*s++ = mode[n];
+					}
 					*s++ = mode[(b4 >> 0) & 0x0f];
 				}
 			}
@@ -439,8 +444,8 @@ u64tohexa(uint64 number, intxx uppercase, uint8 r[24])
 	}
 
 	s = r;
-	a = (number >> 0x00) & 0xffffffff;
-	b = (number >> 0x20) & 0xffffffff;
+	a = (uint32) (number >> 0x00);
+	b = (uint32) (number >> 0x20);
 	if (b) {
 		uint32 b1;
 		uint32 b2;
@@ -448,8 +453,9 @@ u64tohexa(uint64 number, intxx uppercase, uint8 r[24])
 		uint32 b4;
 
 		mode = d1;
-		if (uppercase)
+		if (uppercase) {
 			mode = d2;
+		}
 
 		s += u32tohexa(b, uppercase, s);
 
@@ -466,6 +472,7 @@ u64tohexa(uint64 number, intxx uppercase, uint8 r[24])
 		*s++ = mode[(b3 >> 0) & 0x0f];
 		*s++ = mode[(b4 >> 4) & 0x0f];
 		*s++ = mode[(b4 >> 0) & 0x0f];
+		s[0] = 0;
 	}
 	else {
 		s += u32tohexa(a, uppercase, s);
