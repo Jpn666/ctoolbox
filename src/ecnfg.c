@@ -18,15 +18,12 @@
 #include <ctoolbox/ctype.h>
 
 
-#if !defined(EOF)
-	#define EOF (-1)
-#endif
-
+#define ECNFG_EOF ((uintxx) -1)
 
 CTB_INLINE void*
 request_(struct TECnfg* cfg, uintxx size)
 {
-	struct TAllocator* a;
+	const struct TAllocator* a;
 
 	a = cfg->allctr;
 	return a->request(size, a->user);
@@ -35,7 +32,7 @@ request_(struct TECnfg* cfg, uintxx size)
 CTB_INLINE void
 dispose_(struct TECnfg* cfg, void* memory, uintxx size)
 {
-	struct TAllocator* a;
+	const struct TAllocator* a;
 
 	a = cfg->allctr;
 	a->dispose(memory, size, a->user);
@@ -43,12 +40,12 @@ dispose_(struct TECnfg* cfg, void* memory, uintxx size)
 
 
 TECnfg*
-ecnfg_create(TAllocator* allctr)
+ecnfg_create(const TAllocator* allctr)
 {
 	struct TECnfg* cfg;
 
 	if (allctr == NULL) {
-		allctr = (void*) ctb_getdefaultallocator();
+		allctr = (const void*) ctb_getdefaultallocator();
 	}
 
 	cfg = allctr->request(sizeof(struct TECnfg), allctr->user);
@@ -110,20 +107,20 @@ ecnfg_fetchchr(struct TECnfg* cfg)
 
 	if (cfg->inputfn == NULL) {
 		SETERROR(ECNFG_EINPUT);
-		return (uintxx) EOF;
+		return ECNFG_EOF;
 	}
 	r = cfg->inputfn(cfg->inputmem, sizeof(cfg->inputmem), cfg->payload);
 	if (r) {
 		if (0 > r || r > (intxx) sizeof(cfg->inputmem)) {
 			SETERROR(ECNFG_EINPUT);
-			return (uintxx) EOF;
+			return ECNFG_EOF;
 		}
 		cfg->input    = cfg->inputmem;
 		cfg->inputend = cfg->inputmem + r;
 
 		return *cfg->input++;
 	}
-	return (uintxx) EOF;
+	return ECNFG_EOF;
 }
 
 static void
@@ -186,7 +183,7 @@ ecnfg_fetchunicode(struct TECnfg* cfg)
 	uintxx c;
 
 	c = ecnfg_fetchchr(cfg);
-	if (c < 0x80 || c == (uintxx) EOF) {
+	if (c < 0x80 || c == ECNFG_EOF) {
 		return c;
 	}
 	else {
@@ -308,7 +305,7 @@ ecnfg_parsestring(struct TECnfg* cfg)
 
 	j = 0;
 	while ((c = ecnfg_fetchunicode(cfg)) != 0x22) {
-		if (c == 0x0a || c == (uintxx) EOF) {
+		if (c == 0x0a || c == ECNFG_EOF) {
 			break;
 		}
 
@@ -487,7 +484,7 @@ ecnfg_parsenumber(struct TECnfg* cfg)
 		if (lchr == 0x7b ||
 		    lchr == 0x7d ||
 		    lchr == 0x2d ||
-		    lchr == 0x2b || lchr == (uintxx) EOF || ctb_isspace(lchr)) {
+		    lchr == 0x2b || lchr == ECNFG_EOF || ctb_isspace(lchr)) {
 			return ntype;
 		}
 	}
@@ -538,7 +535,7 @@ L_LOOP:
 					}
 					return ECNFG_TKNINVALID;
 				}
-				if (lchr == (uintxx) EOF) {
+				if (lchr == ECNFG_EOF) {
 					if (cfg->error) {
 						return ECNFG_TKNINVALID;
 					}
@@ -549,7 +546,7 @@ L_LOOP:
 			cfg->line++;
 			goto L_LOOP;
 
-		case EOF:
+		case ECNFG_EOF:
 			if (cfg->error) {
 				return ECNFG_TKNINVALID;
 			}
@@ -640,7 +637,7 @@ L_LOOP:
 			cfg->line++;
 			goto L_LOOP;
 
-		case EOF:
+		case ECNFG_EOF:
 			cfg->lastchr = lchr;
 			return 0;
 	}
@@ -881,6 +878,3 @@ ecnfg_getrval(TECnfg* cfg)
 	}
 	return NULL;
 }
-
-
-#undef ECNFG_INPUTBFFRSZ

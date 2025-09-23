@@ -195,7 +195,7 @@ struct TECnfg {
 	void* payload;
 
 	/* allocator */
-	TAllocator* allctr;
+	const TAllocator* allctr;
 
 	/* lexer */
 	uintxx lastchr;
@@ -223,7 +223,7 @@ typedef struct TECnfg TECnfg;
  *
  * If the allocator is NULL, the default allocator will be used.
  * The returned pointer must be freed with ecnfg_destroy(). */
-TECnfg* ecnfg_create(TAllocator* allctr);
+TECnfg* ecnfg_create(const TAllocator* allctr);
 
 /*
  * Destroy the configuration parser. */
@@ -280,10 +280,12 @@ ecnfg_getstate(TECnfg* cfg, uintxx* error, uintxx* lline)
 {
 	CTB_ASSERT(cfg);
 
-	if (error)
+	if (error) {
 		error[0] = cfg->error;
-	if (lline)
+	}
+	if (lline) {
 		lline[0] = cfg->line;
+	}
 	return cfg->state;
 }
 
