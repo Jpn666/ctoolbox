@@ -21,12 +21,12 @@ else
     compilerflags = [
       '-Wconversion',
       '-Wcast-qual',
-      #'-Wunused-parameter',
-      #'-Wshadow',
-      #'-Wswitch',
-      #'-Wduplicated-branches',
-      #'-Wcast-align',
-      #'-Wdouble-promotion'
+      '-Wunused-parameter',
+      '-Wshadow',
+      '-Wswitch',
+      '-Wduplicated-branches',
+      '-Wcast-align',
+      '-Wdouble-promotion'
     ]
     add_project_arguments(compilerflags, language: 'c')
   endif
