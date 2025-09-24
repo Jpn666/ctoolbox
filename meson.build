@@ -108,7 +108,6 @@ endif
 
 
 # Checked int
-externalckdintasm = false
 ckdintfailback    = false
 if cc.has_header('stdckdint.h', required: false)
   conf.set('CTB_CFG_HAS_STDCKDINT', true)
