@@ -125,10 +125,6 @@
 #include "memory.h"
 
 
-#define ECNFG_MINBFFRSZ 0x1000UL
-#define ECNFG_MAXBFFRSZ 0x4000UL
-
-
 /* Events */
 typedef enum {
 	ECNFG_EVNTNONE       = 0,
@@ -178,30 +174,30 @@ typedef enum {
  *
  * The return value must be the number of bytes read to the buffer (zero if
  * there is no more input or a negative value to indicate an error). */
-typedef intxx (*TECInputFn)(uint8* buffer, uintxx size, void* payload);
+typedef intxx (*TECInputFn)(uint8* buffer, uintxx size, void* user);
 
 
 /* */
 struct TECnfg {
-	uintxx state;
-	uintxx event;
-	intxx  rvcnt;  /* rvalues counter */
-	intxx  sncnt;  /* section counter */
+	uint32 state;
+	uint32 event;
+	int32  rvcnt;  /* rvalues counter */
+	int32  sncnt;  /* section counter */
 
 	/* input callback */
 	TECInputFn inputfn;
 
 	/* input callback parameter */
-	void* payload;
+	void* user;
 
 	/* allocator */
 	const TAllocator* allctr;
 
 	/* lexer */
-	uintxx lastchr;
-	uintxx line;
-	uintxx token;
-	uintxx error;
+	uint32 lastchr;
+	uint32 line;
+	uint32 token;
+	uint32 error;
 
 	uint8* buffer;
 	uint8* bufferbgn;
@@ -223,7 +219,7 @@ typedef struct TECnfg TECnfg;
  *
  * If the allocator is NULL, the default allocator will be used.
  * The returned pointer must be freed with ecnfg_destroy(). */
-TECnfg* ecnfg_create(const TAllocator* allctr);
+TECnfg* ecnfg_create(const TAllocator*);
 
 /*
  * Destroy the configuration parser. */
@@ -235,12 +231,7 @@ void ecnfg_reset(TECnfg*);
 
 /*
  * Set the input function and payload. */
-CTB_INLINE void ecnfg_setinputfn(TECnfg*, TECInputFn inputfn, void* payload);
-
-/*
- * Get the current state of the parser. If error is not NULL, it will be set
- * to the current error code. */
-CTB_INLINE eECNFGState ecnfg_getstate(TECnfg*, uintxx* error, uintxx* lline);
+CTB_INLINE void ecnfg_setinputfn(TECnfg*, TECInputFn inputfn, void* user);
 
 /*
  * Abort the parsing process. */
@@ -267,26 +258,12 @@ const uint8* ecnfg_getrval(TECnfg*);
  * Inlines */
 
 CTB_INLINE void
-ecnfg_setinputfn(TECnfg* cfg, TECInputFn inputfn, void* payload)
+ecnfg_setinputfn(TECnfg* cfg, TECInputFn inputfn, void* user)
 {
 	CTB_ASSERT(cfg);
 
 	cfg->inputfn = inputfn;
-	cfg->payload = payload;
-}
-
-CTB_INLINE eECNFGState
-ecnfg_getstate(TECnfg* cfg, uintxx* error, uintxx* lline)
-{
-	CTB_ASSERT(cfg);
-
-	if (error) {
-		error[0] = cfg->error;
-	}
-	if (lline) {
-		lline[0] = cfg->line;
-	}
-	return cfg->state;
+	cfg->user    = user;
 }
 
 CTB_INLINE void

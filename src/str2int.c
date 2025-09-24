@@ -582,6 +582,11 @@ L1:
 }
 
 
+#if defined(__clang__) && defined(CTB_FASTUNALIGNED)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wcast-align"
+#endif
+
 static eintxx
 parsedecimal32(const uint8* src, uintxx total, const uint8** end, uint32* r)
 {
@@ -980,6 +985,11 @@ L2:
 	return STR2INT_ERANGE;
 }
 
+#if defined(__clang__) && defined(CTB_FASTUNALIGNED)
+	#pragma clang diagnostic pop
+#endif
+
+
 TToIntResult
 dcmltou64(const uint8* src, intxx total, const uint8** end)
 {
@@ -1119,18 +1129,18 @@ parsehexa32(const uint8* src, uintxx total, const uint8** end, uint32* r)
 
 		n = 0;
 		if (total >= 4) {
-			a = hexamap[src[0] - 0x30] << 014;
-			b = hexamap[src[1] - 0x30] << 010;
-			c = hexamap[src[2] - 0x30] << 004;
-			d = hexamap[src[3] - 0x30];
+			a = (uint32) hexamap[src[0] - 0x30] << 014;
+			b = (uint32) hexamap[src[1] - 0x30] << 010;
+			c = (uint32) hexamap[src[2] - 0x30] << 004;
+			d = (uint32) hexamap[src[3] - 0x30];
 			n = a + b + c + d;
 			src += 4;
 
 			if (total == 8) {
-				a = hexamap[src[0] - 0x30] << 014;
-				b = hexamap[src[1] - 0x30] << 010;
-				c = hexamap[src[2] - 0x30] << 004;
-				d = hexamap[src[3] - 0x30];
+				a = (uint32) hexamap[src[0] - 0x30] << 014;
+				b = (uint32) hexamap[src[1] - 0x30] << 010;
+				c = (uint32) hexamap[src[2] - 0x30] << 004;
+				d = (uint32) hexamap[src[3] - 0x30];
 				n = (n << 020) + a + b + c + d;
 				src += 4;
 			}
@@ -1318,41 +1328,41 @@ parsehexa64(const uint8* src, uintxx total, const uint8** end, uint64* r)
 
 		n = 0;
 		if (total >= 8) {
-			a = hexamap[src[0] - 0x30] << 014;
-			b = hexamap[src[1] - 0x30] << 010;
-			c = hexamap[src[2] - 0x30] << 004;
-			d = hexamap[src[3] - 0x30];
+			a = (uint32) hexamap[src[0] - 0x30] << 014;
+			b = (uint32) hexamap[src[1] - 0x30] << 010;
+			c = (uint32) hexamap[src[2] - 0x30] << 004;
+			d = (uint32) hexamap[src[3] - 0x30];
 			n = a + b + c + d;
 			src += 4;
 
-			a = hexamap[src[0] - 0x30] << 014;
-			b = hexamap[src[1] - 0x30] << 010;
-			c = hexamap[src[2] - 0x30] << 004;
-			d = hexamap[src[3] - 0x30];
+			a = (uint32) hexamap[src[0] - 0x30] << 014;
+			b = (uint32) hexamap[src[1] - 0x30] << 010;
+			c = (uint32) hexamap[src[2] - 0x30] << 004;
+			d = (uint32) hexamap[src[3] - 0x30];
 			n = (n << 020) + a + b + c + d;
 			src += 4;
 
 			if (total == 16) {
-				a = hexamap[src[0] - 0x30] << 014;
-				b = hexamap[src[1] - 0x30] << 010;
-				c = hexamap[src[2] - 0x30] << 004;
-				d = hexamap[src[3] - 0x30];
+				a = (uint32) hexamap[src[0] - 0x30] << 014;
+				b = (uint32) hexamap[src[1] - 0x30] << 010;
+				c = (uint32) hexamap[src[2] - 0x30] << 004;
+				d = (uint32) hexamap[src[3] - 0x30];
 				n = (n << 020) + a + b + c + d;
 				src += 4;
 
-				a = hexamap[src[0] - 0x30] << 014;
-				b = hexamap[src[1] - 0x30] << 010;
-				c = hexamap[src[2] - 0x30] << 004;
-				d = hexamap[src[3] - 0x30];
+				a = (uint32) hexamap[src[0] - 0x30] << 014;
+				b = (uint32) hexamap[src[1] - 0x30] << 010;
+				c = (uint32) hexamap[src[2] - 0x30] << 004;
+				d = (uint32) hexamap[src[3] - 0x30];
 				n = (n << 020) + a + b + c + d;
 				src += 4;
 			}
 			else {
 				if (total >= 12) {
-					a = hexamap[src[0] - 0x30] << 014;
-					b = hexamap[src[1] - 0x30] << 010;
-					c = hexamap[src[2] - 0x30] << 004;
-					d = hexamap[src[3] - 0x30];
+					a = (uint32) hexamap[src[0] - 0x30] << 014;
+					b = (uint32) hexamap[src[1] - 0x30] << 010;
+					c = (uint32) hexamap[src[2] - 0x30] << 004;
+					d = (uint32) hexamap[src[3] - 0x30];
 					n = (n << 020) + a + b + c + d;
 					src += 4;
 				}
@@ -1360,10 +1370,10 @@ parsehexa64(const uint8* src, uintxx total, const uint8** end, uint64* r)
 		}
 		else {
 			if (total >= 4) {
-				a = hexamap[src[0] - 0x30] << 014;
-				b = hexamap[src[1] - 0x30] << 010;
-				c = hexamap[src[2] - 0x30] << 004;
-				d = hexamap[src[3] - 0x30];
+				a = (uint32) hexamap[src[0] - 0x30] << 014;
+				b = (uint32) hexamap[src[1] - 0x30] << 010;
+				c = (uint32) hexamap[src[2] - 0x30] << 004;
+				d = (uint32) hexamap[src[3] - 0x30];
 				n = a + b + c + d;
 				src += 4;
 			}
@@ -1382,7 +1392,7 @@ parsehexa64(const uint8* src, uintxx total, const uint8** end, uint64* r)
 		return 0;
 	}
 
-	r[0] = 0xffffffffffffffffu;
+	r[0] = 0xffffffffffffffffull;
 	if (end)
 		end[0] = s;
 	return STR2INT_ERANGE;

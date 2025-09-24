@@ -59,9 +59,9 @@ subword(uint32 n)
 	uint32 r;
 
 	r  = aes_ssbox[(n >> 0x00) & 0xff];
-	r += aes_ssbox[(n >> 0x08) & 0xff] << 0x08;
-	r += aes_ssbox[(n >> 0x10) & 0xff] << 0x10;
-	r += aes_ssbox[(n >> 0x18) & 0xff] << 0x18;
+	r += (uint32) aes_ssbox[(n >> 0x08) & 0xff] << 0x08;
+	r += (uint32) aes_ssbox[(n >> 0x10) & 0xff] << 0x10;
+	r += (uint32) aes_ssbox[(n >> 0x18) & 0xff] << 0x18;
 	return r;
 }
 
@@ -104,9 +104,9 @@ aes_setupkey(TAESctx* context, const uint8* key, uintxx keylen)
 
 	for (i = 0; i < kwords; i++) {
 		context->swork[i] =
-		    (key[0] << 0x18) |
-		    (key[1] << 0x10) |
-		    (key[2] << 0x08) | (key[3]);
+		    ((uint32) key[0] << 0x18) |
+		    ((uint32) key[1] << 0x10) |
+		    ((uint32) key[2] << 0x08) | (key[3]);
 		key += 4;
 	}
 

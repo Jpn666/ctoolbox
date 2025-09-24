@@ -34,6 +34,11 @@ static const uint8 b64enctable[] = {
 };
 
 
+#if defined(__clang__) && defined(CTB_FASTUNALIGNED)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wcast-align"
+#endif
+
 uintxx
 b64strm_encode(TBase64Strm* strm, uintxx final)
 {
@@ -518,3 +523,7 @@ L2:
 
 	return (strm->state = 0);
 }
+
+#if defined(__clang__) && defined(CTB_FASTUNALIGNED)
+	#pragma clang diagnostic pop
+#endif

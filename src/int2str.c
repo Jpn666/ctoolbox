@@ -138,6 +138,10 @@ union TZeroUnion {
 
 #endif
 
+#if defined(__clang__) && defined(CTB_FASTUNALIGNED)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wcast-align"
+#endif
 
 uintxx
 u32tostr(uint32 number, uint8 r[16])
@@ -297,6 +301,9 @@ u64tostr(uint64 number, uint8 r[24])
 #endif
 }
 
+#if defined(__clang__) && defined(CTB_FASTUNALIGNED)
+	#pragma clang diagnostic pop
+#endif
 
 #if defined(__GNUC__)
 	#pragma GCC diagnostic push

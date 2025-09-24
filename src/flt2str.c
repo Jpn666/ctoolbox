@@ -722,6 +722,12 @@ i64tostr(int64 n, union TZeroUnion* z, int32* magnitude)
 	return s2;
 }
 
+
+#if defined(__clang__) && defined(CTB_FASTUNALIGNED)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wcast-align"
+#endif
+
 static uint8*
 formatD(struct TResult result, uint8* s, uintxx mode)
 {
@@ -775,6 +781,11 @@ formatD(struct TResult result, uint8* s, uintxx mode)
 	s = appendexponent(s, (int32) result.exponent + (magnitude - 1));
 	return s;
 }
+
+#if defined(__clang__) && defined(CTB_FASTUNALIGNED)
+	#pragma clang diagnostic pop
+#endif
+
 
 static uint8*
 formatE(struct TResult result, uintxx precision, uint8* s, uintxx mode)

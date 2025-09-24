@@ -18,16 +18,8 @@
 #include <ctoolbox/ctype.h>
 
 
-#define ECNFG_EOF ((uintxx) -1)
+#define ECNFG_EOF ((uint32) -1)
 
-CTB_INLINE void*
-request_(struct TECnfg* cfg, uintxx size)
-{
-	const struct TAllocator* a;
-
-	a = cfg->allctr;
-	return a->request(size, a->user);
-}
 
 CTB_INLINE void
 dispose_(struct TECnfg* cfg, void* memory, uintxx size)
@@ -70,7 +62,7 @@ ecnfg_reset(TECnfg* cfg)
 	cfg->event = 0;
 
 	cfg->inputfn  = NULL;
-	cfg->payload  = NULL;
+	cfg->user     = NULL;
 	cfg->input    = cfg->inputmem;
 	cfg->inputend = cfg->inputmem;
 
@@ -96,7 +88,7 @@ ecnfg_destroy(TECnfg* cfg)
 
 #define SETERROR(E) (cfg->error = (E))
 
-CTB_INLINE uintxx
+CTB_INLINE uint32
 ecnfg_fetchchr(struct TECnfg* cfg)
 {
 	intxx r;
@@ -109,7 +101,7 @@ ecnfg_fetchchr(struct TECnfg* cfg)
 		SETERROR(ECNFG_EINPUT);
 		return ECNFG_EOF;
 	}
-	r = cfg->inputfn(cfg->inputmem, sizeof(cfg->inputmem), cfg->payload);
+	r = cfg->inputfn(cfg->inputmem, sizeof(cfg->inputmem), cfg->user);
 	if (r) {
 		if (0 > r || r > (intxx) sizeof(cfg->inputmem)) {
 			SETERROR(ECNFG_EINPUT);
@@ -278,7 +270,7 @@ ecnfg_readhex(struct TECnfg* cfg)
 	if (i == 0 || overflow) {
 		return UINT_MAX;
 	}
-	cfg->lastchr = c;
+	cfg->lastchr = (uint32) c;
 	return n;
 }
 
@@ -297,7 +289,7 @@ enum {
 	ECNFG_TKNEOF     = 8
 };
 
-static uintxx
+static uint32
 ecnfg_parsestring(struct TECnfg* cfg)
 {
 	uintxx j;
@@ -365,7 +357,7 @@ ecnfg_parsestring(struct TECnfg* cfg)
 }
 
 
-static uintxx
+static uint32
 ecnfg_guesttype(struct TECnfg* cfg)
 {
 	uintxx exponent;
@@ -373,7 +365,7 @@ ecnfg_guesttype(struct TECnfg* cfg)
 	uintxx ishex;
 	uintxx expsign;
 	uintxx e, n, c;
-	uintxx lchr;
+	uint32 lchr;
 
 	c = 0;
 	n = 0;
@@ -468,11 +460,11 @@ ecnfg_guesttype(struct TECnfg* cfg)
 	return ECNFG_TKNINVALID;
 }
 
-static uintxx
+static uint32
 ecnfg_parsenumber(struct TECnfg* cfg)
 {
-	uintxx ntype;
-	uintxx lchr;
+	uint32 ntype;
+	uint32 lchr;
 
 	ntype = ecnfg_guesttype(cfg);
 	if (cfg->error) {
@@ -493,11 +485,11 @@ ecnfg_parsenumber(struct TECnfg* cfg)
 	return ECNFG_TKNINVALID;
 }
 
-static uintxx
+static uint32
 ecnfg_nexttoken(struct TECnfg* cfg)
 {
-	uintxx r;
-	uintxx lchr;
+	uint32 r;
+	uint32 lchr;
 
 	cfg->buffer    = cfg->bufferbgn;
 	cfg->buffer[0] = 0x00;
@@ -609,7 +601,7 @@ static uintxx
 ecnfg_readnextstr(struct TECnfg* cfg)
 {
 	uintxx r;
-	uintxx lchr;
+	uint32 lchr;
 
 	if (cfg->buffer - cfg->bufferbgn) {
 		cfg->buffer--;
@@ -672,7 +664,7 @@ L_LOOP:
 eECNFGType
 ecnfg_nextrvaltype(TECnfg* cfg)
 {
-	uintxx rtype;
+	uint32 rtype;
 	CTB_ASSERT(cfg);
 
 	rtype = ECNFG_TYPENONE;
@@ -686,8 +678,9 @@ ecnfg_nextrvaltype(TECnfg* cfg)
 				NEXTTOKEN(cfg);
 			}
 
-			if (ISRVALUE(cfg->token))
+			if (ISRVALUE(cfg->token)) {
 				rtype = cfg->token;
+			}
 			cfg->rvcnt = 1;
 			break;
 
@@ -791,7 +784,7 @@ L_HASIDENT:
 
 		case ECNFG_TKNLBRACE:
 			cfg->sncnt++;
-			if (cfg->sncnt == INTXX_MAX) {
+			if (cfg->sncnt == INT32_MAX) {
 				SETERROR(ECNFG_ELIMIT);
 				goto L_ERROR;
 			}

@@ -82,6 +82,11 @@ ctb_setdefaultallocator(TAllocator* allocator)
 }
 
 
+#if defined(__clang__) && defined(CTB_FASTUNALIGNED)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wcast-align"
+#endif
+
 void
 ctb_memcpy(void* destination, const void* source, uintxx size)
 {
@@ -292,6 +297,10 @@ ctb_memset(void* destination, uintxx value, uintxx size)
 		}
 	}
 }
+
+#if defined(__clang__) && defined(CTB_FASTUNALIGNED)
+	#pragma clang diagnostic pop
+#endif
 
 
 static void
