@@ -153,6 +153,40 @@ ctb_testfailed(const char* cndtn, const char* filename, int line)
 }
 
 
+#if defined(__GNUC__)
+
+/* 
+ * We use this to avoid compiler warnings when casting away constness, might
+ * not be elegant but works. */
+
+#if defined(__clang__)
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wcast-qual"
+#else
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wcast-qual"
+	#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
+#endif
+
+static inline __attribute__((always_inline)) void*
+CTB_CONSTCAST(const void* a)
+{
+	return (void*) a;
+}
+
+#if defined(__clang__)
+	#pragma clang diagnostic pop
+#else
+	#pragma GCC diagnostic pop
+#endif
+
+#else
+
+#define CTB_CONSTCAST(a) ((void*) ((const void*) (a)))
+
+#endif
+
+
 /* Error values */
 typedef enum {
 	CTB_OK     =  0,
