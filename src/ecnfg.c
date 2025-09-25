@@ -155,9 +155,15 @@ ecnfg_appendchr(struct TECnfg* cfg, uintxx c)
 
 	buffer = (cfg->buffer = cfg->buffer + j);
 	switch (j) {
-		case 4: *--buffer = ((c | 0x80) & 0xbf); c >>= 6;  /* fallthrough */
-		case 3: *--buffer = ((c | 0x80) & 0xbf); c >>= 6;  /* fallthrough */
-		case 2: *--buffer = ((c | 0x80) & 0xbf); c >>= 6;  /* fallthrough */
+		case 4:
+			*--buffer = (uint8) ((c | 0x80) & 0xbf);
+			c >>= 6;  /* fallthrough */
+		case 3:
+			*--buffer = (uint8) ((c | 0x80) & 0xbf);
+			c >>= 6;  /* fallthrough */
+		case 2:
+			*--buffer = (uint8) ((c | 0x80) & 0xbf);
+			c >>= 6;  /* fallthrough */
 		case 1:
 			*--buffer = (uint8) ((c | hmask[j]));
 			break;
