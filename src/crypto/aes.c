@@ -455,28 +455,28 @@ addroundkey(TAESctx* context, uintxx round)
 	uintxx n;
 
 	n = context->swork[(round << 2) + 0];
-	context->state[0][0] ^= (n >> 0x18) & 0xff;
-	context->state[1][0] ^= (n >> 0x10) & 0xff;
-	context->state[2][0] ^= (n >> 0x08) & 0xff;
-	context->state[3][0] ^= (n >> 0x00) & 0xff;
+	context->state[0][0] ^= (uint8) (n >> 0x18);
+	context->state[1][0] ^= (uint8) (n >> 0x10);
+	context->state[2][0] ^= (uint8) (n >> 0x08);
+	context->state[3][0] ^= (uint8) (n >> 0x00);
 
 	n = context->swork[(round << 2) + 1];
-	context->state[0][1] ^= (n >> 0x18) & 0xff;
-	context->state[1][1] ^= (n >> 0x10) & 0xff;
-	context->state[2][1] ^= (n >> 0x08) & 0xff;
-	context->state[3][1] ^= (n >> 0x00) & 0xff;
+	context->state[0][1] ^= (uint8) (n >> 0x18);
+	context->state[1][1] ^= (uint8) (n >> 0x10);
+	context->state[2][1] ^= (uint8) (n >> 0x08);
+	context->state[3][1] ^= (uint8) (n >> 0x00);
 
 	n = context->swork[(round << 2) + 2];
-	context->state[0][2] ^= (n >> 0x18) & 0xff;
-	context->state[1][2] ^= (n >> 0x10) & 0xff;
-	context->state[2][2] ^= (n >> 0x08) & 0xff;
-	context->state[3][2] ^= (n >> 0x00) & 0xff;
+	context->state[0][2] ^= (uint8) (n >> 0x18);
+	context->state[1][2] ^= (uint8) (n >> 0x10);
+	context->state[2][2] ^= (uint8) (n >> 0x08);
+	context->state[3][2] ^= (uint8) (n >> 0x00);
 
 	n = context->swork[(round << 2) + 3];
-	context->state[0][3] ^= (n >> 0x18) & 0xff;
-	context->state[1][3] ^= (n >> 0x10) & 0xff;
-	context->state[2][3] ^= (n >> 0x08) & 0xff;
-	context->state[3][3] ^= (n >> 0x00) & 0xff;
+	context->state[0][3] ^= (uint8) (n >> 0x18);
+	context->state[1][3] ^= (uint8) (n >> 0x10);
+	context->state[2][3] ^= (uint8) (n >> 0x08);
+	context->state[3][3] ^= (uint8) (n >> 0x00);
 }
 
 void
