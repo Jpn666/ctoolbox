@@ -26,8 +26,11 @@
 */
 
 
-#if defined(AUTOINCLUDE_1)
-
+/* */
+struct TVal128 {
+	uint64 hi;
+	uint64 lo;
+};
 
 CTB_INLINE struct TVal128
 mul64to128(uint64 lhs, uint64 rhs)
@@ -72,6 +75,9 @@ mul128hi(uint64 lhs, uint64 rhs)
 {
 	return mul64to128(lhs, rhs).hi;
 }
+
+
+static const struct TVal128* gtable;
 
 CTB_INLINE struct TVal128
 getgs(int32 k)
@@ -945,14 +951,6 @@ formatG(struct TResult result, uintxx precision, uint8* s)
 	return s;
 }
 
-#else
-
-/* */
-struct TVal128 {
-	uint64 hi;
-	uint64 lo;
-};
-
 
 /* ****************************************************************************
  * Tables
@@ -963,7 +961,7 @@ struct TVal128 {
 * The first entry must be for an exponent of K_MIN or less.
 * The last entry must be for an exponent of K_MAX or more. */
 
-static const struct TVal128 gtable[] = {
+static const struct TVal128 gtable_[] = {
 	{0xFF77B1FCBEBCDC4Full, 0x25E8E89C13BB0F7Bull}, /* -292 */
 	{0x9FAACF3DF73609B1ull, 0x77B191618C54E9ADull}, /* -291 */
 	{0xC795830D75038C1Dull, 0xD59DF5B9EF6A2418ull}, /* -290 */
@@ -1583,9 +1581,5 @@ static const struct TVal128 gtable[] = {
 	{0x9E19DB92B4E31BA9ull, 0x6C07A2C26A8346D2ull}  /*  324 */
 };
 
+static const struct TVal128* gtable = gtable_;
 
-#define AUTOINCLUDE_1
-	#include "flt2str.c"
-#undef  AUTOINCLUDE_1
-
-#endif

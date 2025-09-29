@@ -18,9 +18,6 @@
 #include <ctoolbox/ctype.h>
 
 
-#if defined(AUTOINCLUDE_1)
-
-
 #define FLT32MODE 0
 #define FLT64MODE 1
 
@@ -746,6 +743,9 @@ countleadingzeros(uint64 n)
 #define MINPOWEROF5 -342
 #define MAXPOWEROF5 +308
 
+static const uint64 (*powersoffive128)[2];
+
+
 CTB_INLINE struct TVal128
 computeapproximation(uint64 w, int64 q, uint64 precisionmask)
 {
@@ -1231,13 +1231,12 @@ str2flt32(const uint8* src, const uint8** end)
 	return result;
 }
 
-#else
 
 /* ****************************************************************************
  * Tables
  *************************************************************************** */
 
-static const uint64 powersoffive128[][2] = {
+static const uint64 powersoffive128_[][2] = {
 	{0xeef453d6923bd65a, 0x113faa2906a13b3f},  /* -342 */
 	{0x9558b4661b6565f8, 0x4ac7ca59a424c507},  /* -341 */
 	{0xbaaee17fa23ebf76, 0x5d79bcf00d2df649},  /* -340 */
@@ -1891,9 +1890,5 @@ static const uint64 powersoffive128[][2] = {
 	{0x8e679c2f5e44ff8f, 0x570f09eaa7ea7648}   /* 308 */
 };
 
+static const uint64 (*powersoffive128)[2] = powersoffive128_;
 
-#define AUTOINCLUDE_1
-	#include "str2flt.c"
-#undef  AUTOINCLUDE_1
-
-#endif
