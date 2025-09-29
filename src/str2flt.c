@@ -1891,4 +1891,3 @@ static const uint64 powersoffive128_[][2] = {
 };
 
 static const uint64 (*powersoffive128)[2] = powersoffive128_;
-

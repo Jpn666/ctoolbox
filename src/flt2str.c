@@ -1582,4 +1582,3 @@ static const struct TVal128 gtable_[] = {
 };
 
 static const struct TVal128* gtable = gtable_;
-
