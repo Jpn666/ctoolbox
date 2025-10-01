@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016, jpn
+ * Copyright (C) 2025, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,6 +81,7 @@ ctb_u64log2(uint64 v)
 	return i;
 #endif
 }
+
 
 #endif
 

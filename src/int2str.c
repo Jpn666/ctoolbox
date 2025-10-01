@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2023, jpn
+* Copyright (C) 2025, jpn
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -236,7 +236,7 @@ u64tostr(uint64 number, uint8 r[24])
 #endif
 
 	s1 = z.buffer + 24;
-	if (number < 1000000000) {
+	if (number < 1000000000ull) {
 		s2 = todigits((uint32) number, s1);
 	}
 	else {
@@ -245,13 +245,13 @@ u64tostr(uint64 number, uint8 r[24])
 		uint64 c;
 
 		a = mul128hi(19342813113834067ull, number >> 9) >> 11;
-		b = number - (a * 1000000000);
-		if (a > 1000000000) {
+		b = number - (a * 1000000000ull);
+		if (a > 1000000000ull) {
 			number = a;
 			c = b;
 
 			a = mul128hi(19342813113834067ull, number >> 9) >> 11;
-			b = number - (a * 1000000000);
+			b = number - (a * 1000000000ull);
 
 			     todigits((uint32) c, s1 - 9 * 0);
 			     todigits((uint32) b, s1 - 9 * 1);

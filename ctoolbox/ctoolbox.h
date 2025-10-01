@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023, jpn
+ * Copyright (C) 2025, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -185,16 +185,6 @@ CTB_CONSTCAST(const void* a)
 #define CTB_CONSTCAST(a) ((void*) ((const void*) (a)))
 
 #endif
-
-
-/* Error values */
-typedef enum {
-	CTB_OK     =  0,
-	CTB_EPARAM = -1,
-	CTB_ERANGE = -2,
-	CTB_EOOM   = -3,
-	CTB_ENKEY  = -4
-} eCTBError;
 
 
 #endif

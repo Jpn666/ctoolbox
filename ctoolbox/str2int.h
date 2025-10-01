@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023, jpn
+ * Copyright (C) 2025, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.64
@@ -91,5 +91,6 @@ TToIntResult hexatoi64(const uint8* src, intxx total, const uint8** end);
 	#define strtouxx strtou32
 	#define strtoixx strtoi32
 #endif
+
 
 #endif

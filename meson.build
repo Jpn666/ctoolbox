@@ -12,6 +12,10 @@ if mmp.length() == 3
   ]
 endif
 
+if get_option('buildtype').startswith('release')
+    add_project_arguments('-DNDEBUG', language : 'c')
+endif
+
 
 cc = meson.get_compiler('c')
 if cc.get_id() == 'msvc'
@@ -89,26 +93,22 @@ endif
 conf.set('CTB_CFG_NOSTDLIB', get_option('no_stdlib'))
 
 
-isunix    = false
+isunix = false
 iswindows = false
 
 
 # System platform
-if target_machine.system() == 'windows'
+if target_machine.system() in ['windows', 'cygwin']
   conf.set('CTB_CFG_PLATFORM_WINDOWS', true)
-  iswindows = true
 else
-  if target_machine.system() == 'haiku'
-    conf.set('CTB_CFG_PLATFORM_BEOS', true)
-  else
+  if target_machine.system() in ['android', 'darwin', 'dragonfly', 'freebsd', 'gnu', 'linux', 'netbsd', 'openbsd', 'sunos']
     conf.set('CTB_CFG_PLATFORM_UNIX', true)
-    isunix = true
   endif
 endif
 
 
 # Checked int
-ckdintfailback    = false
+ckdintfailback = false
 if cc.has_header('stdckdint.h', required: false)
   conf.set('CTB_CFG_HAS_STDCKDINT', true)
 else
@@ -153,7 +153,6 @@ newline = '''
 
 
 projectsources = []
-externalobjs   = []
 
 base = 'src'
 r = run_command(python, script, base, '.c', check: true).stdout()
@@ -162,51 +161,6 @@ foreach file: r.split(newline)
     projectsources += [file]
   endif
 endforeach
-
-base = 'src/crypto'
-r = run_command(python, script, base, '.c', check: true).stdout()
-foreach file: r.split(newline)
-  if not (file == '')
-    projectsources += [file]
-  endif
-endforeach
-
-
-if target == 'x86_64'
-  supported = false
-
-  path = 'src/crypto/asm'
-  if isunix
-    supported = true
-  endif
-  if iswindows
-    supported = true
-  endif
-
-  if supported
-    if add_languages('nasm', required: false, native: false)
-      if isunix
-        if host_machine.system() in ['darwin', 'ios', 'tvos']
-          nasmformat = 'macho64'
-        else
-          nasmformat = 'elf64'
-        endif
-      endif
-      if iswindows
-        nasmformat = 'win64'
-      endif
-
-      add_project_arguments('-f', nasmformat, language: 'nasm')
-      projectsources += [path / 'x64-adler32.asm']
-      projectsources += [path /   'x64-crc32.asm']
-
-      conf.set('ADLER32_CFG_EXTERNALASM', true)
-      conf.set('CRC32_CFG_EXTERNALASM', true)
-    else
-      warning('NASM not found, using C fallback code')
-    endif
-  endif
-endif
 
 
 headerfiles = []
@@ -227,13 +181,6 @@ foreach file: r.split(newline)
   endif
 endforeach
 
-base = 'ctoolbox/crypto'
-r = run_command(python, script, base, '.h', check: true).stdout()
-foreach file: r.split(newline)
-  if not (file == '')
-    headerfiles += [file]
-  endif
-endforeach
 
 configfile = configure_file(input: 'ctoolboxconfig.h.in', output: 'ctoolboxconfig.h', configuration: conf)
 headerfiles += [configfile]
