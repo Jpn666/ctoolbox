@@ -90,7 +90,9 @@ if not cc.has_header('stdint.h', required: false)
   endif
 endif
 
-conf.set('CTB_CFG_NOSTDLIB', get_option('no_stdlib'))
+if get_option('no_stdlib')
+  conf.set('CTB_CFG_NOSTDLIB', true)
+endif
 
 
 isunix = false

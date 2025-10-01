@@ -18,7 +18,7 @@
 #define f6fc5398_0274_42a2_9186_20cc03b729d0
 
 /*
- * ctoolboxbconfig.h
+ * ctoolboxconfig.h
  * Configuration flags.
  */
 
@@ -62,15 +62,6 @@
 /* In this way we don't have to deal with compiler definitions. */
 #mesondefine CTB_CFG_PLATFORM_UNIX
 #mesondefine CTB_CFG_PLATFORM_WINDOWS
-#mesondefine CTB_CFG_PLATFORM_BEOS
-
-
-/* ***************************************************************************
- * Extra flags
- *************************************************************************** */
-
-#mesondefine ADLER32_CFG_EXTERNALASM
-#mesondefine CRC32_CFG_EXTERNALASM
 
 
 /* ***************************************************************************
