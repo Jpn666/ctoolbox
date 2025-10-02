@@ -13,7 +13,7 @@ if mmp.length() == 3
 endif
 
 if get_option('buildtype').startswith('release')
-    add_project_arguments('-DNDEBUG', language : 'c')
+  add_project_arguments('-DNDEBUG', language : 'c')
 endif
 
 
@@ -156,14 +156,16 @@ newline = '''
 
 projectsources = []
 
-base = 'src'
-r = run_command(python, script, base, '.c', check: true).stdout()
-foreach file: r.split(newline)
-  if not (file == '')
-    projectsources += [file]
-  endif
-endforeach
-
+# Source files
+projectsources += [
+  'src/str2int.c',
+  'src/str2flt.c',
+  'src/memory.c',
+  'src/flt2str.c',
+  'src/ctype.c',
+  'src/int2str.c',
+  'src/assert.c',
+]
 
 headerfiles = []
 
@@ -190,9 +192,14 @@ headerfiles += [configfile]
 
 largs = []
 
-static_build = static_library('ctoolbox', sources: projectsources, pic: true, install: true)
+static_build = static_library(meson.project_name(), sources: projectsources, pic: true, install: true)
 lib = declare_dependency(
   link_with: static_build, include_directories: include_directories('.'), link_args: largs
 )
+ctoolbox_dep = lib
+
+
+pkg = import('pkgconfig')
+pkg.generate(libraries: [static_build], version: meson.project_version(), name: meson.project_name(), filebase: meson.project_name(), description: 'A small base library for other projects')
 
 install_headers(headerfiles, preserve_path: true)
