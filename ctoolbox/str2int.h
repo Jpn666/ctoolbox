@@ -74,23 +74,4 @@ TToIntResult hexatoi32(const uint8* src, intxx total, const uint8** end);
 TToIntResult hexatoi64(const uint8* src, intxx total, const uint8** end);
 
 
-#if defined(CTB_ENV64)
-	#define dcmltouxx dcmltou64
-	#define dcmltoixx dcmltoi64
-	#define heaxtouxx hexatou64
-	#define heaxtoixx hexatoi64
-
-	#define strtouxx strtou64
-	#define strtoixx strtoi64
-#else
-	#define dcmltouxx dcmltou32
-	#define dcmltoixx dcmltoi32
-	#define heaxtouxx hexatou32
-	#define heaxtoixx hexatoi32
-
-	#define strtouxx strtou32
-	#define strtoixx strtoi32
-#endif
-
-
 #endif

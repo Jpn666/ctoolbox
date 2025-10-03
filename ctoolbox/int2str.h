@@ -41,17 +41,4 @@ uintxx u32tohexa(uint32 number, intxx uppercase, uint8 r[16]);
 uintxx u64tohexa(uint64 number, intxx uppercase, uint8 r[24]);
 
 
-#if defined(CTB_ENV64)
-	#define uxxtohexa u64tohexa
-
-	#define uxxtostr u64tostr
-	#define ixxtostr i64tostr
-#else
-	#define uxxtohexa u32tohexa
-
-	#define uxxtostr u32tostr
-	#define ixxtostr i32tostr
-#endif
-
-
 #endif
