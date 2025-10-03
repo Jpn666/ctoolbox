@@ -165,6 +165,7 @@ projectsources += [
   'src/ctype.c',
   'src/int2str.c',
   'src/assert.c',
+  'src/xoshiro.c',
 ]
 
 headerfiles = []
