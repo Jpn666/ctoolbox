@@ -148,12 +148,6 @@ if ckdintfailback
 endif
 
 
-python = find_program('python3')
-script = join_paths(meson.current_source_dir(), 'tools/listfiles.py')
-newline = '''
-'''
-
-
 projectsources = []
 
 # Source files
@@ -170,8 +164,12 @@ projectsources += [
 
 headerfiles = []
 
+
+newline = '''
+'''
+
 base = 'ctoolbox'
-r = run_command(python, script, base, '.h', check: true).stdout()
+r = run_command('tools/listfiles.py', base, '.h', check: true).stdout()
 foreach file: r.split(newline)
   if not (file == '')
     headerfiles += [file]
@@ -179,7 +177,7 @@ foreach file: r.split(newline)
 endforeach
 
 base = 'ctoolbox/private'
-r = run_command(python, script, base, '.h', check: true).stdout()
+r = run_command('tools/listfiles.py', base, '.h', check: true).stdout()
 foreach file: r.split(newline)
   if not (file == '')
     headerfiles += [file]
