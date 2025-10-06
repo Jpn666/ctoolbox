@@ -132,13 +132,11 @@ extern void (*ctb_assertfn)(TAssertInfo);
 CTB_INLINE void
 ctb_testfailed(const char* cndtn, const char* filename, int line)
 {
-	struct TAssertInfo assertinfo;
+	struct TAssertInfo info;
 
 	if (ctb_assertfn) {
-		assertinfo = (struct TAssertInfo){
-			.cndtn = cndtn, .filename = filename, .line = line
-		};
-		ctb_assertfn(assertinfo);
+		info = (struct TAssertInfo) {cndtn, filename, line};
+		ctb_assertfn(info);
 	}
 
 	/*
@@ -165,7 +163,9 @@ ctb_testfailed(const char* cndtn, const char* filename, int line)
 #else
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wcast-qual"
-	#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
+	#if !defined(__GNUG__)
+		#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
+	#endif
 #endif
 
 static inline __attribute__((always_inline)) void*
