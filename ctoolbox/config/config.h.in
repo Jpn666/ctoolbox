@@ -81,29 +81,17 @@
  * Function visibility attributes
  *************************************************************************** */
 
-#if defined(CTB_LINKSHARED) && defined(CTB_BUILDSHARED)
-	#error "CTB_LINKSHARED and CTB_BUILDSHARED are defined"
-#endif
-
-#if defined(CTB_LINKSHARED)
-	#if defined(_MSC_VER)
-		#define CTOOLBOX_API __declspec(dllimport)
-	#endif
-#else
+#if defined(_MSC_VER) || defined(__CYGWIN__)
 	#if defined(CTB_BUILDSHARED)
-		#if defined(_MSC_VER)
-			#define CTOOLBOX_API __declspec(dllexport)
-		#endif
+		#define CTOOLBOX_API __declspec(dllexport)
+	#else
+		#define CTOOLBOX_API __declspec(dllimport)
 	#endif
 #endif
 
 #ifndef CTOOLBOX_API
 	#if defined(__GNUC__)
-		#if defined(CTB_LINKSHARED) || defined(CTB_BUILDSHARED)
-			#define CTOOLBOX_API __attribute__((visibility("default")))
-		#else
-			#define CTOOLBOX_API
-		#endif
+		#define CTOOLBOX_API __attribute__((visibility("default")))
 	#else
 		#define CTOOLBOX_API
 	#endif

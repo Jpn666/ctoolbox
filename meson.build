@@ -1,5 +1,7 @@
 project('ctoolbox', 'c', default_options: ['c_std=c99', 'warning_level=3'], version: run_command('tools/version.py', check: true).stdout().strip(), meson_version: '>=1.3.0')
 
+subdir('ctoolbox/config')
+
 # major, minor and path
 versionarray = [0, 0, 0]
 
@@ -33,118 +35,6 @@ else
     ]
     add_project_arguments(compilerflags, language: 'c')
   endif
-endif
-
-
-# Configuration
-conf = configuration_data()
-
-# build the version string
-v0 = versionarray[0]
-v1 = versionarray[1]
-v2 = versionarray[2]
-version = f'@v0@.@v1@.@v2@'
-
-
-conf.set('version', version)
-
-conf.set('version_major', v0)
-conf.set('version_minor', v1)
-conf.set('version_rpath', v2)
-
-
-# CPU configuration
-if target_machine.endian() == 'little'
-  conf.set('CTB_CFG_LITTLEENDIAN', true)
-else
-  if target_machine.endian() == 'big'
-    conf.set('CTB_CFG_BIGENDIAN', true)
-  else
-    error()
-  endif
-endif
-
-target = target_machine.cpu_family()
-conf.set('CTB_CFG_ENV64', target.contains('64'))
-if target.contains('x86')
-  conf.set('CTB_CFG_FASTUNALIGNED', true)
-else
-  conf.set('CTB_CFG_STRICTALIGNMENT', true)
-endif
-
-
-# Header support
-if not cc.has_header('stdbool.h', required: false)
-  if cc.get_id() == 'msvc'
-    conf.set('CTB_CFG_NOSTDBOOL', true)
-  else
-    error('missing header stdbool.h, compiler not supported')
-  endif
-endif
-
-if not cc.has_header('stdint.h', required: false)
-  if cc.get_id() == 'msvc'
-    conf.set('CTB_CFG_NOSTDINT', true)
-  else
-    error('missing header stdint.h, compiler not supported')
-  endif
-endif
-
-if get_option('no_stdlib')
-  conf.set('CTB_CFG_NOSTDLIB', true)
-endif
-
-
-isunix = false
-iswindows = false
-
-
-# System platform
-if target_machine.system() in ['windows', 'cygwin']
-  conf.set('CTB_CFG_PLATFORM_WINDOWS', true)
-else
-  if target_machine.system() in ['android', 'darwin', 'dragonfly', 'freebsd', 'gnu', 'linux', 'netbsd', 'openbsd', 'sunos']
-    conf.set('CTB_CFG_PLATFORM_UNIX', true)
-  endif
-endif
-
-
-# Checked int
-ckdintfailback = false
-if cc.has_header('stdckdint.h', required: false)
-  conf.set('CTB_CFG_HAS_STDCKDINT', true)
-else
-  supportedcc = [
-    'gcc',
-    'clang',
-    'armclang',
-    'clang-cl',
-    'intel',
-    'intel-cl',
-    'intel-llvm',
-    'intel-llvm-cl'
-  ]
-
-  if supportedcc.contains(cc.get_id())
-    hasckdbuiltin = true
-    if cc.has_function('__builtin_add_overflow') == false
-      hasckdbuiltin = false
-    endif
-    if cc.has_function('__builtin_sub_overflow') == false
-      hasckdbuiltin = false
-    endif
-    if cc.has_function('__builtin_mul_overflow') == false
-      hasckdbuiltin = false
-    endif
-
-    if hasckdbuiltin
-      conf.set('CTB_CFG_HAS_CKDINT_INTRINSICS', true)
-    endif
-  endif
-endif
-
-if ckdintfailback
-  message('checked int not supported, using fallback')
 endif
 
 
@@ -185,20 +75,32 @@ foreach file: r.split(newline)
 endforeach
 
 
-configfile = configure_file(input: 'ctoolboxconfig.h.in', output: 'ctoolboxconfig.h', configuration: conf)
-headerfiles += [configfile]
-
-
 largs = []
 
-static_build = both_libraries(meson.project_name(), sources: projectsources, pic: true, install: true, c_shared_args: ['-DCTB_BUILDSHARED'])
+both_builds = both_libraries(meson.project_name(), sources: projectsources, pic: true, install: true, c_shared_args: ['-DCTB_BUILDSHARED'])
+#sharedlib = both_builds.get_shared_lib()
+#staticlib = both_builds.get_static_lib()
+
+#sharedlib = shared_library(meson.project_name(), sources: projectsources, install: true, c_args: ['-DCTB_BUILDSHARED'])
+#staticlib = static_library(meson.project_name(), sources: projectsources, install: true, pic: true)
+
+#ctoolbox_shared = declare_dependency(link_with: sharedlib, include_directories: include_directories('.'), link_args: largs, compile_args: ['-DCTB_LINKSHARED'])
+#ctoolbox_static = declare_dependency(link_with: staticlib, include_directories: include_directories('.'), link_args: largs)
+
 lib = declare_dependency(
-  link_with: static_build, include_directories: include_directories('.'), link_args: largs
+  link_with: both_builds, include_directories: include_directories('.'), link_args: largs
 )
+#lib = declare_dependency(
+#  link_with: [sharedlib, staticlib], include_directories: include_directories('.'), link_args: largs
+#)
 ctoolbox_dep = lib
+
+#meson.override_dependency('ctoolbox_dep', ctoolbox_shared, static: false)
+#meson.override_dependency('ctoolbox_dep', ctoolbox_static, static: true)
 
 
 pkg = import('pkgconfig')
-pkg.generate(libraries: [static_build], version: meson.project_version(), name: meson.project_name(), filebase: meson.project_name(), description: 'A small base library for other projects')
+pkg.generate(libraries: [lib], version: meson.project_version(), name: meson.project_name(), filebase: meson.project_name(), description: 'A small base library for other projects')
+#pkg.generate(libraries_private: [ctoolbox_shared], libraries: [ctoolbox_static], version: meson.project_version(), name: meson.project_name(), filebase: meson.project_name(), description: 'A small base library for other projects')
 
 install_headers(headerfiles, preserve_path: true)
