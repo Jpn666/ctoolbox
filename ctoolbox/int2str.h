@@ -27,17 +27,28 @@
 
 /*
  * 32 bit integer to decimal string. */
+CTOOLBOX_API
 uintxx u32tostr(uint32 number, uint8 r[16]);
+
+CTOOLBOX_API
 uintxx i32tostr( int32 number, uint8 r[16]);
+
 
 /*
  * 64 bit integer to decimal string. */
+CTOOLBOX_API
 uintxx u64tostr(uint64 number, uint8 r[24]);
+
+CTOOLBOX_API
 uintxx i64tostr( int64 number, uint8 r[24]);
+
 
 /*
  * Unsigned integer type to hexadecimal string. */
+CTOOLBOX_API
 uintxx u32tohexa(uint32 number, intxx uppercase, uint8 r[16]);
+
+CTOOLBOX_API
 uintxx u64tohexa(uint64 number, intxx uppercase, uint8 r[24]);
 
 

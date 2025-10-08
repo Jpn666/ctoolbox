@@ -25,7 +25,7 @@
 #include "ctoolbox.h"
 
 
-extern const uint8 ctb_ctypeproperties[256];
+CTOOLBOX_API extern const uint8 ctb_ctypeproperties[256];
 
 
 #define CTB_CTYPEUPPER 0x01  /* upper */
@@ -42,43 +42,53 @@ extern const uint8 ctb_ctypeproperties[256];
 
 /*
  * */
-CTB_INLINE intxx ctb_isspace(uintxx c);
+CTB_INLINE
+intxx ctb_isspace(uintxx c);
 
 /*
  * */
-CTB_INLINE intxx ctb_isalnum(uintxx c);
+CTB_INLINE
+intxx ctb_isalnum(uintxx c);
 
 /*
  * */
-CTB_INLINE intxx ctb_isalpha(uintxx c);
+CTB_INLINE
+intxx ctb_isalpha(uintxx c);
 
 /*
  * */
-CTB_INLINE intxx ctb_isdigit(uintxx c);
+CTB_INLINE
+intxx ctb_isdigit(uintxx c);
 
 /*
  * */
-CTB_INLINE intxx ctb_iscntrl(uintxx c);
+CTB_INLINE
+intxx ctb_iscntrl(uintxx c);
 
 /*
  * */
-CTB_INLINE intxx ctb_ispunct(uintxx c);
+CTB_INLINE
+intxx ctb_ispunct(uintxx c);
 
 /*
  * */
-CTB_INLINE intxx ctb_islower(uintxx c);
+CTB_INLINE
+intxx ctb_islower(uintxx c);
 
 /*
  * */
-CTB_INLINE intxx ctb_isupper(uintxx c);
+CTB_INLINE
+intxx ctb_isupper(uintxx c);
 
 /*
  * */
-CTB_INLINE intxx ctb_isprint(uintxx c);
+CTB_INLINE
+intxx ctb_isprint(uintxx c);
 
 /*
  * */
-CTB_INLINE intxx ctb_isascii(uintxx c);
+CTB_INLINE
+intxx ctb_isascii(uintxx c);
 
 
 /*

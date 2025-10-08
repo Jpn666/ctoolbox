@@ -113,7 +113,7 @@
 
 /* */
 struct TAssertInfo {
-	const char* filename;
+	const char* file;
 	const char* cndtn;
 	int line;
 };
@@ -121,21 +121,23 @@ struct TAssertInfo {
 typedef struct TAssertInfo TAssertInfo;
 
 
+CTOOLBOX_API extern void (*ctb_assertfn)(TAssertInfo);
+
+
 /*
  * Set the assert function to be called when an assertion fails. If no
  * function is set, the default behavior is to loop infinitely. */
+CTOOLBOX_API
 void ctb_setassertfn(void (*)(TAssertInfo));
 
 
-extern void (*ctb_assertfn)(TAssertInfo);
-
 CTB_INLINE void
-ctb_testfailed(const char* cndtn, const char* filename, int line)
+ctb_testfailed(const char* cndtn, const char* file, int line)
 {
 	struct TAssertInfo info;
 
 	if (ctb_assertfn) {
-		info = (struct TAssertInfo) {cndtn, filename, line};
+		info = (struct TAssertInfo) {cndtn, file, line};
 		ctb_assertfn(info);
 	}
 

@@ -37,18 +37,25 @@ typedef struct TXoshiro128 TXoshiro128;
 
 /*
  * Sets the seed for the generator. */
+CTOOLBOX_API
 void xoshiro128_seed(TXoshiro128*, uint32 seed);
 
 /*
  * Xoshiro-128 start-start and plus-plus functions. */
+CTOOLBOX_API
 uint32 xoshiro128_ssnext(TXoshiro128*);
+
+CTOOLBOX_API
 uint32 xoshiro128_ppnext(TXoshiro128*);
 
 /*
  * This is the jump function for the generator. It is equivalent
  * to 2^64 calls to next(); it can be used to generate 2^64
  * non-overlapping subsequences for parallel computations. */
+CTOOLBOX_API
 void xoshiro128_ssjump(TXoshiro128*);
+
+CTOOLBOX_API
 void xoshiro128_ppjump(TXoshiro128*);
 
 
@@ -63,18 +70,25 @@ typedef struct TXoshiro256 TXoshiro256;
 
 /*
  * Sets the seed for the generator. */
+CTOOLBOX_API
 void xoshiro256_seed(TXoshiro256*, uint64 seed);
 
 /*
  * Xoshiro-256 start-start and plus-plus functions. */
+CTOOLBOX_API
 uint64 xoshiro256_ssnext(TXoshiro256*);
+
+CTOOLBOX_API
 uint64 xoshiro256_ppnext(TXoshiro256*);
 
 /*
  * This is the jump function for the generator. It is equivalent
  * to 2^128 calls to next(); it can be used to generate 2^128
  * non-overlapping subsequences for parallel computations. */
+CTOOLBOX_API
 void xoshiro256_ssjump(TXoshiro256*);
+
+CTOOLBOX_API
 void xoshiro256_ppjump(TXoshiro256*);
 
 
@@ -89,18 +103,25 @@ typedef struct TXoroshiro128 TXoroshiro128;
 
 /*
  * Sets the seed for the generator. */
+CTOOLBOX_API
 void xoroshiro128_seed(TXoroshiro128*, uint64 seed);
 
 /*
  * Xoroshiro-128 start-start and plus-plus functions. */
+CTOOLBOX_API
 uint64 xoroshiro128_ssnext(TXoroshiro128*);
+
+CTOOLBOX_API
 uint64 xoroshiro128_ppnext(TXoroshiro128*);
 
 /*
  * This is the jump function for the generator. It is equivalent
  * to 2^64 calls to next(); it can be used to generate 2^64 non-overlapping
  * subsequences for parallel computations. */
+CTOOLBOX_API
 void xoroshiro128_ssjump(TXoroshiro128*);
+
+CTOOLBOX_API
 void xoroshiro128_ppjump(TXoroshiro128*);
 
 

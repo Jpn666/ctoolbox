@@ -51,26 +51,46 @@ typedef struct TToIntResult TToIntResult;
 
 /*
  * Converts an string (base 2 to base 16) to 32bit or 64bit integer. */
+CTOOLBOX_API
 TToIntResult strtou32(const uint8* src, const uint8** end, intxx base);
+
+CTOOLBOX_API
 TToIntResult strtou64(const uint8* src, const uint8** end, intxx base);
 
+CTOOLBOX_API
 TToIntResult strtoi32(const uint8* src, const uint8** end, intxx base);
+
+CTOOLBOX_API
 TToIntResult strtoi64(const uint8* src, const uint8** end, intxx base);
+
 
 /*
  * Converts a decimal string (base 10) to 32bit or 64bit integer. */
+CTOOLBOX_API
 TToIntResult dcmltou32(const uint8* src, intxx total, const uint8** end);
+
+CTOOLBOX_API
 TToIntResult dcmltou64(const uint8* src, intxx total, const uint8** end);
 
+CTOOLBOX_API
 TToIntResult dcmltoi32(const uint8* src, intxx total, const uint8** end);
+
+CTOOLBOX_API
 TToIntResult dcmltoi64(const uint8* src, intxx total, const uint8** end);
+
 
 /*
  * Converts a hexadecimal string (base 16) to integer. */
+CTOOLBOX_API
 TToIntResult hexatou32(const uint8* src, intxx total, const uint8** end);
+
+CTOOLBOX_API
 TToIntResult hexatou64(const uint8* src, intxx total, const uint8** end);
 
+CTOOLBOX_API
 TToIntResult hexatoi32(const uint8* src, intxx total, const uint8** end);
+
+CTOOLBOX_API
 TToIntResult hexatoi64(const uint8* src, intxx total, const uint8** end);
 
 

@@ -36,10 +36,12 @@ typedef enum {
 /*
  * Convert a float to a string. The precision is the number of digits after
  * the decimal point. */
+CTOOLBOX_API
 uintxx f64tostr(flt64 number, eFLTFormatMode m, uintxx precision, uint8 r[24]);
 
 /*
  * */
+CTOOLBOX_API
 uintxx f32tostr(flt32 number, eFLTFormatMode m, uintxx precision, uint8 r[24]);
 
 

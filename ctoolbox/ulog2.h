@@ -27,11 +27,13 @@
 
 /*
  * */
-CTB_INLINE uintxx ctb_u32log2(uint32 v);
+CTB_INLINE
+uintxx ctb_u32log2(uint32 v);
 
 /*
  * */
-CTB_INLINE uintxx ctb_u64log2(uint64 v);
+CTB_INLINE
+uintxx ctb_u64log2(uint64 v);
 
 
 #if defined(CTB_ENV64)

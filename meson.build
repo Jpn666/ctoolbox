@@ -1,4 +1,4 @@
-project('ctoolbox', 'c', default_options: ['c_std=c99', 'warning_level=3'], version: run_command('tools/version.py', check: true).stdout().strip(), meson_version: '>=1.1.0')
+project('ctoolbox', 'c', default_options: ['c_std=c99', 'warning_level=3'], version: run_command('tools/version.py', check: true).stdout().strip(), meson_version: '>=1.3.0')
 
 # major, minor and path
 versionarray = [0, 0, 0]
@@ -191,7 +191,7 @@ headerfiles += [configfile]
 
 largs = []
 
-static_build = static_library(meson.project_name(), sources: projectsources, pic: true, install: true)
+static_build = both_libraries(meson.project_name(), sources: projectsources, pic: true, install: true, c_shared_args: ['-DCTB_BUILDSHARED'])
 lib = declare_dependency(
   link_with: static_build, include_directories: include_directories('.'), link_args: largs
 )

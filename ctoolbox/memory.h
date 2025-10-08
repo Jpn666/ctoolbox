@@ -50,11 +50,13 @@ typedef struct TAllocator TAllocator;
 
 /*
  * Get the default allocator. */
+CTOOLBOX_API
 const TAllocator* ctb_getdefaultallocator(void);
 
 /*
  * Set the default allocator. If the allocator is NULL, the default
  * allocator will be used. */
+CTOOLBOX_API
 void ctb_setdefaultallocator(TAllocator* allctr);
 
 
@@ -63,17 +65,19 @@ void ctb_setdefaultallocator(TAllocator* allctr);
 
 /*
  * Same as C "memcpy". */
+CTOOLBOX_API
 void ctb_memcpy(void* destination, const void* source, uintxx size);
 
 /*
  * Same as C "memset". */
+CTOOLBOX_API
 void ctb_memset(void* destination, uintxx value, uintxx size);
 
 
 /*
  * A safe memset to zero */
 
-extern void (*volatile ctb_memzerofn)(void*, uintxx);
+CTOOLBOX_API extern void (*volatile ctb_memzerofn)(void*, uintxx);
 
 CTB_INLINE void
 ctb_memzero(void* destination, uintxx size)
