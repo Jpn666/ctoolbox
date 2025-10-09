@@ -1,4 +1,4 @@
-project('ctoolbox', 'c', default_options: ['c_std=c99', 'warning_level=3'], version: run_command('tools/version.py', check: true).stdout().strip(), meson_version: '>=1.3.0')
+project('ctoolbox', 'c', default_options: ['c_std=c99', 'warning_level=3'], version: run_command('tools/version.py', check: true).stdout().strip(), meson_version: '>=1.1.0')
 
 subdir('ctoolbox/config')
 
@@ -65,15 +65,32 @@ endforeach
 
 largs = []
 
-both_builds = both_libraries(meson.project_name(), sources: projectsources, pic: true, install: true, c_shared_args: ['-DCTB_BUILDSHARED'])
+if meson.is_subproject()
+  extraargs = []
+  if get_option('default_library') == 'shared'
+    lib = shared_library(meson.project_name(), sources: projectsources, soversion: versionarray[0], c_args: ['-DCTOOLBOX_BUILDDLL', '-DCTOOLBOX_DLL'])
+    extraargs += ['-DCTOOLBOX_DLL']
+  endif
+  if get_option('default_library') == 'static'
+    lib = static_library(meson.project_name(), sources: projectsources, pic: true)
+  endif
 
-lib = declare_dependency(
-  link_with: both_builds, include_directories: include_directories('.'), link_args: largs
-)
-ctoolbox_dep = lib
+  if not is_variable('lib')
+    error('default_library is not shared or static')
+  endif
+  ctoolbox_dep = declare_dependency(
+    link_with: lib, include_directories: include_directories('.'), compile_args: extraargs
+  )
+else
+  ctoolbox_shared = shared_library(meson.project_name(), sources: projectsources, install: true, soversion: versionarray[0], c_args: ['-DCTOOLBOX_BUILDDLL', '-DCTOOLBOX_DLL'])
+  ctoolbox_static = static_library(meson.project_name(), sources: projectsources, install: true, pic: true)
 
+  ctoolbox_dep = declare_dependency(
+    link_with: [ctoolbox_static, ctoolbox_shared], include_directories: include_directories('.')
+  )
 
-pkg = import('pkgconfig')
-pkg.generate(libraries: [ctoolbox_dep], version: meson.project_version(), name: meson.project_name(), filebase: meson.project_name(), description: 'A small base library for other projects')
+  pkg = import('pkgconfig')
+  pkg.generate(libraries: ctoolbox_dep, version: meson.project_version(), name: meson.project_name(), filebase: meson.project_name(), description: 'A small base library for other projects')
 
-install_headers(headerfiles, preserve_path: true)
+  install_headers(headerfiles, preserve_path: true)
+endif

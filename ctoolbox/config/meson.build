@@ -123,4 +123,9 @@ if ckdintfailback
   message('checked int not supported, using fallback')
 endif
 
-configure_file(input: 'config.h.in', output: 'config.h', configuration: conf, install: true, install_dir: 'include/ctoolbox/config')
+
+if meson.is_subproject()
+  configure_file(input: 'config.h.in', output: 'config.h', configuration: conf)
+else
+  configure_file(input: 'config.h.in', output: 'config.h', configuration: conf, install: true, install_dir: 'include/ctoolbox/config')
+endif

@@ -1,5 +1,5 @@
  /*
- * Copyright (C) 2023, jpn
+ * Copyright (C) 2025, jpn
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #define f6fc5398_0274_42a2_9186_20cc03b729d0
 
 /*
- * ctoolboxconfig.h
+ * config.h
  * Configuration flags.
  */
 
@@ -81,11 +81,13 @@
  * Function visibility attributes
  *************************************************************************** */
 
-#if defined(_MSC_VER) || defined(__CYGWIN__)
-	#if defined(CTB_BUILDSHARED)
-		#define CTOOLBOX_API __declspec(dllexport)
-	#else
-		#define CTOOLBOX_API __declspec(dllimport)
+#if defined(CTOOLBOX_DLL)
+	#if defined(_WIN32)
+		#if defined(CTOOLBOX_BUILDDLL)
+			#define CTOOLBOX_API __declspec(dllexport)
+		#else
+			#define CTOOLBOX_API __declspec(dllimport)
+		#endif
 	#endif
 #endif
 
