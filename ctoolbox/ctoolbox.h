@@ -111,8 +111,8 @@
 
 /* */
 struct TAssertInfo {
-	const char* file;
 	const char* cndtn;
+	const char* file;
 	int line;
 };
 
@@ -135,7 +135,7 @@ ctb_testfailed(const char* cndtn, const char* file, int line)
 	struct TAssertInfo info;
 
 	if (ctb_assertfn) {
-		info = (struct TAssertInfo) {cndtn, file, line};
+		info.cndtn = cndtn; info.file = file; info.line = line;
 		ctb_assertfn(info);
 	}
 
