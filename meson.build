@@ -1,6 +1,8 @@
 project('ctoolbox', 'c', default_options: ['c_std=c99', 'warning_level=3'], version: run_command('tools/version.py', check: true).stdout().strip(), meson_version: '>=1.1.0')
 
+
 subdir('ctoolbox/config')
+
 
 if get_option('buildtype').startswith('release')
   add_project_arguments('-DNDEBUG', language : 'c')
@@ -69,7 +71,9 @@ if meson.is_subproject()
   extraargs = []
   if get_option('default_library') == 'shared'
     lib = shared_library(meson.project_name(), sources: projectsources, soversion: versionarray[0], c_args: ['-DCTOOLBOX_BUILDDLL', '-DCTOOLBOX_DLL'])
-    extraargs += ['-DCTOOLBOX_DLL']
+    if target_machine.system() in ['windows', 'cygwin']
+      extraargs += ['-DCTOOLBOX_DLL']
+    endif
   endif
   if get_option('default_library') == 'static'
     lib = static_library(meson.project_name(), sources: projectsources, pic: true)
