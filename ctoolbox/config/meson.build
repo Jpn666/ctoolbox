@@ -1,4 +1,4 @@
-# major, minor and path
+# major, minor and patch
 versionarray = [0, 0, 0]
 
 mmp = meson.project_version().split('.')

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <ctoolbox/ctoolbox.h>
+#include <ctoolbox/config/config.h>
 
 
 static const char versionstring[] = CTOOLBOX_VERSION_STRING;
@@ -30,6 +30,6 @@ ctoolbox_getversion(void)
 	v.patch = CTOOLBOX_VERSION_PATCH;
 
 	v.versionstring = versionstring;
-	v.builddate     = NULL;
+	v.builddate     = (void*) 0;
 	return v;
 }
