@@ -26,7 +26,7 @@ conf.set('version', version)
 
 conf.set('version_major', v0)
 conf.set('version_minor', v1)
-conf.set('version_rpath', v2)
+conf.set('version_patch', v2)
 
 
 # CPU configuration

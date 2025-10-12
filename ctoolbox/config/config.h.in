@@ -65,19 +65,6 @@
 
 
 /* ***************************************************************************
- * Version number
- *************************************************************************** */
-
-#define CTOOLBOX_VERSION_MAJOR @version_major@
-#define CTOOLBOX_VERSION_MINOR @version_minor@
-/* revision */
-#define CTOOLBOX_VERSION_RPATH @version_rpath@
-
-
-#define CTOOLBOX_VERSION_STRING "@version@"
-
-
-/* ***************************************************************************
  * Function visibility attributes
  *************************************************************************** */
 
@@ -98,6 +85,35 @@
 		#define CTOOLBOX_API
 	#endif
 #endif
+
+
+/* ***************************************************************************
+ * Version number
+ *************************************************************************** */
+
+#define CTOOLBOX_VERSION_MAJOR @version_major@
+#define CTOOLBOX_VERSION_MINOR @version_minor@
+/* revision */
+#define CTOOLBOX_VERSION_PATCH @version_patch@
+
+
+#define CTOOLBOX_VERSION_STRING "@version@"
+
+
+/*
+ * Version info */
+struct CTOOLBOXVersion {
+	int major;
+	int minor;
+	int patch;
+	const char* versionstring;
+	const char* builddate;
+};
+
+/*
+ * */
+CTOOLBOX_API
+struct CTOOLBOXVersion ctoolbox_getversion(void);
 
 
 #endif

@@ -32,6 +32,7 @@ projectsources = []
 
 # Source files
 projectsources += [
+  'src/version.c',
   'src/str2int.c',
   'src/str2flt.c',
   'src/memory.c',
