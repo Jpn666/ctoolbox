@@ -124,8 +124,4 @@ if ckdintfailback
 endif
 
 
-if meson.is_subproject()
-  configure_file(input: 'config.h.in', output: 'config.h', configuration: conf)
-else
-  configure_file(input: 'config.h.in', output: 'config.h', configuration: conf, install: true, install_dir: 'include/ctoolbox/config')
-endif
+configure_file(input: 'config.h.in', output: 'config.h', configuration: conf, install: true, install_dir: 'include/ctoolbox/config')
