@@ -73,9 +73,19 @@ if target_machine.system() in ['windows', 'cygwin']
   extraargs += ['-DCTOOLBOX_DLL']
 endif
 
-ctoolbox_dep = declare_dependency(
-  link_with: lib, include_directories: include_directories('.'), compile_args: extraargs
-)
+common = {'include_directories': include_directories('.'), 'compile_args': extraargs}
+if meson.is_subproject()
+  if meson.get_option('default_library') == 'static'
+    ctoolbox_dep = declare_dependency(link_with: lib.get_static_lib(), kwargs: common)
+  endif
+  if meson.get_option('default_library') == 'shared'
+    ctoolbox_dep = declare_dependency(link_with: lib.get_shared_lib(), kwargs: common)
+  endif
+endif
+
+if not is_variable('ctoolbox_dep')
+  ctoolbox_dep = declare_dependency(link_with: lib, kwargs: common)
+endif
 
 pkg = import('pkgconfig')
 pkg.generate(libraries: ctoolbox_dep, version: meson.project_version(), name: meson.project_name(), filebase: meson.project_name(), description: 'A small base library for other projects')
