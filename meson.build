@@ -75,10 +75,10 @@ endif
 
 common = {'include_directories': include_directories('.'), 'compile_args': extraargs}
 if meson.is_subproject()
-  if meson.get_option('default_library') == 'static'
+  if get_option('default_library') == 'static'
     ctoolbox_dep = declare_dependency(link_with: lib.get_static_lib(), kwargs: common)
   endif
-  if meson.get_option('default_library') == 'shared'
+  if get_option('default_library') == 'shared'
     ctoolbox_dep = declare_dependency(link_with: lib.get_shared_lib(), kwargs: common)
   endif
 endif
