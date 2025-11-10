@@ -79,7 +79,7 @@ if meson.is_subproject()
     ctoolbox_dep = declare_dependency(link_with: lib.get_static_lib(), kwargs: common)
   endif
   if get_option('default_library') == 'shared'
-    ctoolbox_dep = declare_dependency(link_with: lib.get_shared_lib(), kwargs: common, 'compile_args': extraargs)
+    ctoolbox_dep = declare_dependency(link_with: lib.get_shared_lib(), kwargs: common, compile_args: extraargs)
   endif
 endif
 
