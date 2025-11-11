@@ -55,9 +55,6 @@
 #mesondefine CTB_CFG_HAS_STDCKDINT
 #mesondefine CTB_CFG_HAS_CKDINT_INTRINSICS
 
-/* */
-#mesondefine CTB_CFG_NOSTDLIB
-
 
 /* In this way we don't have to deal with compiler definitions. */
 #mesondefine CTB_CFG_PLATFORM_UNIX

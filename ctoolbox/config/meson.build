@@ -66,10 +66,6 @@ if not cc.has_header('stdint.h', required: false)
   endif
 endif
 
-if get_option('no_stdlib')
-  conf.set('CTB_CFG_NOSTDLIB', true)
-endif
-
 
 isunix = false
 iswindows = false
