@@ -63,6 +63,10 @@
 #endif
 
 
+/*
+ * Branch prediction hints.
+ * CTB_EXPECT1(x): Expect x to be true.
+ * CTB_EXPECT0(x): Expect x to be false. */
 #if defined(__GNUC__) || __has_builtin(__builtin_expect)
 	#define CTB_EXPECT1(X) __builtin_expect(!!(X), 1)
 	#define CTB_EXPECT0(X) __builtin_expect(!!(X), 0)
@@ -109,7 +113,8 @@
 #endif
 
 
-/* */
+/*
+ * Assert information structure. */
 struct TAssertInfo {
 	const char* cndtn;
 	const char* file;
@@ -129,6 +134,9 @@ CTOOLBOX_API
 void ctb_setassertfn(void (*)(TAssertInfo));
 
 
+/*
+ * Default assert handler. It calls the user defined assert function if set,
+ * otherwise it loops infinitely. */
 CTB_INLINE void
 ctb_testfailed(const char* cndtn, const char* file, int line)
 {
@@ -168,6 +176,8 @@ ctb_testfailed(const char* cndtn, const char* file, int line)
 	#endif
 #endif
 
+/*
+ * Cast away constness. */
 static inline __attribute__((always_inline)) void*
 CTB_CONSTCAST(const void* a)
 {

@@ -33,7 +33,8 @@ typedef enum {
 } eSTR2FLTError;
 
 
-/* */
+/*
+ * Result of string to float conversion. */
 struct TToFltResult {
 	eintxx error;
 
@@ -47,12 +48,14 @@ typedef struct TToFltResult TToFltResult;
 
 
 /*
- * Convert a string to a float. The string must be in decimal format. */
+ * Convert a string to a float. The string must be in decimal format. If end
+ * is not NULL, stores the pointer to the character that stopped the scan. */
 CTOOLBOX_API
 TToFltResult str2flt64(const uint8* src, const uint8** end);
 
 /*
- * Convert a string to a float. The string must be in decimal format. */
+ * Convert a string to a float. The string must be in decimal format. If end
+ * is not NULL, stores the pointer to the character that stopped the scan. */
 CTOOLBOX_API
 TToFltResult str2flt32(const uint8* src, const uint8** end);
 

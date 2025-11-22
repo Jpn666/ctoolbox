@@ -26,12 +26,14 @@
 
 
 /*
- * */
+ * Integer log base 2.
+ * Returns the integer part of the logarithm base 2 of v. */
 CTB_INLINE
 uintxx ctb_u32log2(uint32 v);
 
 /*
- * */
+ * Integer log base 2.
+ * Returns the integer part of the logarithm base 2 of v. */
 CTB_INLINE
 uintxx ctb_u64log2(uint64 v);
 

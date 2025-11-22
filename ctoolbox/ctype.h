@@ -41,52 +41,62 @@ CTOOLBOX_API extern const uint8 ctb_ctypeproperties[256];
 
 
 /*
- * */
+ * Checks if the character is a white-space character.
+ * Returns non-zero if true, 0 otherwise. */
 CTB_INLINE
 intxx ctb_isspace(uintxx c);
 
 /*
- * */
+ * Checks if the character is alphanumeric.
+ * Returns non-zero if true, 0 otherwise. */
 CTB_INLINE
 intxx ctb_isalnum(uintxx c);
 
 /*
- * */
+ * Checks if the character is alphabetic.
+ * Returns non-zero if true, 0 otherwise. */
 CTB_INLINE
 intxx ctb_isalpha(uintxx c);
 
 /*
- * */
+ * Checks if the character is a decimal digit.
+ * Returns non-zero if true, 0 otherwise. */
 CTB_INLINE
 intxx ctb_isdigit(uintxx c);
 
 /*
- * */
+ * Checks if the character is a control character.
+ * Returns non-zero if true, 0 otherwise. */
 CTB_INLINE
 intxx ctb_iscntrl(uintxx c);
 
 /*
- * */
+ * Checks if the character is a punctuation character.
+ * Returns non-zero if true, 0 otherwise. */
 CTB_INLINE
 intxx ctb_ispunct(uintxx c);
 
 /*
- * */
+ * Checks if the character is a lowercase letter.
+ * Returns non-zero if true, 0 otherwise. */
 CTB_INLINE
 intxx ctb_islower(uintxx c);
 
 /*
- * */
+ * Checks if the character is an uppercase letter.
+ * Returns non-zero if true, 0 otherwise. */
 CTB_INLINE
 intxx ctb_isupper(uintxx c);
 
 /*
- * */
+ * Checks if the character is printable.
+ * Returns non-zero if true, 0 otherwise. */
 CTB_INLINE
 intxx ctb_isprint(uintxx c);
 
 /*
- * */
+ * Checks if the character is a 7-bit ASCII character.
+ * Returns non-zero if true, 0 otherwise. */
 CTB_INLINE
 intxx ctb_isascii(uintxx c);
 

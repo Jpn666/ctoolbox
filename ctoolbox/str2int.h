@@ -34,7 +34,8 @@ typedef enum {
 } eSTR2INTError;
 
 
-/* */
+/*
+ * Result of string to integer conversion. */
 struct TToIntResult {
 	eintxx error;
 
@@ -50,7 +51,8 @@ typedef struct TToIntResult TToIntResult;
 
 
 /*
- * Converts an string (base 2 to base 16) to 32bit or 64bit integer. */
+ * Converts an string (base 2 to base 16) to 32bit or 64bit integer. If end
+ * is not NULL, stores the pointer to the character that stopped the scan. */
 CTOOLBOX_API
 TToIntResult strtou32(const uint8* src, const uint8** end, intxx base);
 
@@ -65,7 +67,8 @@ TToIntResult strtoi64(const uint8* src, const uint8** end, intxx base);
 
 
 /*
- * Converts a decimal string (base 10) to 32bit or 64bit integer. */
+ * Converts a decimal string (base 10) to 32bit or 64bit integer. If end
+ * is not NULL, stores the pointer to the character that stopped the scan. */
 CTOOLBOX_API
 TToIntResult dcmltou32(const uint8* src, intxx total, const uint8** end);
 

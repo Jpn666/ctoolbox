@@ -27,6 +27,9 @@
 
 #if defined(CTB_CFG_HAS_CKDINT_INTRINSICS)
 
+/*
+ * Checked integer arithmetic macros.
+ * Returns 1 if overflow occurred, 0 otherwise. */
 #define ckdi32_add(a, b, r) __builtin_add_overflow(( int32) a, ( int32) b, r)
 #define ckdi64_add(a, b, r) __builtin_add_overflow(( int64) a, ( int64) b, r)
 #define ckdi32_sub(a, b, r) __builtin_sub_overflow(( int32) a, ( int32) b, r)

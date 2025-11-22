@@ -27,7 +27,7 @@
 
 
 /*
- * Xoshiro128 */
+ * Xoshiro128 state. */
 struct TXoshiro128 {
 	uint32 s[4];
 };
@@ -41,7 +41,9 @@ CTOOLBOX_API
 void xoshiro128_seed(TXoshiro128*, uint32 seed);
 
 /*
- * Xoshiro-128 start-start and plus-plus functions. */
+ * Xoshiro-128 start-start and plus-plus functions.
+ * ssnext: star-star variant, recommended for floating point generation.
+ * ppnext: plus-plus variant, recommended for general purpose. */
 CTOOLBOX_API
 uint32 xoshiro128_ssnext(TXoshiro128*);
 
@@ -60,7 +62,7 @@ void xoshiro128_ppjump(TXoshiro128*);
 
 
 /*
- * Xoshiro256 */
+ * Xoshiro256 state. */
 struct TXoshiro256 {
 	uint64 s[4];
 };
@@ -74,7 +76,9 @@ CTOOLBOX_API
 void xoshiro256_seed(TXoshiro256*, uint64 seed);
 
 /*
- * Xoshiro-256 start-start and plus-plus functions. */
+ * Xoshiro-256 start-start and plus-plus functions.
+ * ssnext: star-star variant, recommended for floating point generation.
+ * ppnext: plus-plus variant, recommended for general purpose. */
 CTOOLBOX_API
 uint64 xoshiro256_ssnext(TXoshiro256*);
 
@@ -93,7 +97,7 @@ void xoshiro256_ppjump(TXoshiro256*);
 
 
 /*
- * Xoroshiro128 */
+ * Xoroshiro128 state. */
 struct TXoroshiro128 {
 	uint64 s[2];
 };
@@ -107,7 +111,9 @@ CTOOLBOX_API
 void xoroshiro128_seed(TXoroshiro128*, uint64 seed);
 
 /*
- * Xoroshiro-128 start-start and plus-plus functions. */
+ * Xoroshiro-128 start-start and plus-plus functions.
+ * ssnext: star-star variant, recommended for floating point generation.
+ * ppnext: plus-plus variant, recommended for general purpose. */
 CTOOLBOX_API
 uint64 xoroshiro128_ssnext(TXoroshiro128*);
 
