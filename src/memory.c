@@ -226,9 +226,9 @@ ctb_memset(void* destination, uintxx value, uintxx size)
 		uint64* exx;
 
 		sxx = s;
-		sxx |= sxx << 010;
-		sxx |= sxx << 020;
-		sxx |= sxx << 040;
+		sxx |= sxx << 0x08;
+		sxx |= sxx << 0x10;
+		sxx |= sxx << 0x20;
 		txx = (uint64*) (t);
 		exx = (uint64*) (t + (m = (size >> 3) << 3));
 		for (; exx > txx; txx += 1) {
@@ -240,8 +240,8 @@ ctb_memset(void* destination, uintxx value, uintxx size)
 		uint32* exx;
 
 		sxx = s;
-		sxx |= sxx << 010;
-		sxx |= sxx << 020;
+		sxx |= sxx << 0x08;
+		sxx |= sxx << 0x10;
 		txx = (uint32*) (t);
 		exx = (uint32*) (t + (m = (size >> 3) << 3));
 		for (; exx > txx; txx += 2) {
@@ -267,9 +267,9 @@ ctb_memset(void* destination, uintxx value, uintxx size)
 		}
 
 		sxx = s;
-		sxx |= sxx << 010;
-		sxx |= sxx << 020;
-		sxx |= sxx << 030;
+		sxx |= sxx << 0x08;
+		sxx |= sxx << 0x10;
+		sxx |= sxx << 0x18;
 		txx = (uint32*) (t);
 		exx = (uint32*) (t + (m = (size >> 3) << 3));
 		for (; exx > txx; txx += 2) {
