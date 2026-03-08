@@ -41,7 +41,7 @@ CTOOLBOX_API
 void xoshiro128_seed(TXoshiro128*, uint32 seed);
 
 /*
- * Xoshiro-128 start-start and plus-plus functions.
+ * Xoshiro-128 star-star and plus-plus functions.
  * ssnext: star-star variant, recommended for floating point generation.
  * ppnext: plus-plus variant, recommended for general purpose. */
 CTOOLBOX_API
@@ -76,7 +76,7 @@ CTOOLBOX_API
 void xoshiro256_seed(TXoshiro256*, uint64 seed);
 
 /*
- * Xoshiro-256 start-start and plus-plus functions.
+ * Xoshiro-256 star-star and plus-plus functions.
  * ssnext: star-star variant, recommended for floating point generation.
  * ppnext: plus-plus variant, recommended for general purpose. */
 CTOOLBOX_API

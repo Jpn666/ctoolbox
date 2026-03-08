@@ -139,31 +139,31 @@ typedef void (*TUnaryFn)(void*);
 
 /* signed limits */
 #ifndef INT8_MIN
-	#define  INT8_MIN 0x00000080L
+	#define  INT8_MIN (-0x00000080L)
 #endif
 #ifndef INT8_MAX
-	#define  INT8_MAX 0x0000007FL
+	#define  INT8_MAX (+0x0000007FL)
 #endif
 
 #ifndef INT16_MIN
-	#define INT16_MIN 0x00008000L
+	#define INT16_MIN (-0x00008000L)
 #endif
 #ifndef INT16_MAX
-	#define INT16_MAX 0x00007FFFL
+	#define INT16_MAX (+0x00007FFFL)
 #endif
 
 #ifndef INT32_MIN
-	#define INT32_MIN 0x80000000L
+	#define INT32_MIN (-0x80000000L)
 #endif
 #ifndef INT32_MAX
-	#define INT32_MAX 0x7FFFFFFFL
+	#define INT32_MAX (+0x7FFFFFFFL)
 #endif
 
 #ifndef INT64_MIN
-	#define INT64_MIN 0x8000000000000000LL
+	#define INT64_MIN (-0x8000000000000000LL)
 #endif
 #ifndef INT64_MAX
-	#define INT64_MAX 0x7FFFFFFFFFFFFFFFLL
+	#define INT64_MAX (+0x7FFFFFFFFFFFFFFFLL)
 #endif
 
 
