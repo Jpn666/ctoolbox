@@ -91,10 +91,6 @@
  * Assert
  *************************************************************************** */
 
- #if !defined(CTB_CFG_NOSTDLIB)
-	#include <assert.h>
-#endif
-
 #if defined(_DEBUG)
 	#undef NDEBUG
 #endif
@@ -105,11 +101,6 @@
 #if defined(NDEBUG)
 	#undef  CTB_ASSERT
 	#define CTB_ASSERT(C) (void) (C)
-#else
-	#if !defined(CTB_CFG_NOSTDLIB)
-		#undef  CTB_ASSERT
-		#define CTB_ASSERT(A) assert(A)
-	#endif
 #endif
 
 
@@ -146,6 +137,10 @@ ctb_testfailed(const char* cndtn, const char* file, int line)
 		info.cndtn = cndtn; info.file = file; info.line = line;
 		ctb_assertfn(info);
 	}
+
+#if defined(__GNUC__)
+    __builtin_trap();
+#endif
 
 	/*
 	 * If no assert function is set, we just loop infinitely, this is useful
